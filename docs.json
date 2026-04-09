@@ -22,20 +22,6 @@
             ]
           },
           {
-            "group": "Web App",
-            "pages": [
-              "webapp/overview",
-              "webapp/home",
-              "webapp/auth",
-              "webapp/deposit",
-              "webapp/balance",
-              "webapp/pay_send",
-              "webapp/pay_request",
-              "webapp/api_key",
-              "webapp/api_plan"
-            ]
-          },
-          {
             "group": "Writing content",
             "pages": [
               "essentials/markdown",
@@ -52,6 +38,38 @@
               "ai-tools/windsurf"
             ]
           }
+        ]
+      },
+      {
+        "tab": "Web App",
+        "pages": [
+          "webapp/overview",
+          "webapp/home",
+          "webapp/auth",
+          "webapp/deposit",
+          "webapp/balance",
+          "webapp/pay_send",
+          "webapp/pay_request",
+          "webapp/api_key",
+          "webapp/api_plan"
+        ]
+      },
+      {
+        "tab": "Falcon AI Agent",
+        "pages": [
+          "falcon/overview"
+        ]
+      },      
+      {
+        "tab": "Payment Gateway",
+        "pages": [
+          "payment-gateway/overview"
+        ]
+      },
+      {
+        "tab": "CLI",
+        "pages": [
+          "cli/overview"
         ]
       },
       {
