@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "UniFi Docs",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#2563EB",
+    "light": "#22D3EE",
+    "dark": "#1E3A8A"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -14,18 +14,25 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Why UniFi",
             "pages": [
-              "index",
+              "mission",
               "quickstart",
               "development"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Web App",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "webapp/overview",
+              "webapp/home",
+              "webapp/auth",
+              "webapp/deposit",
+              "webapp/balance",
+              "webapp/pay_send",
+              "webapp/pay_request",
+              "webapp/api_key",
+              "webapp/api_plan"
             ]
           },
           {
@@ -71,12 +78,12 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
+          "anchor": "Web App",
           "href": "https://mintlify.com/docs",
           "icon": "book-open-cover"
         },
         {
-          "anchor": "Blog",
+          "anchor": "Payment Gateway",
           "href": "https://mintlify.com/blog",
           "icon": "newspaper"
         }
@@ -91,13 +98,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:unifiiweb3@gmail.com"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://unifiweb3.pages.dev/home"
     }
   },
   "contextual": {
@@ -114,9 +121,10 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "website": "https://www.unifiweb3.com",
+      "x": "https://x.com/abhi3700",
+      "github": "https://github.com/abhi3700",
+      "linkedin": "https://linkedin.com/company/unifi-web3"
     }
   }
 }
