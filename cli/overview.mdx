@@ -1,0 +1,49 @@
+---
+title: 'Overview'
+description: 'Manage payments, wallets, and APIs directly from the command line.'
+icon: 'terminal'
+---
+
+## What is UniFi CLI?
+
+The **UniFi CLI** allows developers to interact with UniFi directly from the terminal — enabling payments, wallet management, and automation workflows.
+
+{/* TODO: Add diagram */}
+
+---
+
+## Requirements
+
+To use the CLI effectively, you need the following:
+
+<Columns cols={2}>
+  <Card title="Wallet Setup" icon="key">
+
+You can connect using:
+- Metamask (self-custodial)
+- Email-based wallets
+- Other wallet providers
+
+However, for advanced features like **Falcon (automation)**, a **cloud-hosted wallet** is required.
+
+<Note>
+👉 Recommended: Use **AWS Vault** for secure key management.
+</Note>
+
+> Support for additional cloud vault providers will be added in the future.
+
+  </Card>
+
+  <Card title="UniFi Infra" icon="credit-card">
+
+    The CLI works on top of **UniFi’s stablecoin payment infrastructure**, which powers:
+
+    - Gasless transactions
+    - Fast and low-cost transfers
+    - Multi-chain payments
+    - Scheduled payments
+    - Bulk payments (e.g., payroll disbursals)
+    - High-volume automated payouts
+
+  </Card>
+</Columns>
