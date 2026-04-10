@@ -33,6 +33,7 @@
           "webapp/balance",
           "webapp/pay_send",
           "webapp/pay_request",
+          "webapp/pay_history",
           "webapp/api_key",
           "webapp/api_plan"
         ]
@@ -54,7 +55,8 @@
         "pages": [
           "cli/overview",
           "cli/quickstart",
-          "cli/usage"
+          "cli/usage",
+          "cli/changelog"
         ]
       },
       {
