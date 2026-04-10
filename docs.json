@@ -55,7 +55,7 @@
         ]
       },
       {
-        "tab": "Falcon AI Agent",
+        "tab": "Falcon Agent",
         "pages": [
           "falcon/overview"
         ]
@@ -109,8 +109,8 @@
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/unifi-light.svg",
+    "dark": "/logo/unifi-dark.svg"
   },
   "navbar": {
     "links": [
