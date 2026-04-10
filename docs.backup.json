@@ -1,64 +1,54 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "UniFi Docs",
+  "name": "Mint Starter Kit",
   "colors": {
-    "primary": "#2563EB",
-    "light": "#22D3EE",
-    "dark": "#1E3A8A"
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "📘 Guides",
+        "tab": "Guides",
         "groups": [
           {
-            "group": "Why UniFi",
+            "group": "Getting started",
             "pages": [
-              "mission",
+              "index",
               "quickstart",
               "development"
+            ]
+          },
+          {
+            "group": "Customization",
+            "pages": [
+              "essentials/settings",
+              "essentials/navigation"
+            ]
+          },
+          {
+            "group": "Writing content",
+            "pages": [
+              "essentials/markdown",
+              "essentials/code",
+              "essentials/images",
+              "essentials/reusable-snippets"
+            ]
+          },
+          {
+            "group": "AI tools",
+            "pages": [
+              "ai-tools/cursor",
+              "ai-tools/claude-code",
+              "ai-tools/windsurf"
             ]
           }
         ]
       },
       {
-        "tab": "🖥️ Web App",
-        "pages": [
-          "webapp/overview",
-          "webapp/home",
-          "webapp/auth",
-          "webapp/deposit",
-          "webapp/balance",
-          "webapp/pay_send",
-          "webapp/pay_request",
-          "webapp/api_key",
-          "webapp/api_plan"
-        ]
-      },
-      {
-        "tab": "🤖 Falcon Agent",
-        "pages": [
-          "falcon/overview"
-        ]
-      },      
-      {
-        "tab": "💳 Payment Gateway",
-        "pages": [
-          "payment-gateway/overview"
-        ]
-      },
-      {
-        "tab": "🧑🏻‍💻 CLI",
-        "pages": [
-          "cli/overview",
-          "cli/quickstart",
-          "cli/usage"
-        ]
-      },
-      {
-        "tab": "</> API reference",
+        "tab": "API reference",
         "groups": [
           {
             "group": "API documentation",
@@ -81,12 +71,12 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Web App",
+          "anchor": "Documentation",
           "href": "https://mintlify.com/docs",
           "icon": "book-open-cover"
         },
         {
-          "anchor": "Payment Gateway",
+          "anchor": "Blog",
           "href": "https://mintlify.com/blog",
           "icon": "newspaper"
         }
@@ -94,20 +84,20 @@
     }
   },
   "logo": {
-    "light": "/logo/unifi-light.svg",
-    "dark": "/logo/unifi-dark.svg"
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
   },
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:unifiiweb3@gmail.com"
+        "href": "mailto:hi@mintlify.com"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://unifiweb3.pages.dev/home"
+      "href": "https://dashboard.mintlify.com"
     }
   },
   "contextual": {
@@ -124,10 +114,9 @@
   },
   "footer": {
     "socials": {
-      "website": "https://www.unifiweb3.com",
-      "linkedin": "https://linkedin.com/company/unifi-web3",
-      "x": "https://x.com/abhi3700",
-      "github": "https://github.com/abhi3700"
+      "x": "https://x.com/mintlify",
+      "github": "https://github.com/mintlify",
+      "linkedin": "https://linkedin.com/company/mintlify"
     }
   }
 }
