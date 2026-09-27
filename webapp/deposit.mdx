@@ -1,5 +1,26 @@
 ---
-title: 'Deposit'
-description: 'Add funds to your wallet to start sending and receiving stablecoin payments.'
-icon: 'download'
+title: "Deposit"
+description: "Fund the correct wallet address with a supported stablecoin on the intended network."
+icon: "arrow-down-to-line"
 ---
+
+A deposit is a normal onchain transfer into the wallet address shown by UniFi.
+
+<Steps>
+  <Step title="Choose the network">
+    Select Ethereum, Polygon, or the network available in your environment.
+  </Step>
+  <Step title="Copy the address">
+    Copy the displayed address or scan its QR code. Verify the first and last characters.
+  </Step>
+  <Step title="Send the stablecoin">
+    From the source wallet or exchange, select the same token and network shown in UniFi.
+  </Step>
+  <Step title="Wait for the balance">
+    The balance appears after the network and UniFi have observed the transfer.
+  </Step>
+</Steps>
+
+<Warning>
+Sending on the wrong network can make funds unavailable in the selected UniFi balance. Do a small test transfer when using a new source.
+</Warning>

@@ -1,0 +1,37 @@
+---
+title: "Security and Permit2 permissions"
+description: "Understand the one-time token approval, short-lived payment signature, and safe integration practices."
+icon: "shield-halved"
+---
+
+UniFi's non-custodial flow uses [Uniswap Permit2](https://etherscan.io/address/0x000000000022d473030f116ddee9f6b43ac78ba3#code) on Ethereum to separate a reusable token approval from each payment authorization.
+
+## Two different permissions
+
+<Steps>
+  <Step title="Token approval">
+    The wallet grants the Permit2 contract an ERC-20 allowance for the selected token. An unlimited approval avoids repeating this onchain transaction—and its native gas fee—for every payment.
+  </Step>
+  <Step title="Payment signature">
+    The payer signs the actual payment details, such as USDT on Ethereum, recipient, amount, and deadline. UniFi uses a 15-minute expiry for this signature.
+  </Step>
+</Steps>
+
+Permit2 is deployed as a non-upgradeable contract and the contract is not controlled through an owner-admin upgrade path. That reduces upgrade and admin-key risk. It does **not** make an unlimited approval risk-free: a user must still protect wallet access and avoid signing malicious Permit2 messages.
+
+<Warning>
+An unlimited token approval is a convenience and security tradeoff. Only approve the verified Permit2 address, inspect every later signature, and revoke the token allowance if you no longer use the integration.
+</Warning>
+
+## Integration checklist
+
+- Display the token, chain, spender, allowance, recipient, amount, and expiry.
+- Reject expired signatures and mismatched chain IDs.
+- Never request a seed phrase or private key.
+- Store API keys and service credentials only on a trusted server.
+- Treat `Reorged` and `Failed` as unsuccessful terminal states.
+- Let users review and revoke allowances through their wallet or a reputable allowance manager.
+
+## What “gasless” means
+
+The payment execution can be sponsored or settled without the payer holding native gas. The initial ERC-20 approval is different: if an approval is required, it is an onchain transaction and normally needs the chain's native token.

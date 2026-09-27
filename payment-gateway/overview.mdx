@@ -1,5 +1,40 @@
 ---
-title: 'Overview'
-description: 'Enable seamless stablecoin payments for your applications and users.'
-icon: 'plug'
+title: "Payment gateway"
+description: "Create a stablecoin checkout that keeps authorization and receipt state explicit."
+icon: "cart-shopping"
 ---
+
+The UniFi payment gateway is the integration surface for merchant and platform checkouts. It lets your product create a payment session, direct the payer to an authorization flow, and reconcile the resulting receipt.
+
+## Recommended checkout flow
+
+<Steps>
+  <Step title="Create the order">
+    Generate your own immutable order ID and store the expected asset, network, recipient, amount, and expiry.
+  </Step>
+  <Step title="Prepare the UniFi payment">
+    Associate the payment attempt with your order on a trusted server and preflight the exact asset, network, amount, and recipient. Never trust an amount supplied only by the browser.
+  </Step>
+  <Step title="Present the payment">
+    Show the payer the exact stablecoin-network pair, recipient, amount, fee treatment, and expiry.
+  </Step>
+  <Step title="Authorize and execute">
+    The payer connects a wallet, completes Permit2 approval if required, and signs the short-lived payment authorization.
+  </Step>
+  <Step title="Reconcile">
+    Store the receipt ID and transaction hash. Fulfil the order only after the receipt reaches the status required by your risk policy.
+  </Step>
+</Steps>
+
+## Integration rules
+
+- Create and validate orders server-side.
+- Make order IDs and payment attempts idempotent in your own system.
+- Do not infer success from a browser redirect.
+- Verify amount, asset, network, recipient, and receipt status.
+- Handle `Failed` and `Reorged` explicitly.
+- Keep API keys out of frontend code.
+
+<Card title="Use the API reference" icon="code" href="/api-reference/introduction">
+  Start with authentication, preflight, payment submission, and receipt endpoints.
+</Card>

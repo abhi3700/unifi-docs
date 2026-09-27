@@ -1,5 +1,16 @@
 ---
-title: 'Balance'
-description: 'View your available balance across chains and stablecoins.'
-icon: 'wallet'
+title: "Balances"
+description: "Read stablecoin balances by asset and network."
+icon: "scale-balanced"
 ---
+
+The wallet view groups value by stablecoin and shows the chain breakdown underneath it. A balance is tied to both dimensions:
+
+- **Asset:** USDT, USDC, or DAI
+- **Network:** Ethereum, Polygon, or an environment-specific test network
+
+A displayed USD total is a convenience estimate based on the available price feed. Use the token balance—not the USD estimate—when validating whether a payment can be sent.
+
+<Tip>
+Run payment preflight before signing. It checks the spendable balance and estimated fee for the exact asset-network pair.
+</Tip>

@@ -1,5 +1,21 @@
 ---
-title: 'API Key, Quota'
-description: 'Create and manage API keys and monitor usage quotas for your applications.'
-icon: 'key'
+title: "API keys and quota"
+description: "Create server credentials and monitor API usage."
+icon: "key"
 ---
+
+API keys authenticate server-to-server requests and determine the entity and usage quota applied to the call.
+
+## Key handling
+
+- Create a separate named key for each environment or service.
+- Copy a new key into a secret manager immediately.
+- Send it as `Authorization: Bearer <API_KEY>`.
+- Never place a production API key in browser code, mobile bundles, logs, or screenshots.
+- Revoke a key when a service is retired or the credential might be exposed.
+
+<Warning>
+Wallet JWTs and API keys are both bearer credentials, but they serve different actors. Do not exchange or embed a server API key in the end-user wallet flow.
+</Warning>
+
+Read [API authentication](/api-reference/authentication) for request examples.

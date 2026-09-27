@@ -1,4 +1,31 @@
 ---
-title: "Mission"
-description: "The Gasless Payment Rail for Stablecoins"
+title: "Why UniFi"
+description: "A stablecoin payment rail that removes native-gas friction without hiding payment state."
 ---
+
+Stablecoins are useful for payments, but the payer is still expected to understand networks, native gas tokens, allowances, transaction state, and finality. UniFi moves those concerns into a consistent payment interface.
+
+## Design goals
+
+<Columns cols={2}>
+  <Card title="Stablecoin-first" icon="coins">
+    Show the asset, network, amount, and fee clearly instead of exposing a generic crypto transfer.
+  </Card>
+  <Card title="Gasless repeat payments" icon="gas-pump">
+    Reuse a Permit2 token approval so supported payments do not require a separate native-token fee each time.
+  </Card>
+  <Card title="Explicit authorization" icon="signature">
+    Ask the user to sign the payment details, with a 15-minute expiry, before execution.
+  </Card>
+  <Card title="Inspectable receipts" icon="receipt">
+    Expose receipt IDs, transaction hashes, fees, timestamps, and confirmation state.
+  </Card>
+</Columns>
+
+## One rail, multiple interfaces
+
+UniFi's web app is the direct user experience. The API and developer kit expose the same payment lifecycle to applications. The payment gateway packages collection flows for merchants, while Falcon coordinates payment automation.
+
+<Info>
+“Gasless” describes the supported payment execution flow. A first-time token approval is an onchain transaction and can still require the network's native gas token.
+</Info>

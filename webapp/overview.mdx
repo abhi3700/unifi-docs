@@ -1,5 +1,30 @@
 ---
-title: 'Overview'
-description: 'Send, request, and manage global stablecoin payments instantly with UniFi — gasless, low-cost, and seamless.'
-icon: 'credit-card'
+title: "Web app overview"
+description: "Send, request, and track stablecoin payments from one interface."
+icon: "wallet"
 ---
+
+The UniFi web app combines wallet access, balances, payment creation, payment requests, receipts, and developer credentials.
+
+<CardGroup cols={2}>
+  <Card title="Send a payment" icon="paper-plane" href="/webapp/pay_send">
+    Choose a stablecoin and network, review the payment, and authorize execution.
+  </Card>
+  <Card title="Request a payment" icon="link" href="/webapp/pay_request">
+    Create a shareable payment intent for a payer.
+  </Card>
+  <Card title="Inspect balances" icon="scale-balanced" href="/webapp/balance">
+    View supported stablecoin balances by asset and network.
+  </Card>
+  <Card title="Track receipts" icon="receipt" href="/webapp/pay_history">
+    Search past payments and inspect confirmation or finality.
+  </Card>
+</CardGroup>
+
+## Before you start
+
+You need an EVM wallet, a supported stablecoin balance, and enough native gas for a first-time Permit2 approval when one is required. The subsequent supported payment flow does not require native gas from the payer.
+
+<Note>
+Always confirm the selected asset **and** network. “USDT on Ethereum” and “USDT on Polygon” are different payment routes.
+</Note>

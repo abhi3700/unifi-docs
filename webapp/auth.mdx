@@ -1,5 +1,26 @@
 ---
-title: 'Auth'
-description: 'Secure access to your wallet and payments with 2FA protection.'
-icon: 'lock'
+title: "Connect and authenticate"
+description: "Use a wallet-signed challenge to establish a UniFi session."
+icon: "lock"
 ---
+
+UniFi uses wallet ownership to authenticate non-custodial users.
+
+<Steps>
+  <Step title="Connect your wallet">
+    Select the wallet account you want UniFi to use. Check the address shown by the app.
+  </Step>
+  <Step title="Review the challenge">
+    UniFi issues a short-lived, single-use message containing the expected domain, URI, chain ID, nonce, and expiry.
+  </Step>
+  <Step title="Sign the message">
+    Sign only when the wallet message matches the UniFi site and the account you selected. This is an authentication signature, not a token transfer.
+  </Step>
+  <Step title="Use the session">
+    UniFi verifies the signature and creates a bearer session for protected requests.
+  </Step>
+</Steps>
+
+<Warning>
+UniFi support will never ask for your seed phrase or private key.
+</Warning>

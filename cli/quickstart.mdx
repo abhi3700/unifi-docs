@@ -1,4 +1,44 @@
 ---
-title: 'Quickstart'
-description: 'Set up the UniFi CLI and start in minutes.'
+title: "CLI quickstart"
+description: "Build the current CLI, connect an AWS KMS wallet, and verify the session."
+icon: "rocket"
 ---
+
+## Prerequisites
+
+- Rust and Cargo
+- AWS CLI installed and authenticated
+- access to an AWS KMS secp256k1 signing key
+- this repository checkout
+
+<Steps>
+  <Step title="Build the CLI">
+    From the repository root:
+
+    ```bash
+    cargo build --release --manifest-path unifi-cli-app/Cargo.toml
+    ```
+  </Step>
+  <Step title="Inspect help">
+    ```bash
+    ./target/release/unifi --help
+    ```
+  </Step>
+  <Step title="Connect the wallet">
+    ```bash
+    ./target/release/unifi connect --wallet alias/my-wallet
+    ```
+
+    The CLI requests a single-use wallet challenge, signs it with AWS KMS, and stores the resulting session locally.
+  </Step>
+  <Step title="Verify configuration and balance">
+    ```bash
+    ./target/release/unifi config get
+    ./target/release/unifi balance
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+Use an AWS profile and KMS key with the minimum permissions required. Never paste cloud credentials into the CLI arguments.
+</Warning>

@@ -1,5 +1,32 @@
 ---
-title: 'Send'
-description: 'Send stablecoin payments instantly across chains.'
-icon: 'send'
+title: "Send a payment"
+description: "Authorize a stablecoin transfer and track it to confirmation."
+icon: "paper-plane"
 ---
+
+<Steps>
+  <Step title="Select the asset and chain">
+    Choose an explicit pair such as **USDT on Ethereum**.
+  </Step>
+  <Step title="Enter payment details">
+    Provide the recipient address and amount. Add a short memo when useful.
+  </Step>
+  <Step title="Review preflight">
+    Check the available balance, estimated stablecoin fee, and whether a Permit2 approval is required.
+  </Step>
+  <Step title="Approve once if needed">
+    Approve the verified Permit2 contract for the selected token. Reusing the approval avoids another approval transaction for each later payment.
+  </Step>
+  <Step title="Sign the payment">
+    Review the recipient, amount, asset, network, and 15-minute expiry, then sign.
+  </Step>
+  <Step title="Track the receipt">
+    Keep the receipt ID and watch the payment move from `Processing` to `Confirmed` or `Finalized`.
+  </Step>
+</Steps>
+
+<Info>
+The recipient receives the selected stablecoin on the selected network. Native gas shown as `0` applies to the supported payment step, not necessarily to a first-time token approval.
+</Info>
+
+See [Security and Permit2 permissions](/concepts/security-and-permissions) for the approval model.

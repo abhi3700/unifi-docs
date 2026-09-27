@@ -1,5 +1,29 @@
 ---
-title: 'Pay Receipt'
-description: 'View your payment receipt with status and details'
-icon: 'receipt'
+title: "Payment receipts"
+description: "Interpret payment status, fees, transaction data, and finality."
+icon: "receipt"
 ---
+
+Each submitted payment gets a receipt ID. The receipt can contain:
+
+- payer or user identifier
+- chain and stablecoin
+- recipient and amount
+- estimated and actual fees
+- transaction hash and block number
+- start and completion timestamps
+- current status
+
+## Status guide
+
+| Status | What to do |
+| --- | --- |
+| `Processing` | Wait and refresh; do not send a duplicate payment. |
+| `Confirmed` | The transaction is in a block. Use this only if your risk policy accepts confirmations. |
+| `Finalized` | The service observed finalized-chain status. |
+| `Failed` | Read the error, correct the cause, and create a new payment if needed. |
+| `Reorged` | The transaction left the canonical chain; verify onchain state before retrying. |
+
+<Warning>
+A receipt page is not a substitute for recipient-side accounting. High-value integrations should reconcile receipt state and the onchain transaction hash.
+</Warning>

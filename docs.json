@@ -1,118 +1,130 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "palm",
   "name": "UniFi Docs",
+  "description": "Build and operate gasless stablecoin payment experiences with UniFi.",
   "colors": {
-    "primary": "#2563EB",
-    "light": "#22D3EE",
-    "dark": "#1E3A8A"
+    "primary": "#155EEF",
+    "light": "#26C7E8",
+    "dark": "#4B87FF"
+  },
+  "fonts": {
+    "family": "Inter"
+  },
+  "modeToggle": {
+    "default": "light"
+  },
+  "codeBlock": {
+    "mode": "auto"
   },
   "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/unifi-light.svg",
+    "dark": "/logo/unifi-dark.svg",
+    "href": "/"
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "📘 Guides",
+        "tab": "Get started",
         "groups": [
           {
-            "group": "Why UniFi",
+            "group": "Welcome to UniFi",
+            "pages": ["index", "quickstart", "mission"]
+          },
+          {
+            "group": "Core concepts",
             "pages": [
-              "mission",
-              "quickstart",
+              "concepts/how-unifi-works",
+              "concepts/security-and-permissions",
               "development"
             ]
           }
         ]
       },
       {
-        "tab": "🖥️ Web App",
-        "pages": [
-          "webapp/overview",
-          "webapp/home",
-          "webapp/auth",
-          "webapp/deposit",
-          "webapp/balance",
-          "webapp/pay_send",
-          "webapp/pay_receipt",
-          "webapp/pay_request",
-          "webapp/pay_history",
-          "webapp/api_key",
-          "webapp/api_plan"
-        ]
-      },
-      {
-        "tab": "🤖 Falcon Agent",
-        "pages": [
-          "falcon/overview"
-        ]
-      },      
-      {
-        "tab": "💳 Payment Gateway",
-        "pages": [
-          "payment-gateway/overview"
-        ]
-      },
-      {
-        "tab": "🧑🏻‍💻 CLI",
-        "pages": [
-          "cli/overview",
-          "cli/quickstart",
-          "cli/usage",
-          "cli/changelog"
-        ]
-      },
-      {
-        "tab": "</> API reference",
+        "tab": "Web app",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Start here",
+            "pages": ["webapp/overview", "webapp/home", "webapp/auth"]
+          },
+          {
+            "group": "Wallet",
+            "pages": ["webapp/deposit", "webapp/balance"]
+          },
+          {
+            "group": "Payments",
             "pages": [
-              "api-reference/introduction"
+              "webapp/pay_send",
+              "webapp/pay_request",
+              "webapp/pay_receipt",
+              "webapp/pay_history"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Developer access",
+            "pages": ["webapp/api_key", "webapp/api_plan"]
+          }
+        ]
+      },
+      {
+        "tab": "Build",
+        "groups": [
+          {
+            "group": "Products",
+            "pages": ["payment-gateway/overview", "falcon/overview"]
+          },
+          {
+            "group": "Command line",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "cli/overview",
+              "cli/quickstart",
+              "cli/usage",
+              "cli/changelog"
             ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/authentication",
+              "api-reference/errors"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "openapi": {
+              "source": "/api-reference/openapi.json",
+              "directory": "api-reference/endpoints"
+            }
           }
         ]
       }
     ]
   },
-  "logo": {
-    "light": "/logo/unifi-light.svg",
-    "dark": "/logo/unifi-dark.svg"
-  },
   "navbar": {
     "links": [
-      {
-        "label": "Support",
-        "href": "mailto:unifiiweb3@gmail.com"
-      }
+      {"label": "Website", "href": "https://payunifi.com"},
+      {"label": "Support", "href": "mailto:unifiiweb3@gmail.com"}
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
+      "label": "Open UniFi",
       "href": "https://unifiweb3.pages.dev/home"
     }
   },
   "contextual": {
-    "options": [
-     "copy",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+    "options": ["copy", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
   },
   "footer": {
     "socials": {
-      "website": "https://www.unifiweb3.com",
+      "website": "https://payunifi.com",
       "linkedin": "https://linkedin.com/company/unifi-web3",
       "x": "https://x.com/abhi3700",
       "github": "https://github.com/abhi3700"

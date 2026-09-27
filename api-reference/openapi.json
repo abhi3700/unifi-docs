@@ -1,217 +1,1222 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.0.3",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "UniFi API",
+    "version": "0.1.0",
+    "description": "Integration-facing endpoints for wallet authentication, stablecoin balances, payment preflight, payment creation, and receipt tracking."
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://unifi-api-4a5e.onrender.com",
+      "description": "Hosted service"
+    },
+    {
+      "url": "http://127.0.0.1:3333",
+      "description": "Local development"
     }
   ],
-  "security": [
+  "tags": [
     {
-      "bearerAuth": []
+      "name": "Service",
+      "description": "Service availability."
+    },
+    {
+      "name": "Authentication",
+      "description": "Wallet challenge and JWT exchange."
+    },
+    {
+      "name": "Wallet",
+      "description": "Stablecoin balances."
+    },
+    {
+      "name": "Payments",
+      "description": "Payment preflight and submission."
+    },
+    {
+      "name": "Receipts",
+      "description": "Payment status and history."
     }
   ],
   "paths": {
-    "/plants": {
+    "/healthz": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "operationId": "getHealthz",
+        "summary": "Check service availability",
+        "description": "Checks whether the API process is available. This lightweight endpoint does not test every downstream dependency.",
+        "tags": ["Service"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The API process is available.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "API server is healthy",
+                  "server_uptime": 1789992000
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/challenge/{address}": {
+      "post": {
+        "operationId": "createWalletChallenge",
+        "summary": "Create a wallet challenge",
+        "description": "Creates a short-lived, single-use authentication challenge for an EVM address.",
+        "tags": ["Authentication"],
+        "security": [],
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
+            "$ref": "#/components/parameters/Address"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthChallengeRequest"
+              },
+              "example": {
+                "domain": "app.payunifi.com",
+                "uri": "https://app.payunifi.com",
+                "chain_id": 1
+              }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Challenge created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthChallengeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/auth/generate_jwt/{address}": {
+      "post": {
+        "operationId": "exchangeWalletChallenge",
+        "summary": "Exchange a signed challenge for a JWT",
+        "description": "Verifies the signed single-use challenge and returns a bearer JWT.",
+        "tags": ["Authentication"],
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Address"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JwtExchangeRequest"
+              },
+              "example": {
+                "message": "Sign in to UniFi...",
+                "signature": "0x1234abcd",
+                "nonce": "challenge-nonce",
+                "platform": "Web"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JWT issued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "eyJhbGciOi..."
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/wallet/onchain/balance/{user_id}/{chain}/{coin}": {
+      "get": {
+        "operationId": "getStablecoinBalance",
+        "summary": "Get a stablecoin balance",
+        "description": "Returns the formatted net balance for one user, chain, and stablecoin.",
+        "tags": ["Wallet"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          },
+          {
+            "$ref": "#/components/parameters/Coin"
           }
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Formatted token balance.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "1200.00"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/payment/onchain/balance_est_fee/{user_id}/{chain}/{coin}": {
+      "get": {
+        "operationId": "preflightPayment",
+        "summary": "Preflight a stablecoin payment",
+        "description": "Returns the spendable balance, estimated fee, and whether the token allowance is zero for the selected route.",
+        "tags": ["Payments"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          },
+          {
+            "$ref": "#/components/parameters/Coin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment preflight values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreflightResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "is_coin_allowance_zero": false,
+                    "balance": "1200.00",
+                    "est_fee": "0.12"
                   }
                 }
               }
             }
           },
           "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
           },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/payment/onchain/balance_est_fee_ncw/{user_id}/{is_fee_incl}": {
+      "post": {
+        "operationId": "preflightNonCustodialPayment",
+        "summary": "Preflight a non-custodial payment",
+        "description": "Checks the wallet balance, estimated stablecoin fee, and Permit2 allowance for the exact payment.",
+        "tags": ["Payments"],
         "parameters": [
           {
-            "name": "id",
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "name": "is_fee_incl",
             "in": "path",
-            "description": "ID of plant to delete",
             "required": true,
+            "description": "Whether the entered amount includes the UniFi fee.",
             "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
+              "type": "boolean"
+            },
+            "example": false
           }
         ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/PaymentPayload"
+              },
+              "example": {
+                "chain": "Ethereum",
+                "coin": "USDT",
+                "to_address": "0x71A9000000000000000000000000000000003F2C",
+                "amount": "100.00",
+                "memo": "General"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Non-custodial payment preflight values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NonCustodialPreflightResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/ncw/create_domain_permit/{user_id}": {
+      "post": {
+        "operationId": "createPermit2TypedData",
+        "summary": "Create Permit2 signing data",
+        "description": "Creates the EIP-712 domain and Permit2 permit that the payer signs. Set the deadline to no more than 15 minutes after the current time.",
+        "tags": ["Payments"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NonCustodialPaymentBase"
+              },
+              "example": {
+                "chain": "Ethereum",
+                "coin": "USDT",
+                "to_address": "0x71A9000000000000000000000000000000003F2C",
+                "amount": "100.00",
+                "est_fee": "0.12",
+                "deadline": 1789992900
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "EIP-712 domain and Permit2 permit for wallet signing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermitSigningDataResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/payment/onchain/ncw/{user_id}": {
+      "post": {
+        "operationId": "createNonCustodialPayment",
+        "summary": "Submit a signed non-custodial payment",
+        "description": "Submits the payment details, Permit2 nonce, and wallet signature and returns a receipt ID.",
+        "tags": ["Payments"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NonCustodialPaymentRequest"
+              },
+              "example": {
+                "payload": {
+                  "base": {
+                    "chain": "Ethereum",
+                    "coin": "USDT",
+                    "to_address": "0x71A9000000000000000000000000000000003F2C",
+                    "amount": "100.00",
+                    "est_fee": "0.12",
+                    "deadline": 1789992900
+                  },
+                  "nonce": "42",
+                  "sig": "0x1234abcd",
+                  "memo": "General"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment accepted; data is the receipt ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/{user_id}/{is_fee_incl}": {
+      "post": {
+        "operationId": "createPayment",
+        "summary": "Create a managed-wallet payment",
+        "description": "Submits a payment from a UniFi-managed wallet and returns a receipt ID. Use the non-custodial endpoints for wallet-signed Permit2 payments.",
+        "tags": ["Payments"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "name": "is_fee_incl",
+            "in": "path",
+            "required": true,
+            "description": "Whether the entered amount includes the UniFi fee.",
+            "schema": {
+              "type": "boolean"
+            },
+            "example": false
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayOnchainRequest"
+              },
+              "example": {
+                "payload": {
+                  "chain": "Ethereum",
+                  "coin": "USDT",
+                  "to_address": "0x71A9000000000000000000000000000000003F2C",
+                  "amount": "100.00",
+                  "memo": "General"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment accepted; data is the receipt ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "pay_01JXYZ..."
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/receipt/{receipt_id}": {
+      "get": {
+        "operationId": "getPaymentReceipt",
+        "summary": "Get a payment receipt",
+        "description": "Returns one onchain payment receipt by its UniFi receipt ID.",
+        "tags": ["Receipts"],
+        "parameters": [
+          {
+            "name": "receipt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "pay_01JXYZ..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment receipt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/payment/onchain/receipts/{user_id}/{sort_by_latest}/{from_start}": {
+      "get": {
+        "operationId": "listPaymentReceipts",
+        "summary": "List payment receipts",
+        "description": "Returns paginated payment history for a user, with optional chain and status filters.",
+        "tags": ["Receipts"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "name": "sort_by_latest",
+            "in": "path",
+            "required": true,
+            "description": "Sort newest receipts first when true.",
+            "schema": {
+              "type": "boolean"
+            },
+            "example": true
+          },
+          {
+            "name": "from_start",
+            "in": "path",
+            "required": true,
+            "description": "Start a fresh pagination window when true.",
+            "schema": {
+              "type": "boolean"
+            },
+            "example": true
+          },
+          {
+            "name": "chain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Chain"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ReceiptStatus"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "example": 20
+          },
+          {
+            "name": "next_or_previous",
+            "in": "query",
+            "required": false,
+            "description": "Select the next or previous pagination direction for an existing history window.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment history page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
           }
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A UniFi API key for server integrations or a wallet-authenticated JWT for user routes."
+      }
+    },
+    "parameters": {
+      "Address": {
+        "name": "address",
+        "in": "path",
+        "required": true,
+        "description": "EVM wallet address.",
+        "schema": {
+          "type": "string",
+          "pattern": "^0x[a-fA-F0-9]{40}$"
+        },
+        "example": "0x71A9000000000000000000000000000000003F2C"
+      },
+      "UserId": {
+        "name": "user_id",
+        "in": "path",
+        "required": true,
+        "description": "UniFi user identifier or supported wallet address, depending on the integration.",
+        "schema": {
+          "type": "string"
+        },
+        "example": "0x71A9000000000000000000000000000000003F2C"
+      },
+      "Chain": {
+        "name": "chain",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Chain"
+        },
+        "example": "Ethereum"
+      },
+      "Coin": {
+        "name": "coin",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Stablecoin"
+        },
+        "example": "USDT"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "The request is invalid or cannot be executed in the current state.",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            },
+            "example": "Invalid recipient address."
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
+      "Unauthorized": {
+        "description": "The bearer credential is missing, invalid, or not allowed to access this user.",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            },
+            "example": "Unauthorized API key"
           }
-        ]
+        }
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
+      "ServerError": {
+        "description": "The service could not complete the request.",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            },
+            "example": "Service temporarily unavailable. Please retry later."
+          }
+        }
+      },
+      "Unavailable": {
+        "description": "A required dependency is temporarily unavailable.",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            },
+            "example": "Ethereum is temporarily unavailable. Please try again in a moment."
           }
         }
       }
     },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+    "schemas": {
+      "Chain": {
+        "type": "string",
+        "enum": ["Ethereum", "Polygon", "Sepolia", "Anvil"],
+        "description": "Canonical chain value. Deployment availability varies by environment."
+      },
+      "Stablecoin": {
+        "type": "string",
+        "enum": ["USDT", "USDC", "DAI"]
+      },
+      "ReceiptStatus": {
+        "type": "string",
+        "enum": ["Processing", "Failed", "Confirmed", "Finalized", "Reorged"]
+      },
+      "Platform": {
+        "type": "string",
+        "enum": [
+          "TgBot",
+          "Web",
+          "CliMac",
+          "CliLinux",
+          "CliWindows",
+          "MacDesktop",
+          "LinuxDesktop",
+          "WindowsDesktop"
+        ]
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": ["status", "data", "server_uptime"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "200 OK"
+          },
+          "data": {
+            "type": "string",
+            "example": "API server is healthy"
+          },
+          "server_uptime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Server timestamp value returned by the current service."
+          }
+        }
+      },
+      "AuthChallengeRequest": {
+        "type": "object",
+        "required": ["domain", "uri", "chain_id"],
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Expected application domain."
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "Expected application origin or URI."
+          },
+          "chain_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      },
+      "AuthChallenge": {
+        "type": "object",
+        "required": ["message", "nonce", "expires_at"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The exact message the wallet must sign."
+          },
+          "nonce": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Challenge expiry as a Unix timestamp."
+          }
+        }
+      },
+      "AuthChallengeResponse": {
+        "type": "object",
+        "required": ["status", "data"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "200 OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AuthChallenge"
+          }
+        }
+      },
+      "JwtExchangeRequest": {
+        "type": "object",
+        "required": ["message", "signature", "nonce", "platform"],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string",
+            "description": "Hex-encoded wallet signature."
+          },
+          "nonce": {
+            "type": "string"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/Platform"
+          }
+        }
+      },
+      "StringResponse": {
+        "type": "object",
+        "required": ["status", "data"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "200 OK"
+          },
+          "data": {
+            "type": "string"
+          }
+        }
+      },
+      "PreflightValues": {
+        "type": "object",
+        "required": ["is_coin_allowance_zero", "balance", "est_fee"],
+        "properties": {
+          "is_coin_allowance_zero": {
+            "type": "boolean"
+          },
+          "balance": {
+            "type": "string",
+            "description": "Formatted stablecoin balance."
+          },
+          "est_fee": {
+            "type": "string",
+            "description": "Formatted estimated fee in the stablecoin."
+          }
+        }
+      },
+      "PreflightResponse": {
+        "type": "object",
+        "required": ["status", "data"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "200 OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PreflightValues"
+          }
+        }
+      },
+      "Permit2Allowance": {
+        "type": "object",
+        "required": ["is_suff", "required_allowance", "is_max_allowance"],
+        "properties": {
+          "is_suff": {
+            "type": "boolean",
+            "description": "Whether the current Permit2 allowance covers the payment."
+          },
+          "required_allowance": {
+            "type": "string",
+            "description": "Additional formatted token allowance required."
+          },
+          "is_max_allowance": {
+            "type": "boolean",
+            "description": "Whether the wallet has granted the maximum ERC-20 allowance to Permit2."
+          }
+        }
+      },
+      "NonCustodialPreflightValues": {
+        "type": "object",
+        "required": ["allowance", "balance", "est_fee"],
+        "properties": {
+          "allowance": {
+            "$ref": "#/components/schemas/Permit2Allowance"
+          },
+          "balance": {
+            "type": "string",
+            "description": "Formatted stablecoin balance."
+          },
+          "est_fee": {
+            "type": "string",
+            "description": "Formatted estimated fee in the stablecoin."
+          }
+        }
+      },
+      "NonCustodialPreflightResponse": {
+        "type": "object",
+        "required": ["status", "data"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "200 OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NonCustodialPreflightValues"
+          }
+        }
+      },
+      "Memo": {
+        "description": "Payment purpose. Unit variants serialize as strings; a custom purpose serializes as an object.",
+        "oneOf": [
+          {
+            "type": "string",
+            "enum": ["General", "FliqPay", "FliqPayMerchant", "BulkPay"]
+          },
+          {
+            "type": "object",
+            "required": ["Custom"],
+            "properties": {
+              "Custom": {
+                "type": "string",
+                "maxLength": 48
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "PaymentPayload": {
+        "type": "object",
+        "required": ["chain", "coin", "to_address", "amount", "memo"],
+        "properties": {
+          "chain": {
+            "$ref": "#/components/schemas/Chain"
+          },
+          "coin": {
+            "$ref": "#/components/schemas/Stablecoin"
+          },
+          "to_address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[0-9]+(\\.[0-9]+)?$",
+            "description": "Human-readable decimal token amount."
+          },
+          "memo": {
+            "$ref": "#/components/schemas/Memo"
+          }
+        }
+      },
+      "Schedule": {
+        "type": "object",
+        "required": ["id", "is_recurring"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Existing scheduled payment identifier."
+          },
+          "is_recurring": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NonCustodialPaymentBase": {
+        "type": "object",
+        "required": ["chain", "coin", "to_address", "amount", "est_fee", "deadline"],
+        "properties": {
+          "chain": {
+            "$ref": "#/components/schemas/Chain"
+          },
+          "coin": {
+            "$ref": "#/components/schemas/Stablecoin"
+          },
+          "to_address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[0-9]+(\\.[0-9]+)?$"
+          },
+          "est_fee": {
+            "type": "string",
+            "pattern": "^[0-9]+(\\.[0-9]+)?$"
+          },
+          "deadline": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix timestamp. UniFi's user flow uses current time plus 15 minutes."
+          }
+        }
+      },
+      "PermitSigningData": {
+        "type": "object",
+        "required": ["domain", "permit"],
+        "properties": {
+          "domain": {
+            "type": "object",
+            "description": "EIP-712 domain returned by UniFi.",
+            "additionalProperties": true
+          },
+          "permit": {
+            "type": "object",
+            "description": "Permit2 batch transfer data returned by UniFi.",
+            "additionalProperties": true
+          }
+        }
+      },
+      "PermitSigningDataResponse": {
+        "type": "object",
+        "required": ["status", "data"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "200 OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PermitSigningData"
+          }
+        }
+      },
+      "SignedNonCustodialPayload": {
+        "type": "object",
+        "required": ["base", "nonce", "sig", "memo"],
+        "properties": {
+          "base": {
+            "$ref": "#/components/schemas/NonCustodialPaymentBase"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "Permit2 nonce as a base-10 integer string."
+          },
+          "sig": {
+            "type": "string",
+            "description": "Wallet signature over the returned Permit2 typed data."
+          },
+          "memo": {
+            "$ref": "#/components/schemas/Memo"
+          }
+        }
+      },
+      "NonCustodialPaymentRequest": {
+        "type": "object",
+        "required": ["payload"],
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/SignedNonCustodialPayload"
+          },
+          "sched": {
+            "$ref": "#/components/schemas/Schedule"
+          }
+        }
+      },
+      "PayOnchainRequest": {
+        "type": "object",
+        "required": ["payload"],
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/PaymentPayload"
+          },
+          "sched": {
+            "$ref": "#/components/schemas/Schedule"
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "required": [
+          "id",
+          "entity",
+          "user_id",
+          "is_fee_incl",
+          "chain",
+          "coin",
+          "to_address",
+          "amount",
+          "memo",
+          "est_fee",
+          "act_fee",
+          "tx_hash",
+          "block_num",
+          "status",
+          "start_ts_us",
+          "end_ts_us"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "entity": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "is_fee_incl": {
+            "type": "boolean"
+          },
+          "chain": {
+            "$ref": "#/components/schemas/Chain"
+          },
+          "coin": {
+            "$ref": "#/components/schemas/Stablecoin"
+          },
+          "to_address": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "memo": {
+            "$ref": "#/components/schemas/Memo"
+          },
+          "est_fee": {
+            "type": "string"
+          },
+          "act_fee": {
+            "type": "string"
+          },
+          "tx_hash": {
+            "type": "string"
+          },
+          "block_num": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReceiptStatus"
+          },
+          "start_ts_us": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Payment start time in microseconds."
+          },
+          "end_ts_us": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Confirmation time in microseconds, or zero before confirmation."
+          }
+        }
+      },
+      "ReceiptResponse": {
+        "type": "object",
+        "required": ["status", "data"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "200 OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Receipt"
+          }
+        }
+      },
+      "History": {
+        "type": "object",
+        "required": ["has_prev", "receipts", "has_next"],
+        "properties": {
+          "has_prev": {
+            "type": "boolean"
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Receipt"
+            }
+          },
+          "has_next": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HistoryResponse": {
+        "type": "object",
+        "required": ["status", "data"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "200 OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/History"
+          }
+        }
       }
     }
-  }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
 }

@@ -1,0 +1,34 @@
+---
+title: "Errors and payment state"
+description: "Handle HTTP failures, retries, receipt status, and idempotency safely."
+icon: "triangle-exclamation"
+---
+
+## HTTP errors
+
+Errors use an appropriate HTTP status and currently return a plain-text, user-safe message.
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid input, insufficient balance or allowance, expired data, or an invalid payment state |
+| `401` | Missing, invalid, or unauthorized bearer credential |
+| `409` | The requested operation conflicts with the current resource state |
+| `500` | The service could not complete the request |
+| `503` | A required dependency such as an RPC endpoint is unavailable |
+
+Do not parse human-readable error text into business logic. Branch on the HTTP status and the payment receipt state.
+
+## Retry policy
+
+- Retry `429` and transient `5xx` responses with exponential backoff and jitter.
+- Do not automatically retry a payment submission after a timeout unless you have first checked whether a receipt was created.
+- Do not retry `400` or `401` without changing the request or credential.
+- Persist your own order ID and the UniFi receipt ID together.
+
+## Receipt state
+
+`Processing` is not failure. `Confirmed` and `Finalized` represent different settlement confidence. `Failed` and `Reorged` require explicit handling.
+
+<Warning>
+The payment endpoint does not expose a caller-supplied idempotency key in the current public contract. Prevent duplicate submissions in your own order state machine.
+</Warning>

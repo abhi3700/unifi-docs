@@ -1,5 +1,36 @@
 ---
-title: 'Overview'
-description: 'Your autonomous payment agent'
-icon: 'robot'
+title: "Falcon payment agent"
+description: "Coordinate payment, payroll, and bounty workflows through a private UniFi agent."
+icon: "bird"
 ---
+
+Falcon is UniFi's multi-agent framework for programmable stablecoin operations. Specialized agents coordinate workflows such as single payments, scheduled payments, bulk payouts, payroll, and bounties.
+
+## Current interface
+
+Falcon is currently operated through Telegram. Slack, Discord, Signal, and other interfaces are planned; do not assume they are available in the current deployment.
+
+## Security boundary
+
+Each Falcon instance is intended to be private to its owner. That isolation is important, but it does not remove the need for payment controls.
+
+- Restrict who can reach and instruct the agent.
+- Verify recipient, amount, stablecoin, network, and schedule before approval.
+- Use a dedicated wallet and least-privilege cloud permissions.
+- Keep bot tokens, API keys, and KMS configuration out of chat and logs.
+- Review receipts and scheduled jobs regularly.
+
+<Warning>
+Automation increases the impact of a bad instruction or compromised credential. Use limits, review steps, and separate production credentials.
+</Warning>
+
+## Run from the repository
+
+Falcon is not distributed as a public hosted package in these docs. Repository operators can configure the supplied environment template and run the Rust service locally:
+
+```bash
+cd falcon
+cargo run --release
+```
+
+Do not commit the resulting `.env` file.

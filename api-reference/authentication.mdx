@@ -1,0 +1,46 @@
+---
+title: "Authentication"
+description: "Use bearer API keys for servers or a signed wallet challenge for users."
+icon: "key"
+---
+
+Protected routes require:
+
+```http
+Authorization: Bearer <credential>
+```
+
+## Server integrations
+
+Create a named API key in the UniFi web app and store it in a server-side secret manager.
+
+```bash
+curl --request GET \
+  --url https://unifi-api-4a5e.onrender.com/wallet/onchain/balance/USER_ID/Ethereum/USDT \
+  --header "Authorization: Bearer $UNIFI_API_KEY"
+```
+
+Never ship the key in browser JavaScript, a public repository, a mobile binary, or analytics events.
+
+## Wallet authentication
+
+The challenge endpoints do not require an existing bearer credential.
+
+<Steps>
+  <Step title="Request a challenge">
+    POST the expected domain, URI, and chain ID for the wallet address. The server returns a short-lived message, nonce, and expiry.
+  </Step>
+  <Step title="Sign the exact message">
+    Ask the wallet to sign the returned message without altering whitespace or fields.
+  </Step>
+  <Step title="Exchange it for a JWT">
+    POST the message, signature, nonce, and platform. The challenge is single-use.
+  </Step>
+  <Step title="Send the JWT">
+    Use the returned JWT as the bearer credential for protected user routes.
+  </Step>
+</Steps>
+
+<Warning>
+Validate that the challenge domain and URI match the application the user is viewing. Reject expired challenges and never reuse a nonce.
+</Warning>

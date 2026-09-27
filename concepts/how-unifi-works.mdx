@@ -1,0 +1,51 @@
+---
+title: "How UniFi works"
+description: "Understand the actors, authorization steps, execution, and receipt lifecycle."
+icon: "diagram-project"
+---
+
+A UniFi payment separates **user authorization** from **transaction execution**.
+
+```text
+Payer wallet
+  │  1. Approve Permit2 once per token when needed
+  │  2. Sign payment details (15-minute expiry)
+  ▼
+UniFi execution layer
+  │  3. Validate signature, allowance, balance, and request
+  │  4. Submit the stablecoin transfer
+  ▼
+Recipient wallet
+  │  5. Receive the selected stablecoin on the selected network
+  ▼
+Receipt
+     Processing → Confirmed → Finalized
+```
+
+## Payment lifecycle
+
+<Steps>
+  <Step title="Select an asset on a network">
+    A payment is always explicit, for example **USDT on Ethereum**. The asset and chain are part of the request and receipt.
+  </Step>
+  <Step title="Preflight the payment">
+    UniFi checks the available stablecoin balance, Permit2 allowance state, and estimated stablecoin-denominated fee.
+  </Step>
+  <Step title="Authorize">
+    The wallet approves Permit2 if necessary, then signs payment-specific data with a 15-minute expiry.
+  </Step>
+  <Step title="Execute">
+    UniFi verifies the request and submits the onchain transfer. The recipient receives the selected stablecoin; the payer does not need native gas for the supported payment step.
+  </Step>
+  <Step title="Track">
+    The receipt records the payment status, estimated and actual fees, transaction hash, block number, and timestamps.
+  </Step>
+</Steps>
+
+## Fee inclusion
+
+The `is_fee_incl` payment option controls whether the entered amount includes the UniFi fee. Make this choice visible to the payer before authorization; it changes the amount accounting even though the transfer asset stays the same.
+
+## Custodial and non-custodial identifiers
+
+API paths use a `user_id`. Depending on the integration, this can identify a UniFi-managed user or an EVM wallet address. Authorization is still enforced for protected routes.

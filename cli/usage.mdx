@@ -1,4 +1,50 @@
 ---
-title: 'Usage'
-description: 'Learn about the commands'
+title: "CLI commands"
+description: "Reference the commands implemented by the current UniFi CLI."
+icon: "square-terminal"
 ---
+
+## Connection
+
+```bash
+unifi connect
+unifi connect --wallet alias/my-wallet
+unifi disconnect
+```
+
+## Configuration
+
+```bash
+unifi config get
+unifi config set --url http://127.0.0.1:3333
+unifi config set --wallet alias/my-wallet
+```
+
+Use `--url` to switch between a local API and the hosted service.
+
+## Wallet
+
+```bash
+unifi deposit
+unifi balance
+```
+
+## Sepolia faucet
+
+```bash
+unifi faucet usdt
+unifi faucet usdc
+unifi faucet dai
+```
+
+The faucet command is for Sepolia test assets only.
+
+## API keys
+
+```bash
+unifi api create backend
+unifi api view
+unifi api revoke backend
+```
+
+Name keys after their workload or environment so they can be rotated independently.
