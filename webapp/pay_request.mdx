@@ -1,21 +1,42 @@
 ---
-title: "Request a payment"
-description: "Create a payment intent that another person can review and pay."
+title: "Request Pay"
+description: "Create and share a FliQR request for an exact stablecoin payment."
 icon: "link"
 ---
 
-A payment request packages the recipient and payment details into a shareable link or QR code.
+The **Receive** tab embeds FliQR, UniFi's payment-request builder. It creates a URL and QR code from
+the selected network, stablecoin, recipient address, and amount.
 
 ## Create a request
 
-1. Choose the stablecoin and network.
-2. Enter the amount and an optional purpose.
-3. Confirm the receiving address.
-4. Generate the link or QR code.
-5. Share it with the intended payer through a trusted channel.
+<Steps>
+  <Step title="Open Receive">
+    Use the Home quick action or switch the Pay page from Send to Receive.
+  </Step>
+  <Step title="Choose the pair">
+    Select the stablecoin and network. For an authenticated account, UniFi loads the account's own
+    address as the recipient.
+  </Step>
+  <Step title="Enter the amount">
+    The amount is validated before a request can be created; empty and invalid amounts are shown as
+    field errors.
+  </Step>
+  <Step title="Share">
+    The result sheet contains a scannable QR, the payment URL, and a Share action that captures the
+    request card as an image and includes the link.
+  </Step>
+</Steps>
 
-The payer still reviews and signs the payment. A request cannot move funds by itself.
+The generated share text states the amount, stablecoin, and network, so the payer can verify the
+request before opening it.
+
+## Payer experience
+
+Opening a FliQR link loads FliQPay with the request fields already fixed. A merchant-session link can
+also carry a session ID and start timestamp; those sessions expire after 15 minutes. Invalid or
+expired links render explicit error screens and do not process a payment.
 
 <Warning>
-Treat payment links like invoices: verify the sender and the destination displayed in UniFi before authorizing.
+A QR code is input, not proof of payment. The recipient should verify the resulting receipt and wait
+for finality before treating the request as settled.
 </Warning>

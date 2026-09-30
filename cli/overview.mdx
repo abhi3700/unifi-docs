@@ -1,22 +1,51 @@
 ---
-title: "CLI overview"
-description: "Connect an AWS KMS-backed wallet and inspect UniFi from the terminal."
+title: "Overview"
+description: "Manage payments, wallets, and APIs directly from the command line."
 icon: "terminal"
 ---
 
-The UniFi CLI is an early developer interface for wallet connection, testnet funding, balances, deposits, configuration, and API-key management.
+## What is UniFi CLI?
 
-## Current command surface
+The **UniFi CLI** allows developers to interact with UniFi directly from the terminal — enabling payments, wallet management, and automation workflows.
 
-- connect or disconnect an AWS KMS-backed wallet
-- inspect or update CLI configuration
-- request Sepolia faucet tokens
-- display the deposit address
-- inspect wallet balances
-- create, view, and revoke API keys
+{/* TODO: Add diagram */}
 
-<Info>
-Payment submission is not currently exposed as a CLI command. Use the web app or API for payment creation.
-</Info>
+---
 
-The CLI stores local connection configuration but delegates wallet signing to AWS KMS through the AWS CLI. Protect both the local configuration and the AWS account.
+## Requirements
+
+To use the CLI effectively, you need the following:
+
+<Columns cols={2}>
+  <Card title="Account Setup" icon="key">
+
+The CLI supports two account types:
+
+- an **AWS KMS-backed wallet**;
+- an **email-based UniFi account**.
+
+The CLI cannot connect directly to Web3 wallets such as MetaMask. Browser-wallet connections are
+available through the UniFi web app instead.
+
+<Note>
+For automation and unattended workflows, use **AWS KMS** so signing keys remain protected by the
+KMS security boundary.
+</Note>
+
+> Support for additional managed-key providers is planned for a future release.
+
+  </Card>
+
+  <Card title="UniFi Infra" icon="credit-card">
+
+    The CLI works on top of **UniFi’s stablecoin payment infrastructure**, which powers:
+
+    - Gasless transactions
+    - Fast and low-cost transfers
+    - Multi-chain payments
+    - Scheduled payments
+    - Bulk payments (e.g., payroll disbursals)
+    - High-volume automated payouts
+
+  </Card>
+</Columns>

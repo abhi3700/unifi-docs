@@ -1,25 +1,31 @@
 ---
-title: "Why UniFi"
-description: "A stablecoin payment rail that removes native-gas friction without hiding payment state."
+title: "Mission"
+description: "Why UniFi is building a simpler payment rail for stablecoins."
 ---
 
-Stablecoins are useful for payments, but the payer is still expected to understand networks, native gas tokens, allowances, transaction state, and finality. UniFi moves those concerns into a consistent payment interface.
+UniFi's goal is to make stablecoin payments feel like a familiar payment app while preserving the
+onchain record behind every transfer. The experience centers on three things: a wallet view, a
+send/receive flow, and a receipt that follows a payment through finality.
 
 ## Design goals
 
 <Columns cols={2}>
-  <Card title="Stablecoin-first" icon="coins">
-    Show the asset, network, amount, and fee clearly instead of exposing a generic crypto transfer.
-  </Card>
-  <Card title="Gasless repeat payments" icon="gas-pump">
-    Reuse a Permit2 token approval so supported payments do not require a separate native-token fee each time.
-  </Card>
-  <Card title="Explicit authorization" icon="signature">
-    Ask the user to sign the payment details, with a 15-minute expiry, before execution.
-  </Card>
-  <Card title="Inspectable receipts" icon="receipt">
-    Expose receipt IDs, transaction hashes, fees, timestamps, and confirmation state.
-  </Card>
+    <Card title="Stablecoin-first" icon="coins">
+        Show the asset, network, amount, and fee clearly instead of exposing a
+        generic crypto transfer.
+    </Card>
+    <Card title="Gasless repeat payments" icon="gas-pump">
+        Reuse a Permit2 token approval so supported payments do not require a
+        separate native-token fee each time.
+    </Card>
+    <Card title="Explicit authorization" icon="signature">
+        Ask the user to sign the payment details, with a 15-minute expiry,
+        before execution.
+    </Card>
+    <Card title="Inspectable receipts" icon="receipt">
+        Expose receipt IDs, transaction hashes, fees, timestamps, and
+        confirmation state.
+    </Card>
 </Columns>
 
 ## One rail, multiple interfaces
@@ -27,5 +33,63 @@ Stablecoins are useful for payments, but the payer is still expected to understa
 UniFi's web app is the direct user experience. The API and developer kit expose the same payment lifecycle to applications. The payment gateway packages collection flows for merchants, while Falcon coordinates payment automation.
 
 <Info>
-“Gasless” describes the supported payment execution flow. A first-time token approval is an onchain transaction and can still require the network's native gas token.
+    “Gasless” describes the supported payment execution flow. A first-time token
+    approval is an onchain transaction and can still require the network's
+    native gas token.
 </Info>
+
+## What the current product supports
+
+The web app and backend currently implement:
+
+- email accounts with a UniFi-managed wallet and authenticator-based approval for protected actions;
+- self-custodial EVM wallets connected through MetaMask;
+- USDT, USDC, and DAI payment choices;
+- Ethereum, Polygon, and Sepolia network choices;
+- fee-inclusive and fee-exclusive payments;
+- payment links and QR requests through FliQR;
+- searchable payment history and receipts with `Submitted`, `Confirmed`, and `Finalized` stages;
+- API keys, usage quotas, and API-plan selection.
+
+<Note>
+    The exact assets and networks available to a user can vary by account and
+    product configuration. Use the choices displayed in the app when starting a
+    payment or deposit.
+</Note>
+
+## Product principles
+
+### Make the payment explicit
+
+A payment always names the stablecoin, network, recipient, amount, and fee mode. The review step
+keeps those choices visible before the user authorizes anything.
+
+### Separate authorization from execution
+
+Email accounts approve sensitive actions with authenticator OTP. A self-custodial wallet approves
+Permit2 when required and signs payment-specific data. UniFi's execution layer then validates and
+submits the transfer.
+
+### Treat finality as part of the product
+
+Submission is not the same as settlement. Receipts distinguish a request accepted by UniFi from a
+transaction confirmed onchain and a block considered finalized.
+
+### Keep developer access visible
+
+The same web app exposes API-key management, credit usage, request-rate limits, and plan choices so
+an integration can be operated alongside end-user payments.
+
+## Product direction, not current behavior
+
+The UniFi roadmap includes broader payroll, scheduled-payment, cross-chain, and token-routing
+goals. Those are product direction. This documentation presents a feature as available only when
+it is offered by the application or public API.
+
+<Card
+    title="See the payment lifecycle"
+    icon="diagram-project"
+    href="/concepts/how-unifi-works"
+>
+    Follow authorization, execution, and receipt finality from end to end.
+</Card>

@@ -1,15 +1,82 @@
 ---
 title: "Home"
-description: "Choose the UniFi flow that matches what you want to do."
-icon: "house"
+description: "Start a payment, request, scan, or deposit and choose an asset-network pair."
+icon: "home"
 ---
 
-The home page is the starting point for common actions:
+Home is the public entry point at `/app`. It introduces the payment wallet and keeps the most common
+actions above the network and stablecoin selectors.
 
-- **Pay** to send a stablecoin to a wallet address or payment request.
-- **Request** to create a shareable link or QR code.
-- **Wallet** to view balances and deposit addresses.
-- **History** to revisit receipts and payment state.
-- **Developer** to create API credentials and inspect plan usage.
+<Frame caption="The signed-out UniFi home page and its primary actions.">
+    <div
+        style={{ width: "100%", aspectRatio: "1440 / 530", overflow: "hidden" }}
+    >
+        <img
+            className="w-full h-auto"
+            src="/images/web-app/home_signedout.png"
+            alt="UniFi home screen with Pay, Scan, Receive, and Deposit actions"
+        />
+    </div>
+</Frame>
 
-The selected asset control always represents a token-network pair. Look for both the stablecoin icon and the chain badge before continuing.
+## Quick actions
+
+| Action  | Opens                                                 |
+| ------- | ----------------------------------------------------- |
+| Pay     | Send stablecoin                                       |
+| Scan    | Scan an address, then continue to the payment page.   |
+| Receive | Create link to receive payment                        |
+| Deposit | Select asset & network -> View deposit wallet address |
+
+Protected actions require authentication. If you open one while signed out—such as a payment
+link—UniFi asks you to sign in with email or connect a wallet, then returns you to the requested
+page after authentication.
+
+## Asset-Network selection
+
+The **Networks** row starts from a network and asks for a stablecoin. The **Stablecoins** row starts
+from an asset and asks for a network. Both paths end at the same typed route, so the following screen
+receives an explicit `(coin, chain)` pair.
+
+<Columns cols={2}>
+    <Frame caption="After selecting a stablecoin, choose its network.">
+        <img
+            className="w-full h-auto"
+            src="/images/web-app/home_select_asset.png"
+            alt="UniFi network picker with USDT selected"
+        />
+    </Frame>
+    <Frame caption="After selecting a network, choose its stablecoin.">
+        <img
+            className="w-full h-auto"
+            src="/images/web-app/home_select_network.png"
+            alt="UniFi stablecoin picker with Ethereum selected"
+        />
+    </Frame>
+</Columns>
+
+<Note>
+    Only networks available to the current account and product configuration
+    appear in the picker.
+</Note>
+
+## Navigate the app
+
+The persistent navigation keeps the primary destinations within reach:
+
+- **Home** returns to the overview and quick actions.
+- **Wallet** opens balances and funding tools.
+- **Pay** starts the send or receive flow.
+- **Activity** opens payment history.
+- **More** groups additional wallet, payment, history, and API tools.
+
+Select the UniFi logo from the expanded menu to return to Home. Expand **Wallet**, **Payment**, or
+**API** to reveal their related destinations without crowding the primary navigation.
+
+<Frame caption="The More menu groups wallet, payment, history, and API tools.">
+  <img
+    className="w-full h-auto"
+    src="/images/web-app/home_more.png"
+    alt="UniFi More menu with Wallet, Payment, Pay History, and API sections"
+  />
+</Frame>

@@ -1,32 +1,75 @@
 ---
-title: "Send a payment"
-description: "Authorize a stablecoin transfer and track it to confirmation."
-icon: "paper-plane"
+title: "Send"
+description: "Choose an asset and network, review a recipient and amount, then authorize payment."
+icon: "send"
 ---
 
+The Pay page contains two tabs: **Send** and **Receive**. Send is the default and can also be opened
+with an asset, a network, both values, or a prefilled address in the route.
+
+## Send flow
+
 <Steps>
-  <Step title="Select the asset and chain">
-    Choose an explicit pair such as **USDT on Ethereum**.
-  </Step>
-  <Step title="Enter payment details">
-    Provide the recipient address and amount. Add a short memo when useful.
-  </Step>
-  <Step title="Review preflight">
-    Check the available balance, estimated stablecoin fee, and whether a Permit2 approval is required.
-  </Step>
-  <Step title="Approve once if needed">
-    Approve the verified Permit2 contract for the selected token. Reusing the approval avoids another approval transaction for each later payment.
-  </Step>
-  <Step title="Sign the payment">
-    Review the recipient, amount, asset, network, and 15-minute expiry, then sign.
-  </Step>
-  <Step title="Track the receipt">
-    Keep the receipt ID and watch the payment move from `Processing` to `Confirmed` or `Finalized`.
-  </Step>
+    <Step title="Choose the asset and network">
+        The header selector carries an explicit stablecoin/network pair.
+        Changing it replaces the route so refresh and navigation preserve the
+        choice.
+    </Step>
+    <Step title="Enter the recipient">
+        Paste or type a valid destination address. A scanned UniFi QR can
+        prefill the same payment data.
+    </Step>
+    <Step title="Enter the amount">
+        The form loads balance and estimated-fee information for the selected
+        pair. Mobile layouts use the product's numeric keypad instead of
+        depending on the browser keypad.
+    </Step>
+    <Step title="Review">
+        Review the stablecoin, network, recipient, amount, memo when present,
+        and fee treatment before authorizing.
+    </Step>
+    <Step title="Authorize and submit">
+        Email accounts confirm with authenticator OTP. MetaMask accounts approve
+        Permit2 when needed, then sign the payment-specific request before it is
+        sent to UniFi.
+    </Step>
 </Steps>
 
-<Info>
-The recipient receives the selected stablecoin on the selected network. Native gas shown as `0` applies to the supported payment step, not necessarily to a first-time token approval.
-</Info>
+## Fee mode
 
-See [Security and Permit2 permissions](/concepts/security-and-permissions) for the approval model.
+UniFi supports fee-exclusive and fee-inclusive amounts. Exclusive mode adds the fee to the entered
+payment; inclusive mode accounts for the fee inside it. The review surface is the place to confirm
+which mode applies.
+
+## Connected-wallet approval
+
+When the Permit2 allowance is insufficient, the UI shows an approval step before signing. The
+approval is an onchain ERC-20 transaction; the later payment authorization is a short-lived
+signature. User-rejected, disconnected-wallet, wrong-network, insufficient-gas, and unavailable-
+network errors have distinct messages in the current implementation.
+
+### Why connected wallets may need a network token
+
+When you pay with MetaMask or another self-custodial wallet, Permit2 must first be authorized to use
+the selected token. If the current allowance is insufficient, your wallet submits an onchain approval
+transaction. The network charges gas for this transaction, so the wallet must hold a small amount of
+the network's native token.
+
+After the approval is confirmed, you sign the payment authorization and submit the payment. Later
+payments can skip the approval step while the existing allowance remains sufficient.
+
+Email-based custodial wallets and AWS KMS wallets use a managed authorization flow, so you do not
+need to fund a separate native-token approval from a connected wallet.
+
+## Result
+
+Successful submission opens a result sheet with the new receipt ID. The receipt begins in a
+processing/submitted state and can later advance to confirmed and finalized.
+
+<Card
+    title="Understand receipt states"
+    icon="receipt"
+    href="/webapp/pay_receipt"
+>
+    See exactly what Submitted, Confirmed, Finalized, Failed, and Reorged mean.
+</Card>

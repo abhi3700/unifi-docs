@@ -1,21 +1,37 @@
 ---
-title: "API keys and quota"
-description: "Create server credentials and monitor API usage."
+title: "API Key, Quota"
+description: "Manage API credentials and inspect the active plan's credits and request quota."
 icon: "key"
 ---
 
-API keys authenticate server-to-server requests and determine the entity and usage quota applied to the call.
+The protected API page has two tabs: **Keys** and **Quota**.
 
-## Key handling
+## Keys
 
-- Create a separate named key for each environment or service.
-- Copy a new key into a secret manager immediately.
-- Send it as `Authorization: Bearer <API_KEY>`.
-- Never place a production API key in browser code, mobile bundles, logs, or screenshots.
-- Revoke a key when a service is retired or the credential might be exposed.
+The key table shows a key's name, creation time, and available actions. If the account has no keys,
+the page shows a dedicated empty state and a **New API Key** action.
+
+Creating a key asks for a clear, unique name such as `Mobile app`. Deleting a key requires a
+confirmation step and warns that every app using it will immediately lose API access.
 
 <Warning>
-Wallet JWTs and API keys are both bearer credentials, but they serve different actors. Do not exchange or embed a server API key in the end-user wallet flow.
+Treat the generated key as a server-side secret. Do not commit it, expose it in browser code, or
+place it in screenshots and support messages.
 </Warning>
 
-Read [API authentication](/api-reference/authentication) for request examples.
+For custodial accounts, creation and deletion are protected by authenticator OTP. The current Free
+plan also displays its key-count limit in the Keys view.
+
+## Quota
+
+Quota shows:
+
+- the current plan and active state;
+- consumed and available API credits;
+- image-credit usage where applicable;
+- the current billing cycle;
+- the next renewal time;
+- an Upgrade link to API Plans.
+
+The page distinguishes API access management from payment authentication: an API key authorizes an
+integration, while the web JWT authorizes the signed-in user session.

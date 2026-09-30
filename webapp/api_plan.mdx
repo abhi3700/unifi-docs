@@ -1,16 +1,47 @@
 ---
-title: "API plans"
-description: "Understand API access, credits, and plan metadata."
-icon: "chart-column"
+title: "API Plans"
+description: "Compare API credits, request rates, operational features, and billing periods."
+icon: "box"
 ---
 
-The API plan view reports the current plan, duration, remaining credits, image-processing credits, and expiry time associated with the account.
+API Plans has a public catalog at `/app/api/plan/public` and an authenticated purchase flow under
+`/app/api/plan`.
 
-Before changing a plan:
+<Frame caption="The public UniFi API plan catalog.">
+  <img className="w-full h-auto" src="/images/web-app/api-plans-public.png" alt="UniFi API Plans with annual billing selected and five plan tiers" />
+</Frame>
 
-1. Check the current expiry and remaining credits.
-2. Review the purchase asset, network, amount, and fee estimate.
-3. Confirm which environment the plan applies to.
-4. Save the resulting receipt.
+## Compare plans
 
-Plan names, prices, and limits can change. Treat the values displayed in the app at purchase time as authoritative.
+The catalog exposes Monthly and Annual billing; Annual displays a 25% saving. Expand one tier at a
+time or enable **Compare** to show every feature group.
+
+| Tier | Included API credits | Request rate |
+| --- | ---: | ---: |
+| Free | 100k | 1 request/s |
+| Starter | 1M | 10 requests/s |
+| Growth | 20M | 20 requests/s |
+| Scale | 50M | 30 requests/s |
+| Enterprise | Custom | Custom |
+
+Higher tiers include increasing bulk-payout, scheduled-payment, SLA, analytics, webhook, and
+relayer allowances. Growth is marked Recommended. Enterprise uses a
+**Talk to Us** action instead of self-service purchase.
+
+## Purchase flow
+
+Authenticated paid-plan selection proceeds through three visible stages:
+
+```text
+Plan selected → Payment → Confirmation
+```
+
+The payment stage changes from **Review & authorize** to **Submitted**, and Confirmation advances
+from **Finality check** to **Waiting for finality** and then **Finalized**.
+
+If a subscription payment is still pending, the page shows **Finalizing payment** and pauses plan
+changes until blockchain confirmation is complete.
+
+<Note>
+Pricing and limits may change; the live catalog is the source of truth at purchase time.
+</Note>

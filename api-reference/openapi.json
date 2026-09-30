@@ -9,10 +9,6 @@
     {
       "url": "https://unifi-api-4a5e.onrender.com",
       "description": "Hosted service"
-    },
-    {
-      "url": "http://127.0.0.1:3333",
-      "description": "Local development"
     }
   ],
   "tags": [
@@ -729,8 +725,8 @@
     "schemas": {
       "Chain": {
         "type": "string",
-        "enum": ["Ethereum", "Polygon", "Sepolia", "Anvil"],
-        "description": "Canonical chain value. Deployment availability varies by environment."
+        "enum": ["Ethereum", "Polygon", "Sepolia"],
+        "description": "Canonical public chain value. Availability can vary by account and product configuration."
       },
       "Stablecoin": {
         "type": "string",

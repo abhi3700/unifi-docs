@@ -1,16 +1,39 @@
 ---
-title: "Balances"
-description: "Read stablecoin balances by asset and network."
-icon: "scale-balanced"
+title: "Balance"
+description: "Inspect total and per-network balances for every supported stablecoin."
+icon: "wallet"
 ---
 
-The wallet view groups value by stablecoin and shows the chain breakdown underneath it. A balance is tied to both dimensions:
+The protected Wallet page presents the account's assets in two layers: a total-balance summary and
+a matrix broken down by stablecoin and network.
 
-- **Asset:** USDT, USDC, or DAI
-- **Network:** Ethereum, Polygon, or an environment-specific test network
+## Page controls
 
-A displayed USD total is a convenience estimate based on the available price feed. Use the token balance—not the USD estimate—when validating whether a payment can be sent.
+- **Add funds** opens the deposit pair selector.
+- The eye control hides or reveals the total balance.
+- The network control changes the active network summary.
+- The sort control orders assets by USD value, high-to-low or low-to-high.
+- **Refresh** fetches the latest aggregate wallet response.
 
-<Tip>
-Run payment preflight before signing. It checks the spendable balance and estimated fee for the exact asset-network pair.
-</Tip>
+The balance matrix uses one frontend request for the aggregate wallet view rather than issuing one
+request per card. Rows identify Tether (USDT), USD Coin (USDC), and Dai (DAI), with a total USD
+column and network-specific values.
+
+## Asset actions
+
+The More action on an asset provides:
+
+- **Pay** — keep the asset fixed and choose a network;
+- **Add funds** — choose a supported network and open its deposit details;
+- **History** — open activity filtered to that stablecoin.
+
+## Balance timing
+
+Wallet display favors the latest onchain balance for responsive feedback. Payments use the
+finalized balance for safety. A recent deposit can therefore appear after a short delay, and a
+recent debit can temporarily differ from the finalized amount.
+
+<Note>
+Custodial and self-custodial accounts use different backend balance accounting, but the page keeps
+the same asset-and-network presentation for both.
+</Note>

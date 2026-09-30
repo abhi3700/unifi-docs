@@ -1,29 +1,49 @@
 ---
-title: "Payment receipts"
-description: "Interpret payment status, fees, transaction data, and finality."
+title: "Pay Receipt"
+description: "Read payment status, transfer details, blockchain reference, and finality."
 icon: "receipt"
 ---
 
-Each submitted payment gets a receipt ID. The receipt can contain:
+A receipt is the durable view of a payment attempt. It records the selected asset and network,
+amount, recipient, fee information, timestamps, receipt ID, and—after onchain submission—the
+transaction hash and block reference.
 
-- payer or user identifier
-- chain and stablecoin
-- recipient and amount
-- estimated and actual fees
-- transaction hash and block number
-- start and completion timestamps
-- current status
+## Status timeline
 
-## Status guide
+| Status | Meaning | What the receipt can show |
+| --- | --- | --- |
+| Submitted | Accepted into UniFi's execution flow and waiting for onchain confirmation | Request details and receipt ID; a transaction hash may not exist yet |
+| Confirmed | Included in a block and waiting for the chain's finality threshold | Transaction hash, block reference, and paid timestamp |
+| Finalized | Included in a finalized block; payment complete | Complete transfer and blockchain reference |
+| Failed | Rejected before a valid onchain transfer completed | Failure state and retry guidance |
+| Reorged | A previously confirmed block left the canonical chain | Reorg warning and retry guidance |
 
-| Status | What to do |
-| --- | --- |
-| `Processing` | Wait and refresh; do not send a duplicate payment. |
-| `Confirmed` | The transaction is in a block. Use this only if your risk policy accepts confirmations. |
-| `Finalized` | The service observed finalized-chain status. |
-| `Failed` | Read the error, correct the cause, and create a new payment if needed. |
-| `Reorged` | The transaction left the canonical chain; verify onchain state before retrying. |
+The main success progression is:
+
+```text
+Submitted → Confirmed → Finalized
+```
+
+Only the active status word is emphasized in the rendered timeline; the supporting copy remains at
+normal weight.
+
+## Receipt sections
+
+- **Asset Transfer** — stablecoin, network, amount, destination, and fee details.
+- **Blockchain Reference** — transaction hash and explorer action when one exists.
+- **Receipt ID** — the UniFi identifier used by History, sharing, and receipt routes.
+
+The page labels a processing receipt as **Submitted · Waiting for confirmation**, a confirmed
+receipt as **Confirmed on-chain · Waiting for finality**, and the completed state as **Finalized
+on-chain · Payment complete**.
+
+## Refresh and share
+
+Processing receipts expose a timed refresh action. The Share control uses the receipt capture root,
+excludes interactive controls from the image, and passes the screenshot plus receipt URL to the
+browser's Web Share path when supported.
 
 <Warning>
-A receipt page is not a substitute for recipient-side accounting. High-value integrations should reconcile receipt state and the onchain transaction hash.
+Do not treat `Submitted` or `Confirmed` as irreversible settlement. Use `Finalized` for the
+completed success state, and treat `Failed` and `Reorged` as unsuccessful terminal outcomes.
 </Warning>

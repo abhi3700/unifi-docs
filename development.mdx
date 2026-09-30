@@ -1,50 +1,75 @@
 ---
-title: "Environments and supported values"
-description: "Use the correct API host, chain names, stablecoin symbols, and payment states."
+title: "Development"
+description: "Plan a secure UniFi payment integration and follow each transfer through finality."
 ---
 
-## API environments
+UniFi supports product teams that need stablecoin payments without pushing wallet and settlement
+complexity into every customer journey. Use the web app for operator workflows and the API for
+server-side integrations.
 
-| Environment | Base URL | Purpose |
-| --- | --- | --- |
-| Hosted | `https://unifi-api-4a5e.onrender.com` | Current public service |
-| Local | `http://127.0.0.1:3333` | Local backend development |
+## Choose an integration surface
 
-Keep the base URL configurable in your integration. Do not hard-code a test or local host into production builds.
+<Columns cols={2}>
+  <Card title="Web app" icon="desktop" href="/webapp/overview">
+    Manage balances, payments, requests, receipts, and API access from the UniFi interface.
+  </Card>
+  <Card title="API" icon="code" href="/api-reference/introduction">
+    Build payment operations into a trusted service using an account API key.
+  </Card>
+</Columns>
 
-## Canonical request values
+## Integration flow
 
-### Chains
+<Steps>
+  <Step title="Create API access">
+    Sign in to UniFi, open **More → API**, and create a key for the service that will call the API.
+  </Step>
+  <Step title="Collect payment details">
+    Define the stablecoin, network, recipient, amount, fee mode, and any reference your product
+    needs to reconcile the transfer.
+  </Step>
+  <Step title="Authorize the payment">
+    Keep approval in the account's security boundary. Email accounts use authenticator approval;
+    connected wallets approve and sign through the wallet when required.
+  </Step>
+  <Step title="Store the receipt ID">
+    Save the returned receipt identifier with your own order or invoice record. It is the stable
+    reference for status checks and support.
+  </Step>
+  <Step title="Wait for finality">
+    Treat `Submitted` and `Confirmed` as in progress. Complete the business action only after the
+    receipt reaches `Finalized`.
+  </Step>
+</Steps>
 
-Use the serialized chain names below:
+## Recommended boundary
 
-- `Ethereum`
-- `Polygon`
-- `Sepolia` for testnet flows
-- `Anvil` for local development
-
-### Stablecoins
-
-- `USDT`
-- `USDC`
-- `DAI`
-
-Support depends on the selected environment and deployed contracts. A value being accepted by the type system does not guarantee liquidity or availability in every deployment.
-
-### Receipt states
-
-| Status | Meaning |
-| --- | --- |
-| `Processing` | UniFi accepted the payment for execution. |
-| `Confirmed` | The transaction was included in a block and has a transaction hash. |
-| `Finalized` | The transaction was observed at finalized chain status. |
-| `Failed` | Validation or execution failed. |
-| `Reorged` | The transaction is no longer on the canonical chain; retry may be required. |
-
-## Local health check
-
-```bash
-curl http://127.0.0.1:3333/healthz
+```text
+Your client → Your trusted backend → UniFi API → Network settlement → Receipt
 ```
 
-A healthy service returns JSON with `status`, `data`, and `server_uptime`.
+Keep API keys in a trusted backend. Do not embed them in browser code, mobile binaries, public
+configuration, analytics events, or shared logs. Wallet signatures belong in the user's wallet;
+UniFi never needs a seed phrase or private key.
+
+## Design for asynchronous settlement
+
+Submission and finality are separate events. Your integration should persist the receipt ID,
+display an in-progress state, tolerate repeated status checks, and make the final business action
+idempotent. A retry must not create a second order or release the same goods twice.
+
+<Note>
+Use the API base URL and credentials issued for your UniFi deployment. Credentials are scoped to
+their assigned environment and should not be mixed across deployments.
+</Note>
+
+## Continue building
+
+<Columns cols={2}>
+  <Card title="Understand the lifecycle" icon="diagram-project" href="/concepts/how-unifi-works">
+    Follow a payment from review and authorization to confirmation and finality.
+  </Card>
+  <Card title="Secure the integration" icon="shield" href="/concepts/security-and-permissions">
+    Review account authorization, API-key handling, and wallet-signature boundaries.
+  </Card>
+</Columns>

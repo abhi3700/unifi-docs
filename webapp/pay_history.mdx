@@ -1,15 +1,133 @@
 ---
-title: "Payment history"
-description: "Search and filter previous stablecoin payments."
-icon: "clock-rotate-left"
+title: "Pay History"
+description: "Search, filter, open, and share payment receipts across assets and networks."
+icon: "history"
 ---
 
-Payment history lists receipts for the current user. Use it to:
+History is the authenticated **Activity** destination. It presents recent payments as receipt
+cards and loads older activity as you scroll.
 
-- sort newest or oldest first
-- filter by chain
-- filter by status
-- paginate through older or newer results
-- open the full receipt and transaction hash
+<Frame caption="History lists recent payments and provides direct access to search and filters.">
+    <img
+        className="w-full h-auto"
+        src="/images/web-app/history.png"
+        alt="UniFi payment history showing recent USDT payments and the Activity navigation item"
+    />
+</Frame>
 
-History is a view of recorded payment attempts, not only successful transfers. Check the status before using a row for reconciliation.
+Each card identifies the stablecoin, network, amount, payment date, status, and shortened account
+address. Select a card to inspect the complete receipt.
+
+<Frame caption="Open the filter panel to narrow payment history by asset, network, or both.">
+    <img
+        className="w-full h-auto"
+        src="/images/web-app/history_filter.png"
+        alt="UniFi payment history with the asset and network filter panel open"
+    />
+</Frame>
+
+## Find a payment
+
+Select the search icon to open a focused search view. You can search using:
+
+- stablecoin;
+- network;
+- amount;
+- payer or recipient address;
+- receipt ID.
+
+History displays the number of matching payments and searches older activity when the currently
+loaded results do not contain a match.
+
+<Columns cols={2}>
+    <Frame caption="Search accepts payment details or a receipt reference.">
+        <img
+            className="w-full h-auto"
+            src="/images/web-app/history_search.png"
+            alt="UniFi payment-history search panel and its supported search fields"
+        />
+    </Frame>
+    <Frame caption="Matching payments update as the search term changes.">
+        <img
+            className="w-full h-auto"
+            src="/images/web-app/history_search_output.png"
+            alt="UniFi payment-history search results for USDT"
+        />
+    </Frame>
+</Columns>
+
+<Tip>
+    Receipt IDs are the most precise search input when support or another user
+    shares a specific payment reference.
+</Tip>
+
+## Filter
+
+The filter panel provides independent **Asset** and **Network** choices:
+
+1. Choose a stablecoin, a network, or both.
+2. Select **Show payments** to apply the selection.
+3. Use the active-filter summary or **Clear** to remove the selection.
+
+Leaving a category set to **All** keeps that part of the history unrestricted.
+
+<Columns cols={2}>
+    <Frame caption="Filter by one stablecoin across its available networks.">
+        <img
+            className="w-full h-auto"
+            src="/images/web-app/history_filter_by_asset.png"
+            alt="UniFi history filtered to USDT payments"
+        />
+    </Frame>
+    <Frame caption="Filter by one network across its available stablecoins.">
+        <img
+            className="w-full h-auto"
+            src="/images/web-app/history_filter_by_chain.png"
+            alt="UniFi history filter with Polygon selected"
+        />
+    </Frame>
+</Columns>
+
+<Frame caption="Combine an asset and network for the narrowest result set.">
+    <img
+        className="w-full h-auto"
+        src="/images/web-app/history_filter_by_asset_network.png"
+        alt="UniFi history filtered by USDT and Ethereum with no matching payments"
+    />
+</Frame>
+
+If a filter combination has no results, the page shows **No matching payments** and provides a
+**Clear filters** action so you can return to the full history.
+
+## Receipt cards
+
+Selecting a payment card opens its receipt without losing your place in History. The receipt shows:
+
+- the `Submitted`, `Confirmed`, and `Finalized` progression;
+- the transferred asset, network, amount, and account address;
+- fee savings when available;
+- the blockchain reference and receipt ID;
+- the payment date and share action.
+
+<Frame caption="Open a payment to inspect its finality and blockchain references.">
+    <img
+        className="w-full h-auto"
+        src="/images/web-app/history_receipt_details.png"
+        alt="Finalized UniFi payment receipt opened from payment history"
+    />
+</Frame>
+
+<Card
+    title="Understand receipt details"
+    icon="receipt"
+    href="/webapp/pay_receipt"
+>
+    Learn how status, blockchain references, fee information, and receipt
+    sharing work.
+</Card>
+
+## Empty state
+
+An account with no payment activity sees **No Payments Yet!** with a **Pay** action. This is
+different from a filtered empty state, which preserves the selected filters and offers
+**Clear filters**.

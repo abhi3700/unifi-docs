@@ -1,30 +1,58 @@
 ---
-title: "Web app overview"
-description: "Send, request, and track stablecoin payments from one interface."
-icon: "wallet"
+title: "Overview"
+description: "A tour of the UniFi 2.0 web application and its main payment journeys."
+icon: "credit-card"
 ---
 
-The UniFi web app combines wallet access, balances, payment creation, payment requests, receipts, and developer credentials.
+The UniFi web app combines wallet balances, deposits, stablecoin payments, payment requests,
+receipts, history, and API access in one responsive Dioxus application.
 
-<CardGroup cols={2}>
-  <Card title="Send a payment" icon="paper-plane" href="/webapp/pay_send">
-    Choose a stablecoin and network, review the payment, and authorize execution.
+<Frame caption="The UniFi home page with its primary payment actions.">
+  <div style={{ width: "100%", aspectRatio: "1440 / 530", overflow: "hidden" }}>
+    <img style={{ display: "block", width: "100%", maxWidth: "100%", height: "auto" }} src="/images/web-app/home.png" alt="UniFi home page showing the Pay, Scan, Receive, and Deposit actions" />
+  </div>
+</Frame>
+
+## Main journeys
+
+<Columns cols={2}>
+  <Card title="Fund and inspect a wallet" icon="wallet" href="/webapp/deposit">
+    Choose a stablecoin and network, copy the wallet address, verify the token contract, and then
+    inspect balances by asset and network.
+  </Card>
+  <Card title="Send a payment" icon="send" href="/webapp/pay_send">
+    Enter a recipient and amount, review fees, authorize the payment, and follow its receipt.
   </Card>
   <Card title="Request a payment" icon="link" href="/webapp/pay_request">
-    Create a shareable payment intent for a payer.
+    Create a FliQR link and QR code for a specific stablecoin, network, recipient, and amount.
   </Card>
-  <Card title="Inspect balances" icon="scale-balanced" href="/webapp/balance">
-    View supported stablecoin balances by asset and network.
+  <Card title="Track activity" icon="history" href="/webapp/pay_history">
+    Filter or search payment history, open receipt details, and share a receipt.
   </Card>
-  <Card title="Track receipts" icon="receipt" href="/webapp/pay_history">
-    Search past payments and inspect confirmation or finality.
-  </Card>
-</CardGroup>
+</Columns>
 
-## Before you start
+## Account models
 
-You need an EVM wallet, a supported stablecoin balance, and enough native gas for a first-time Permit2 approval when one is required. The subsequent supported payment flow does not require native gas from the payer.
+| Account | Authorization | Wallet behavior |
+| --- | --- | --- |
+| Email | Password plus authenticator OTP for protected actions | UniFi-managed custodial wallet |
+| MetaMask | Wallet challenge for login; Permit2 approval and payment signature when required | Self-custodial EVM wallet |
+
+The protected routes redirect to Auth when the user has no valid session. Public routes include the
+home screen and the API-plan catalog.
+
+## Supported choices in the current UI
+
+- Stablecoins: USDT, USDC, and DAI.
+- Networks: Ethereum, Polygon, and Sepolia.
 
 <Note>
-Always confirm the selected asset **and** network. “USDT on Ethereum” and “USDT on Polygon” are different payment routes.
+Network availability can vary by account and product configuration. Start from the choices shown
+in the app so the payment and deposit flows remain on a supported pair.
 </Note>
+
+## Bottom navigation
+
+The persistent product navigation provides **Home**, **Wallet**, **Pay**, **Activity**, and **More**.
+The centered Pay action opens the payment workflow; the home-page quick actions open the same
+underlying routes with the selected asset and network carried forward.

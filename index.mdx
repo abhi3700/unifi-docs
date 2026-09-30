@@ -1,53 +1,118 @@
 ---
-title: "UniFi documentation"
-description: "Gasless stablecoin payments for users, developers, and payment operators."
+title: "Welcome"
+description: "Everything you need to send/receive payments using stablecoins."
 ---
 
-# Stablecoin payments without native gas
+## ⚡ Start with UniFi
 
-UniFi lets people send stablecoins while the execution layer handles the native network fee. The payer chooses an asset and network, reviews the payment, signs a short-lived authorization, and tracks the resulting onchain receipt.
+UniFi is a **global stablecoin payment platform** that enables:
 
-<CardGroup cols={2}>
-  <Card title="Use the web app" icon="wallet" href="/webapp/overview">
-    Connect a wallet, fund it, send or request a payment, and follow its status.
+- 🚫⛽ Gasless transactions
+- 🌍 Multi-chain payments
+- ⚡ Instant & low-cost transfers
+- 🔐 Privacy-first design
+- 💸 Bulk & scheduled payments
+
+<Tip>Built for real-world payments — from individuals to enterprises.</Tip>
+
+---
+
+## 🚀 Get Started
+
+<Columns cols={2}>
+  <Card title="Web App" icon="globe" href="/webapp/overview">
+    Explore the UniFi dashboard and payment flows.
   </Card>
-  <Card title="Integrate the API" icon="code" href="/api-reference/introduction">
-    Authenticate, inspect balances, preflight a payment, submit it, and fetch receipts.
+
+<Card title="Falcon Agent" icon="robot" href="/falcon/overview">
+    Automate payments, scheduling, and workflows using your AI-powered payment
+    agent.
+</Card>
+
+<Card
+    title="Payment Gateway"
+    icon="credit-card"
+    href="/payment-gateway/overview"
+>
+    Accept payments globally with UniFi — built for merchants and platforms.
+</Card>
+
+<Card title="CLI" icon="terminal" href="/cli/overview">
+    Automate payments and manage workflows via CLI.
+</Card>
+
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Integrate UniFi into your product or backend.
   </Card>
-  <Card title="Build a checkout" icon="cart-shopping" href="/payment-gateway/overview">
-    Add stablecoin payment collection to a product or merchant flow.
+</Columns>
+
+---
+
+## 💡 Core Capabilities
+
+<Columns cols={2}>
+  <Card title="Pay & Request" icon="send" href="/webapp/pay_send">
+    Send or request payments instantly using links, QR, or address.
   </Card>
-  <Card title="Automate with Falcon" icon="bird" href="/falcon/overview">
-    Operate payment, payroll, and bounty workflows through a private agent.
+
+<Card title="Multi-Chain" icon="shuffle" href="/webapp/pay_send">
+    Pay across chains without worrying about bridges.
+</Card>
+
+<Card title="Bulk Payments" icon="box" href="/webapp/pay_send">
+    Execute payroll and batch payments with minimal fees.
+</Card>
+
+  <Card title="FliQ" icon="bolt" href="/webapp/pay_request">
+    Share payment links for seamless collections.
   </Card>
-</CardGroup>
+</Columns>
 
-## What UniFi handles
+---
 
-- **Gasless execution:** the payer does not need the chain's native token for each supported payment flow.
-- **Stablecoin-first UX:** amounts, balances, fees, and receipts stay denominated in the selected stablecoin.
-- **Permissioned signing:** non-custodial payments use Permit2 approval plus a payment authorization that expires after 15 minutes.
-- **Receipt tracking:** submitted payments progress through `Processing`, `Confirmed`, `Finalized`, `Failed`, or `Reorged`.
-- **Multiple interfaces:** use the web app, API, CLI, payment gateway, or Falcon.
+## 🤖 Falcon Agent
 
-<Note>
-Production asset and network availability is environment-specific. The current service types include USDT, USDC, and DAI on Ethereum and Polygon, with Sepolia for testing and Anvil for local development.
-</Note>
+<Note>Your autonomous payment agent.</Note>
 
-## Choose a path
+- 💬 Trigger payments via chat
+- ⏰ Schedule & automate workflows
+- 📊 Handle payroll and bulk operations
+- 📸 Share a payment snapshot to auto-detect payment details and pay instantly or schedule it for later.
 
-<Steps>
-  <Step title="Pay with the web app">
-    Start with [Web app overview](/webapp/overview), then follow [Send a payment](/webapp/pay_send).
-  </Step>
-  <Step title="Build an integration">
-    Read [How UniFi works](/concepts/how-unifi-works), then create a request from the [API reference](/api-reference/introduction).
-  </Step>
-  <Step title="Understand permissions">
-    Review [Security and Permit2 permissions](/concepts/security-and-permissions) before enabling non-custodial payments.
-  </Step>
-</Steps>
+<Card title="Explore Falcon" icon="robot" href="/falcon/overview" />
+
+---
+
+## 🧑🏻‍💻 For Developers
+
+<Columns cols={2}>
+  <Card title="CLI Usage" icon="terminal" href="/cli/usage">
+    Run commands, manage keys, and automate payments.
+  </Card>
+
+  <Card title="API Integration" icon="plug" href="/api-reference/introduction">
+    Build on top of UniFi with secure APIs.
+  </Card>
+</Columns>
+
+---
+
+## 🔗 Explore More
+
+<Columns cols={2}>
+  <Card title="Payment Gateway" icon="credit-card" href="/payment-gateway/overview">
+    Accept payments globally with UniFi — built for merchants, platforms, and businesses at scale.
+  </Card>
+
+  <Card title="Changelog" icon="history" href="/cli/changelog">
+    Track updates and improvements.
+  </Card>
+</Columns>
+
+---
 
 <Warning>
-Treat a payment as settled only when its receipt reaches the status your product requires. `Confirmed` means the transaction was included in a block; `Finalized` means the service observed finalized-chain status.
+    Always verify payment status (`Confirmed` vs `Finalized`) before treating a
+    payment as complete — [understand confirmation vs
+    finality](/webapp/pay_receipt) ↗️
 </Warning>

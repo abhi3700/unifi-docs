@@ -1,26 +1,51 @@
 ---
-title: "Connect and authenticate"
-description: "Use a wallet-signed challenge to establish a UniFi session."
+title: "Auth"
+description: "Sign up or return with email credentials or a connected MetaMask wallet."
 icon: "lock"
 ---
 
-UniFi uses wallet ownership to authenticate non-custodial users.
+Auth is the gate for wallet, payment, history, and API-management routes. The route stores the page
+the user originally requested and returns there after a successful session is established.
+
+<Frame caption="Choose an email account or MetaMask to continue.">
+  <img className="w-full h-auto" src="/images/web-app/auth.png" alt="UniFi account screen with an email field and MetaMask option" />
+</Frame>
+
+## Email account flow
+
+For a new email account, the implementation proceeds through:
 
 <Steps>
-  <Step title="Connect your wallet">
-    Select the wallet account you want UniFi to use. Check the address shown by the app.
+  <Step title="Verify the email">
+    Enter a valid email address and submit the six-digit OTP sent by the configured email service.
   </Step>
-  <Step title="Review the challenge">
-    UniFi issues a short-lived, single-use message containing the expected domain, URI, chain ID, nonce, and expiry.
+  <Step title="Set a password">
+    The password is hashed client-side with the account identifier before the login request.
   </Step>
-  <Step title="Sign the message">
-    Sign only when the wallet message matches the UniFi site and the account you selected. This is an authentication signature, not a token transfer.
+  <Step title="Enable authenticator 2FA">
+    Scan the generated TOTP QR and confirm a current six-digit code.
   </Step>
-  <Step title="Use the session">
-    UniFi verifies the signature and creates a bearer session for protected requests.
+  <Step title="Open the requested page">
+    The web session is stored in the `unifi_user_id` and `unifi_jwt` cookies and the original route
+    is resumed.
   </Step>
 </Steps>
 
+Returning email users complete password and authenticator checks when the backend reports that a
+fresh login is required. Recovery routes exist for password reset and 2FA renewal.
+
+## MetaMask flow
+
+The wallet flow requests a server-issued challenge, signs it in MetaMask, and exchanges the
+signature for a web JWT. The server checks that the challenge address, origin, chain context,
+nonce, and expiry match before issuing the session.
+
 <Warning>
-UniFi support will never ask for your seed phrase or private key.
+UniFi never needs a seed phrase or private key. A legitimate login asks the wallet to sign the
+displayed authentication challenge, not to reveal wallet secrets.
 </Warning>
+
+## Session exit
+
+Email accounts log out; connected-wallet accounts disconnect. Protected pages reuse the shared
+logout/disconnect dialog and return to Auth when the session is missing or invalid.

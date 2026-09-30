@@ -1,46 +1,68 @@
 ---
 title: "Quickstart"
-description: "Complete your first UniFi payment and verify its receipt."
+description: "Open UniFi, choose an account model, and complete a first payment flow."
 ---
 
-This quickstart uses the hosted web app. You only need an EVM wallet and a supported stablecoin balance.
+This quickstart follows the web app that runs at `/app`. You can explore the home screen and public
+API plans without signing in; wallet balances, deposits, payments, history, and API keys require an
+authenticated session.
 
-<Steps>
-  <Step title="Open UniFi">
-    Open the [UniFi web app](https://unifiweb3.pages.dev/home) and connect your wallet. Confirm that the displayed address is the account you intend to use.
-  </Step>
-  <Step title="Choose the asset and network">
-    Select a supported pair such as **USDT on Ethereum** or **USDC on Polygon**. Asset availability can differ by environment.
-  </Step>
-  <Step title="Enter the payment">
-    Choose **Send**, enter the recipient address and amount, then review the asset, network, recipient, and fee treatment.
-  </Step>
-  <Step title="Approve Permit2 if needed">
-    On the first payment for an asset, your wallet may ask you to approve Uniswap's Permit2 contract. This is an onchain token approval and can require native gas. Later payments can reuse that approval.
-  </Step>
-  <Step title="Sign the payment">
-    Sign the UniFi payment authorization. This signature is scoped to the payment details and expires after 15 minutes.
-  </Step>
-  <Step title="Verify the receipt">
-    Save the receipt ID. Open the receipt page and wait for the status required by your workflow—usually `Confirmed` or `Finalized`.
-  </Step>
-</Steps>
+## 1. Choose how to sign in
+
+<Columns cols={2}>
+  <Card title="Email account" icon="envelope">
+    UniFi creates and manages the account wallet. Signup continues through email verification,
+    password setup, and authenticator 2FA.
+  </Card>
+  <Card title="MetaMask" icon="wallet">
+    Connect an EVM wallet and sign the server-issued authentication challenge. UniFi does not ask
+    for a seed phrase or private key.
+  </Card>
+</Columns>
+
+<Frame caption="Choose an email account or MetaMask to continue.">
+  <img className="w-full h-auto" src="/images/web-app/auth.png" alt="UniFi account creation screen with email and MetaMask options" />
+</Frame>
+
+## 2. Start from a quick action
+
+The home page offers four entry points:
+
+- **Pay** — select an asset and network, enter a recipient and amount, then review and authorize.
+- **Scan** — read a UniFi payment QR and open its payment flow.
+- **Receive** — create a FliQR link and QR for a requested amount.
+- **Deposit** — display the wallet address and token contract information for the selected pair.
+
+Selecting a network or stablecoin on the home screen opens the same pair picker used by the
+payment flow.
+
+## 3. Select the asset and network
+
+The current web app exposes USDT, USDC, and DAI. The exact network list depends on the environment
+and account type.
+
+<Warning>
+Always match both the stablecoin and the network. The Deposit screen shows the token contract and a
+warning because sending another asset or using another network can permanently lose funds.
+</Warning>
+
+## 4. Review and authorize
+
+For an email account, a protected payment is completed with authenticator OTP. For a connected
+wallet, UniFi checks balance and Permit2 allowance, asks for token approval when required, and then
+asks the wallet to sign the payment details. The payment signature expires after 15 minutes.
 
 <Tip>
-Before signing, verify the chain, stablecoin, recipient, amount, and expiry in your wallet. A signature should match the payment shown in UniFi.
+"Gasless" applies to the supported payment execution. A first-time ERC-20 approval is an onchain
+transaction and normally needs the network's native token.
 </Tip>
 
-## Build instead of click
+## 5. Track the receipt
 
-If you are integrating UniFi into a product:
+Use **Activity** to open History, search by asset, network, amount, address, or receipt ID, and open
+the receipt. Treat `Finalized` as the completed success state; `Submitted` and `Confirmed` still
+represent work in progress.
 
-1. Read [Authentication](/api-reference/authentication).
-2. Call the non-custodial preflight endpoint to fetch balance, estimated fee, and Permit2 allowance state.
-3. Create the Permit2 EIP-712 signing data with a 15-minute deadline.
-4. Ask the wallet to sign the returned typed data.
-5. Submit the signature with the exact payment fields and store the returned receipt ID.
-6. Poll the receipt endpoint until the payment reaches a terminal state.
-
-<Card title="Open the API reference" icon="brackets-curly" href="/api-reference/introduction">
-  See request schemas, responses, authentication, and executable examples.
+<Card title="Open the Web App guide" icon="desktop" href="/webapp/overview">
+  Explore each screen and its account-specific behavior.
 </Card>

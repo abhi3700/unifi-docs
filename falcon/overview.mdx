@@ -1,36 +1,127 @@
 ---
-title: "Falcon payment agent"
-description: "Coordinate payment, payroll, and bounty workflows through a private UniFi agent."
-icon: "bird"
+title: "Overview"
+description: "Use an AI-assisted agent to prepare and automate on-chain stablecoin payments."
+icon: "robot"
 ---
 
-Falcon is UniFi's multi-agent framework for programmable stablecoin operations. Specialized agents coordinate workflows such as single payments, scheduled payments, bulk payouts, payroll, and bounties.
+Falcon is your personal payment agent that runs on top of UniFi. It combines AI-assisted instruction handling with
+UniFi's blockchain payment infrastructure so an owner can prepare, review, schedule, and track
+stablecoin payments from chat interface (Telegram, ..).
 
-## Current interface
+<Info>
+    Falcon is powered by both **AI** and **blockchain**: AI helps interpret
+    payment instructions, while the blockchain provides the verifiable
+    settlement record.
+</Info>
 
-Falcon is currently operated through Telegram. Slack, Discord, Signal, and other interfaces are planned; do not assume they are available in the current deployment.
+## How the two layers work
 
-## Security boundary
+<Columns cols={2}>
+    <Card title="AI" icon="sparkles">
+        Falcon interprets supported payment instructions from text and images.
+        In the batch-payment flow, it can extract payment rows from an uploaded
+        table or screenshot and prepare them for review.
+    </Card>
+    <Card title="Blockchain" icon="link">
+        UniFi executes supported stablecoin payments on-chain. The resulting
+        transaction and receipt provide a verifiable record as the payment
+        progresses toward finality.
+    </Card>
+</Columns>
 
-Each Falcon instance is intended to be private to its owner. That isolation is important, but it does not remove the need for payment controls.
+AI does not move funds by itself. It helps turn an instruction into structured payment data. The
+owner reviews that data before submission, and the payment layer validates, signs, and executes the
+transaction.
 
-- Restrict who can reach and instruct the agent.
-- Verify recipient, amount, stablecoin, network, and schedule before approval.
-- Use a dedicated wallet and least-privilege cloud permissions.
-- Keep bot tokens, API keys, and KMS configuration out of chat and logs.
-- Review receipts and scheduled jobs regularly.
+## Payment workflow
 
-<Warning>
-Automation increases the impact of a bad instruction or compromised credential. Use limits, review steps, and separate production credentials.
-</Warning>
-
-## Run from the repository
-
-Falcon is not distributed as a public hosted package in these docs. Repository operators can configure the supplied environment template and run the Rust service locally:
-
-```bash
-cd falcon
-cargo run --release
+```text
+Owner instruction
+      ↓
+Falcon interprets the request
+      ↓
+Review payment details
+      ↓
+AWS KMS authorization
+      ↓
+UniFi submits the payment
+      ↓
+On-chain receipt and finality
 ```
 
-Do not commit the resulting `.env` file.
+<Steps>
+    <Step title="Start from Telegram">
+        Choose a Falcon command such as **Pay**, **FliQPay**, **FliQR — Request
+        payment**, **Wallet balance**, **Deposit**, or **History**.
+    </Step>
+    <Step title="Provide the payment details">
+        For a single payment, open the secure payment page. For a batch payment,
+        upload a readable screenshot or table containing the payment rows.
+    </Step>
+    <Step title="Review before submission">
+        Falcon prepares a payment session or draft and returns a secure review
+        link. Confirm the recipient, amount, stablecoin, network, fee mode, and
+        schedule before continuing.
+    </Step>
+    <Step title="Authorize and execute">
+        Falcon uses its configured AWS KMS-backed signing path and UniFi's
+        payment infrastructure to submit an immediate or scheduled payment.
+    </Step>
+    <Step title="Track the result">
+        Use payment history and receipts to distinguish submission,
+        confirmation, and finality.
+    </Step>
+</Steps>
+
+## What Falcon can manage
+
+| Workflow        | What it provides                                                                   |
+| --------------- | ---------------------------------------------------------------------------------- |
+| Single payment  | Prepare an immediate or scheduled payment through a secure review session          |
+| Batch payment   | Extract multiple payment rows from an image and prepare a reviewable payment batch |
+| FliQ payment    | Open and pay a UniFi payment link immediately or on a schedule                     |
+| Payment request | Create a payment link or QR request                                                |
+| Wallet          | View balances and retrieve the deposit address                                     |
+| Activity        | View and search past payments                                                      |
+| API access      | Manage API keys, usage credits, and plan information                               |
+
+## Gasless payment experience
+
+Traditional ERC-20 payments often require users to hold both the stablecoin and the network's
+native token for transaction fees. UniFi's supported payment flow separates that gas handling from
+the payer experience, allowing Falcon to automate payments while the wallet maintains the required
+stablecoin balance. Also, using web app, user has to do prior approval before payment. But with Falcon, you don't need such pre-payment setup.
+
+<Note>
+    "Gasless" describes the supported UniFi payment execution. Network
+    availability, asset support, fees, and any prerequisite token approval
+    remain subject to the selected account and payment configuration.
+</Note>
+
+## Wallet and authorization model
+
+Falcon's current automated signing path uses an **AWS KMS-backed wallet**. The signing key remains
+inside the KMS security boundary, while Falcon receives the signatures required to authorize
+supported transactions.
+
+Falcon does not use a browser wallet such as MetaMask for unattended payment signing. Keep its AWS
+credentials, KMS key, UniFi API key, and Telegram bot token private and scoped to the Falcon
+deployment.
+
+## Private Telegram interface
+
+Falcon currently runs through **Telegram** and filters incoming instructions to the configured owner
+account. **Slack**, **Discord**, **Signal**, and other interfaces are planned rather than currently available.
+
+<Warning>
+    Owner-only access reduces exposure, but automation increases the impact of a
+    compromised account or incorrect instruction. Use a dedicated wallet,
+    least-privilege cloud permissions, payment limits, review steps, and
+    separate production credentials.
+</Warning>
+
+## Run your Falcon
+
+Download the current build and follow the deployment instructions in the
+[Falcon releases repository](https://github.com/abhi3700/falcon-releases). A deployment requires
+UniFi access, a Telegram bot restricted to its owner, and an AWS KMS key for payment signing.

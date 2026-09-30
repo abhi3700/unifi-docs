@@ -1,6 +1,6 @@
 ---
 title: "CLI quickstart"
-description: "Build the current CLI, connect an AWS KMS wallet, and verify the session."
+description: "Set up the UniFi CLI and start in minutes."
 icon: "rocket"
 ---
 
@@ -18,6 +18,7 @@ icon: "rocket"
     ```bash
     cargo build --release --manifest-path unifi-cli-app/Cargo.toml
     ```
+
   </Step>
   <Step title="Inspect help">
     ```bash
@@ -30,6 +31,7 @@ icon: "rocket"
     ```
 
     The CLI requests a single-use wallet challenge, signs it with AWS KMS, and stores the resulting session locally.
+
   </Step>
   <Step title="Verify configuration and balance">
     ```bash
@@ -40,5 +42,6 @@ icon: "rocket"
 </Steps>
 
 <Warning>
-Use an AWS profile and KMS key with the minimum permissions required. Never paste cloud credentials into the CLI arguments.
+    Use an AWS profile and KMS key with the minimum permissions required. Never
+    paste cloud credentials into the CLI arguments.
 </Warning>
