@@ -4,13 +4,18 @@ description: "Use bearer API keys for servers or a signed wallet challenge for u
 icon: "key"
 ---
 
-Protected routes require:
+Protected operations accept a UniFi API key or user JWT as a bearer credential:
 
 ```http
 Authorization: Bearer <credential>
 ```
 
-## Server integrations
+| Credential | Use it for | How to obtain it |
+| --- | --- | --- |
+| API key | Trusted backend services | Create a named key from the UniFi web app or API-key endpoint |
+| User JWT | Requests made for a signed-in wallet user | Complete the signed-wallet challenge flow |
+
+## API keys for server integrations
 
 Create a named API key in the UniFi web app and store it in a server-side secret manager.
 
@@ -20,9 +25,10 @@ curl --request GET \
   --header "Authorization: Bearer $UNIFI_API_KEY"
 ```
 
-Never ship the key in browser JavaScript, a public repository, a mobile binary, or analytics events.
+The credential must be authorized for the `user_id` in user-scoped routes. Never ship the key in
+browser JavaScript, a public repository, a mobile binary, logs, or analytics events.
 
-## Wallet authentication
+## Wallet JWTs
 
 The challenge endpoints do not require an existing bearer credential.
 
@@ -44,3 +50,8 @@ The challenge endpoints do not require an existing bearer credential.
 <Warning>
 Validate that the challenge domain and URI match the application the user is viewing. Reject expired challenges and never reuse a nonce.
 </Warning>
+
+<Note>
+Email-based and AWS KMS integrations authenticate through their managed UniFi flow. The signed
+challenge described here is specifically for self-custodial wallets.
+</Note>

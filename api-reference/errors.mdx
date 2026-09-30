@@ -27,7 +27,9 @@ Do not parse human-readable error text into business logic. Branch on the HTTP s
 
 ## Receipt state
 
-`Processing` is not failure. `Confirmed` and `Finalized` represent different settlement confidence. `Failed` and `Reorged` require explicit handling.
+`Processing` is not a failure; the web app presents this state as **Submitted**. `Confirmed` and
+`Finalized` represent different settlement confidence. `Failed` and `Reorged` require explicit
+handling.
 
 <Warning>
 The payment endpoint does not expose a caller-supplied idempotency key in the current public contract. Prevent duplicate submissions in your own order state machine.

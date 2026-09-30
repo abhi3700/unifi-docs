@@ -1,45 +1,76 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "UniFi API",
-    "version": "0.1.0",
-    "description": "Integration-facing endpoints for wallet authentication, stablecoin balances, payment preflight, payment creation, and receipt tracking."
+    "title": "UniFi Public API",
+    "version": "1.0.0",
+    "description": "Production API operations exposed through the public UniFi developer kit. Internal administration, worker, dashboard, support, scheduling, and Falcon orchestration routes are intentionally excluded."
   },
   "servers": [
     {
       "url": "https://unifi-api-4a5e.onrender.com",
-      "description": "Hosted service"
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
     }
   ],
   "tags": [
     {
       "name": "Service",
-      "description": "Service availability."
+      "description": "Service availability and dependency health."
+    },
+    {
+      "name": "API keys",
+      "description": "Manage named API credentials for a UniFi user."
     },
     {
       "name": "Authentication",
-      "description": "Wallet challenge and JWT exchange."
+      "description": "Authenticate a self-custodial wallet with a signed challenge."
+    },
+    {
+      "name": "Profile",
+      "description": "Read and update a UniFi user profile."
     },
     {
       "name": "Wallet",
-      "description": "Stablecoin balances."
+      "description": "Resolve wallet addresses and stablecoin balances."
+    },
+    {
+      "name": "Payment setup",
+      "description": "Read spendable balances and estimated payment fees."
     },
     {
       "name": "Payments",
-      "description": "Payment preflight and submission."
+      "description": "Create managed-wallet stablecoin payments."
     },
     {
       "name": "Receipts",
-      "description": "Payment status and history."
+      "description": "Read payment status and paginated history."
+    },
+    {
+      "name": "Notifications",
+      "description": "Notify a payer about a payment request."
+    },
+    {
+      "name": "Sessions",
+      "description": "Create and retrieve short-lived UniFi sessions."
+    },
+    {
+      "name": "Testnet",
+      "description": "Request test stablecoins on supported public test networks."
     }
   ],
   "paths": {
     "/healthz": {
       "get": {
         "operationId": "getHealthz",
-        "summary": "Check service availability",
-        "description": "Checks whether the API process is available. This lightweight endpoint does not test every downstream dependency.",
-        "tags": ["Service"],
+        "summary": "Check API process availability",
+        "description": "Lightweight liveness check. It does not test the database, blockchain RPCs, or every downstream dependency.",
+        "tags": [
+          "Service"
+        ],
         "security": [],
         "responses": {
           "200": {
@@ -56,6 +87,237 @@
                 }
               }
             }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Check API dependencies",
+        "description": "Runs the deeper service health check, including production dependencies. This operation consumes protected API capacity.",
+        "tags": [
+          "Service"
+        ],
+        "responses": {
+          "200": {
+            "description": "The API and required dependencies are healthy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "API server is healthy",
+                  "server_uptime": 1789992000
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/api_key/generate/{user_id}/{name}": {
+      "post": {
+        "operationId": "generateApiKey",
+        "summary": "Generate a named API key",
+        "description": "Creates an API key for the authenticated user. Store the returned value immediately in a server-side secret manager.",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/ApiKeyName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The new API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "ufi_live_redacted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/api/{user_id}": {
+      "get": {
+        "operationId": "getApiAccount",
+        "summary": "Get API plan and keys",
+        "description": "Returns the user's API plan metadata and named API-key records.",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API plan and key information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiAccountResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "metadata": {
+                      "plan": "Free",
+                      "duration": "Month",
+                      "credits": 100000,
+                      "img_credits": 0,
+                      "expiry_at": 1792584000
+                    },
+                    "keys": [
+                      {
+                        "name": "backend",
+                        "value": "ufi_live_redacted",
+                        "created_at": 1789992000
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/api_key/del/{user_id}/{name}": {
+      "delete": {
+        "operationId": "deleteApiKey",
+        "summary": "Delete a named API key",
+        "description": "Deletes the API key identified by its user-scoped name.",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/ApiKeyName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The key was deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "message": "The API key has been deleted successfully."
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
@@ -63,9 +325,11 @@
     "/auth/challenge/{address}": {
       "post": {
         "operationId": "createWalletChallenge",
-        "summary": "Create a wallet challenge",
-        "description": "Creates a short-lived, single-use authentication challenge for an EVM address.",
-        "tags": ["Authentication"],
+        "summary": "Create a wallet sign-in challenge",
+        "description": "Creates a short-lived, single-use challenge for an EVM wallet address.",
+        "tags": [
+          "Authentication"
+        ],
         "security": [],
         "parameters": [
           {
@@ -89,11 +353,19 @@
         },
         "responses": {
           "200": {
-            "description": "Challenge created.",
+            "description": "Challenge message, nonce, and expiration.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AuthChallengeResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "message": "Sign in to UniFi...",
+                    "nonce": "single-use-nonce",
+                    "expires_at": 1790000000
+                  }
                 }
               }
             }
@@ -101,8 +373,23 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
           "500": {
             "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
@@ -111,8 +398,10 @@
       "post": {
         "operationId": "exchangeWalletChallenge",
         "summary": "Exchange a signed challenge for a JWT",
-        "description": "Verifies the signed single-use challenge and returns a bearer JWT.",
-        "tags": ["Authentication"],
+        "description": "Verifies the exact challenge message and signature, consumes the nonce, and returns a bearer JWT.",
+        "tags": [
+          "Authentication"
+        ],
         "security": [],
         "parameters": [
           {
@@ -128,8 +417,8 @@
               },
               "example": {
                 "message": "Sign in to UniFi...",
-                "signature": "0x1234abcd",
-                "nonce": "challenge-nonce",
+                "signature": "0xsignature",
+                "nonce": "single-use-nonce",
                 "platform": "Web"
               }
             }
@@ -137,7 +426,7 @@
         },
         "responses": {
           "200": {
-            "description": "JWT issued.",
+            "description": "A bearer JWT.",
             "content": {
               "application/json": {
                 "schema": {
@@ -153,8 +442,253 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
           "500": {
             "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/profile/{user_id}": {
+      "get": {
+        "operationId": "getUserProfile",
+        "summary": "Get a user profile",
+        "description": "Returns the public profile fields available to the authenticated caller.",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "name": "Ada Lovelace",
+                    "nickname": "ada",
+                    "preferred_fiat_currency": "USD"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "setUserProfile",
+        "summary": "Create or update a user profile",
+        "description": "Sets the supplied profile fields for the authenticated user.",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserProfile"
+              },
+              "example": {
+                "name": "Ada Lovelace",
+                "nickname": "ada",
+                "preferred_fiat_currency": "USD"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The profile was saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "message": "User profile saved successfully."
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/wallet/address/{user_id}/{chain}": {
+      "get": {
+        "operationId": "getUserWalletAddress",
+        "summary": "Get a wallet address for a chain",
+        "description": "Resolves the user's wallet address for the requested chain.",
+        "tags": [
+          "Wallet"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An EVM wallet address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "0x1111111111111111111111111111111111111111"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/wallet/addresses/{user_id}": {
+      "get": {
+        "operationId": "getUserWalletAddresses",
+        "summary": "Get wallet addresses by protocol",
+        "description": "Returns the user's wallet address for every supported chain protocol.",
+        "tags": [
+          "Wallet"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet addresses keyed by protocol.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletAddressesResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "Evm": "0x1111111111111111111111111111111111111111"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
@@ -162,9 +696,11 @@
     "/wallet/onchain/balance/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getStablecoinBalance",
-        "summary": "Get a stablecoin balance",
+        "summary": "Get one stablecoin balance",
         "description": "Returns the formatted net balance for one user, chain, and stablecoin.",
-        "tags": ["Wallet"],
+        "tags": [
+          "Wallet"
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/UserId"
@@ -178,7 +714,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Formatted token balance.",
+            "description": "Human-readable token balance.",
             "content": {
               "application/json": {
                 "schema": {
@@ -197,18 +733,432 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
           "500": {
             "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/wallet/onchain/balances/{user_id}/{chain}": {
+      "get": {
+        "operationId": "getChainStablecoinBalances",
+        "summary": "Get all stablecoin balances on a chain",
+        "description": "Returns formatted balances for every supported stablecoin on the requested chain.",
+        "tags": [
+          "Wallet"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stablecoin balances keyed by ticker.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StablecoinBalanceMapResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "USDT": "1200.00",
+                    "USDC": "50.25",
+                    "DAI": "0.00"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/wallet/balances/{user_id}": {
+      "get": {
+        "operationId": "getWalletBalances",
+        "summary": "Get the complete wallet balance view",
+        "description": "Returns all supported assets across all supported chains, ordered by total USD value.",
+        "tags": [
+          "Wallet"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The aggregate wallet balance view.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletBalancesResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": [
+                    [
+                      "USDT",
+                      {
+                        "total_usd": "1200.00",
+                        "price_usd": "1.00",
+                        "chain_details": [
+                          [
+                            "Ethereum",
+                            {
+                              "balance": "1000.00",
+                              "value_usd": "1000.00"
+                            }
+                          ],
+                          [
+                            "Polygon",
+                            {
+                              "balance": "200.00",
+                              "value_usd": "200.00"
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/wallet/balances/by_chain/{user_id}/{chain}": {
+      "get": {
+        "operationId": "getWalletBalancesByChain",
+        "summary": "Get wallet balances by chain",
+        "description": "Returns each supported stablecoin balance and USD value for one chain.",
+        "tags": [
+          "Wallet"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet balances grouped by stablecoin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletBalancesByChainResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "total_usd": "1250.25",
+                    "coin_details": [
+                      [
+                        "USDT",
+                        {
+                          "price_usd": "1.00",
+                          "balance": "1200.00",
+                          "value_usd": "1200.00"
+                        }
+                      ],
+                      [
+                        "USDC",
+                        {
+                          "price_usd": "1.00",
+                          "balance": "50.25",
+                          "value_usd": "50.25"
+                        }
+                      ]
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/wallet/balances/by_coin/{user_id}/{coin}": {
+      "get": {
+        "operationId": "getWalletBalancesByCoin",
+        "summary": "Get wallet balances by stablecoin",
+        "description": "Returns the selected stablecoin's balance and USD value across supported chains.",
+        "tags": [
+          "Wallet"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Coin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet balances grouped by chain.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletBalancesByCoinResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "total_usd": "1200.00",
+                    "price_usd": "1.00",
+                    "chain_details": [
+                      [
+                        "Ethereum",
+                        {
+                          "balance": "1000.00",
+                          "value_usd": "1000.00"
+                        }
+                      ],
+                      [
+                        "Polygon",
+                        {
+                          "balance": "200.00",
+                          "value_usd": "200.00"
+                        }
+                      ]
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/net_balance/{user_id}/{chain}/{coin}": {
+      "get": {
+        "operationId": "getPaymentNetBalance",
+        "summary": "Get spendable payment balance",
+        "description": "Returns the user's formatted net balance before creating a payment.",
+        "tags": [
+          "Payment setup"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          },
+          {
+            "$ref": "#/components/parameters/Coin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Spendable stablecoin balance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "1199.88"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/est_fee/{user_id}/{chain}/{coin}": {
+      "get": {
+        "operationId": "getEstimatedPaymentFee",
+        "summary": "Estimate the payment fee",
+        "description": "Returns the formatted estimated total stablecoin fee for the selected route.",
+        "tags": [
+          "Payment setup"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          },
+          {
+            "$ref": "#/components/parameters/Coin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estimated fee denominated in the selected stablecoin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "0.12"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
     },
     "/payment/onchain/balance_est_fee/{user_id}/{chain}/{coin}": {
       "get": {
-        "operationId": "preflightPayment",
-        "summary": "Preflight a stablecoin payment",
-        "description": "Returns the spendable balance, estimated fee, and whether the token allowance is zero for the selected route.",
-        "tags": ["Payments"],
+        "operationId": "getPaymentBalanceAndFee",
+        "summary": "Get payment balance and fee",
+        "description": "Combines spendable balance, estimated fee, and allowance state for the selected route.",
+        "tags": [
+          "Payment setup"
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/UserId"
@@ -245,168 +1195,57 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
-    "/payment/onchain/balance_est_fee_ncw/{user_id}/{is_fee_incl}": {
-      "post": {
-        "operationId": "preflightNonCustodialPayment",
-        "summary": "Preflight a non-custodial payment",
-        "description": "Checks the wallet balance, estimated stablecoin fee, and Permit2 allowance for the exact payment.",
-        "tags": ["Payments"],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/UserId"
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           },
-          {
-            "name": "is_fee_incl",
-            "in": "path",
-            "required": true,
-            "description": "Whether the entered amount includes the UniFi fee.",
-            "schema": {
-              "type": "boolean"
-            },
-            "example": false
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PaymentPayload"
-              },
-              "example": {
-                "chain": "Ethereum",
-                "coin": "USDT",
-                "to_address": "0x71A9000000000000000000000000000000003F2C",
-                "amount": "100.00",
-                "memo": "General"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Non-custodial payment preflight values.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NonCustodialPreflightResponse"
-                }
-              }
-            }
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
-    "/payment/onchain/ncw/create_domain_permit/{user_id}": {
-      "post": {
-        "operationId": "createPermit2TypedData",
-        "summary": "Create Permit2 signing data",
-        "description": "Creates the EIP-712 domain and Permit2 permit that the payer signs. Set the deadline to no more than 15 minutes after the current time.",
-        "tags": ["Payments"],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/UserId"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NonCustodialPaymentBase"
-              },
-              "example": {
-                "chain": "Ethereum",
-                "coin": "USDT",
-                "to_address": "0x71A9000000000000000000000000000000003F2C",
-                "amount": "100.00",
-                "est_fee": "0.12",
-                "deadline": 1789992900
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "EIP-712 domain and Permit2 permit for wallet signing.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PermitSigningDataResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
           },
           "500": {
             "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
     },
-    "/payment/onchain/ncw/{user_id}": {
+    "/faucet/{user_id}/{coin}/{chain}/{create_session}": {
       "post": {
-        "operationId": "createNonCustodialPayment",
-        "summary": "Submit a signed non-custodial payment",
-        "description": "Submits the payment details, Permit2 nonce, and wallet signature and returns a receipt ID.",
-        "tags": ["Payments"],
+        "operationId": "requestTestnetFaucet",
+        "summary": "Request testnet stablecoins",
+        "description": "Requests stablecoins for a registered user on a supported public testnet. This operation is not available for mainnet funding.",
+        "tags": [
+          "Testnet"
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Coin"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          },
+          {
+            "$ref": "#/components/parameters/CreateSession"
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NonCustodialPaymentRequest"
-              },
-              "example": {
-                "payload": {
-                  "base": {
-                    "chain": "Ethereum",
-                    "coin": "USDT",
-                    "to_address": "0x71A9000000000000000000000000000000003F2C",
-                    "amount": "100.00",
-                    "est_fee": "0.12",
-                    "deadline": 1789992900
-                  },
-                  "nonce": "42",
-                  "sig": "0x1234abcd",
-                  "memo": "General"
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "Payment accepted; data is the receipt ID.",
+            "description": "A session identifier when requested; otherwise an empty string.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "session_123"
                 }
               }
             }
@@ -416,6 +1255,15 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
           },
           "500": {
             "$ref": "#/components/responses/ServerError"
@@ -428,23 +1276,18 @@
     },
     "/payment/onchain/{user_id}/{is_fee_incl}": {
       "post": {
-        "operationId": "createPayment",
-        "summary": "Create a managed-wallet payment",
-        "description": "Submits a payment from a UniFi-managed wallet and returns a receipt ID. Use the non-custodial endpoints for wallet-signed Permit2 payments.",
-        "tags": ["Payments"],
+        "operationId": "createManagedWalletPayment",
+        "summary": "Create a stablecoin payment",
+        "description": "Submits a payment from a UniFi-managed wallet. The response is a receipt ID; query the receipt endpoint for settlement progress.",
+        "tags": [
+          "Payments"
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/UserId"
           },
           {
-            "name": "is_fee_incl",
-            "in": "path",
-            "required": true,
-            "description": "Whether the entered amount includes the UniFi fee.",
-            "schema": {
-              "type": "boolean"
-            },
-            "example": false
+            "$ref": "#/components/parameters/IsFeeInclusive"
           }
         ],
         "requestBody": {
@@ -456,10 +1299,10 @@
               },
               "example": {
                 "payload": {
-                  "chain": "Ethereum",
+                  "chain": "Sepolia",
                   "coin": "USDT",
-                  "to_address": "0x71A9000000000000000000000000000000003F2C",
-                  "amount": "100.00",
+                  "to_address": "0x2222222222222222222222222222222222222222",
+                  "amount": "10.25",
                   "memo": "General"
                 }
               }
@@ -468,7 +1311,7 @@
         },
         "responses": {
           "200": {
-            "description": "Payment accepted; data is the receipt ID.",
+            "description": "The new receipt ID.",
             "content": {
               "application/json": {
                 "schema": {
@@ -476,7 +1319,7 @@
                 },
                 "example": {
                   "status": "200 OK",
-                  "data": "pay_01JXYZ..."
+                  "data": "1reb05f9d5f2791616e3c"
                 }
               }
             }
@@ -486,6 +1329,79 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/fliq/notify/payer/{pid}/{chain}/{coin}/{to_address}/{amount}": {
+      "get": {
+        "operationId": "notifyFliqPayer",
+        "summary": "Notify a payer",
+        "description": "Sends a payment-request notification to the payer identified by the UniFi payment ID.",
+        "tags": [
+          "Notifications"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          },
+          {
+            "$ref": "#/components/parameters/Coin"
+          },
+          {
+            "$ref": "#/components/parameters/ToAddress"
+          },
+          {
+            "$ref": "#/components/parameters/Amount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The notification was accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "message": "Notification sent to Payer on Telegram!"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
           },
           "500": {
             "$ref": "#/components/responses/ServerError"
@@ -500,26 +1416,43 @@
       "get": {
         "operationId": "getPaymentReceipt",
         "summary": "Get a payment receipt",
-        "description": "Returns one onchain payment receipt by its UniFi receipt ID.",
-        "tags": ["Receipts"],
+        "description": "Returns the latest known state of one stablecoin payment.",
+        "tags": [
+          "Receipts"
+        ],
         "parameters": [
           {
-            "name": "receipt_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "pay_01JXYZ..."
+            "$ref": "#/components/parameters/ReceiptId"
           }
         ],
         "responses": {
           "200": {
-            "description": "Payment receipt.",
+            "description": "The payment receipt.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReceiptResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "id": "1reb05f9d5f2791616e3c",
+                    "entity": "self",
+                    "user_id": "user@example.com",
+                    "is_fee_incl": false,
+                    "chain": "Sepolia",
+                    "coin": "USDT",
+                    "to_address": "0x2222222222222222222222222222222222222222",
+                    "amount": "10.25",
+                    "memo": "General",
+                    "est_fee": "0.12",
+                    "act_fee": "0.10",
+                    "tx_hash": "0xtransaction",
+                    "block_num": 123456,
+                    "status": "Confirmed",
+                    "start_ts_us": 1789992000000000,
+                    "end_ts_us": 1789992060000000
+                  }
                 }
               }
             }
@@ -530,41 +1463,41 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
           "500": {
             "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
     },
     "/payment/onchain/receipts/{user_id}/{sort_by_latest}/{from_start}": {
       "get": {
-        "operationId": "listPaymentReceipts",
-        "summary": "List payment receipts",
-        "description": "Returns paginated payment history for a user, with optional chain and status filters.",
-        "tags": ["Receipts"],
+        "operationId": "getPaymentReceipts",
+        "summary": "Get payment history",
+        "description": "Returns a cursor-like page of receipts. Use next_or_previous with the returned has_next and has_prev flags.",
+        "tags": [
+          "Receipts"
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/UserId"
           },
           {
-            "name": "sort_by_latest",
-            "in": "path",
-            "required": true,
-            "description": "Sort newest receipts first when true.",
-            "schema": {
-              "type": "boolean"
-            },
-            "example": true
+            "$ref": "#/components/parameters/SortByLatest"
           },
           {
-            "name": "from_start",
-            "in": "path",
-            "required": true,
-            "description": "Start a fresh pagination window when true.",
-            "schema": {
-              "type": "boolean"
-            },
-            "example": true
+            "$ref": "#/components/parameters/FromStart"
           },
           {
             "name": "chain",
@@ -572,7 +1505,8 @@
             "required": false,
             "schema": {
               "$ref": "#/components/schemas/Chain"
-            }
+            },
+            "description": "Filter by chain."
           },
           {
             "name": "status",
@@ -580,7 +1514,8 @@
             "required": false,
             "schema": {
               "$ref": "#/components/schemas/ReceiptStatus"
-            }
+            },
+            "description": "Filter by receipt state."
           },
           {
             "name": "limit",
@@ -591,25 +1526,33 @@
               "format": "int64",
               "minimum": 1
             },
-            "example": 20
+            "description": "Maximum number of receipts to return."
           },
           {
             "name": "next_or_previous",
             "in": "query",
             "required": false,
-            "description": "Select the next or previous pagination direction for an existing history window.",
             "schema": {
               "type": "boolean"
-            }
+            },
+            "description": "true requests the next page; false requests the previous page."
           }
         ],
         "responses": {
           "200": {
-            "description": "Payment history page.",
+            "description": "A page of payment receipts.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HistoryResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "has_prev": false,
+                    "receipts": [],
+                    "has_next": false
+                  }
                 }
               }
             }
@@ -620,8 +1563,138 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
           "500": {
             "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/session/create/{user_id}": {
+      "post": {
+        "operationId": "createSession",
+        "summary": "Create a UniFi session",
+        "description": "Creates a short-lived session for the user. Falcon heartbeat settings are optional.",
+        "tags": [
+          "Sessions"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              },
+              "example": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new session ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "session_123"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/session/{session_id}": {
+      "get": {
+        "operationId": "getSession",
+        "summary": "Get session data",
+        "description": "Returns the user and authentication data associated with a session ID.",
+        "tags": [
+          "Sessions"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SessionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The session data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "user_id": "user@example.com",
+                    "jwt": "eyJhbGciOi..."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
@@ -632,30 +1705,39 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "A UniFi API key for server integrations or a wallet-authenticated JWT for user routes."
+        "bearerFormat": "API key or JWT",
+        "description": "Use a server-side UniFi API key or a user JWT issued by the wallet challenge flow."
       }
     },
     "parameters": {
-      "Address": {
-        "name": "address",
-        "in": "path",
-        "required": true,
-        "description": "EVM wallet address.",
-        "schema": {
-          "type": "string",
-          "pattern": "^0x[a-fA-F0-9]{40}$"
-        },
-        "example": "0x71A9000000000000000000000000000000003F2C"
-      },
       "UserId": {
         "name": "user_id",
         "in": "path",
         "required": true,
-        "description": "UniFi user identifier or supported wallet address, depending on the integration.",
         "schema": {
           "type": "string"
         },
-        "example": "0x71A9000000000000000000000000000000003F2C"
+        "description": "UniFi user identifier, such as a verified email address or wallet address."
+      },
+      "Address": {
+        "name": "address",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^0x[a-fA-F0-9]{40}$"
+        },
+        "description": "EVM wallet address."
+      },
+      "ApiKeyName": {
+        "name": "name",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": "User-scoped name for the API key."
       },
       "Chain": {
         "name": "chain",
@@ -664,7 +1746,7 @@
         "schema": {
           "$ref": "#/components/schemas/Chain"
         },
-        "example": "Ethereum"
+        "description": "Blockchain network."
       },
       "Coin": {
         "name": "coin",
@@ -673,40 +1755,150 @@
         "schema": {
           "$ref": "#/components/schemas/Stablecoin"
         },
-        "example": "USDT"
+        "description": "Stablecoin ticker."
+      },
+      "CreateSession": {
+        "name": "create_session",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "boolean"
+        },
+        "description": "Whether to create and return a session after funding."
+      },
+      "IsFeeInclusive": {
+        "name": "is_fee_incl",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "boolean"
+        },
+        "description": "When true, the fee is included in the entered amount. When false, the fee is added separately."
+      },
+      "PaymentId": {
+        "name": "pid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "UniFi payment identifier for the payer."
+      },
+      "ToAddress": {
+        "name": "to_address",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^0x[a-fA-F0-9]{40}$"
+        },
+        "description": "Payment recipient address."
+      },
+      "Amount": {
+        "name": "amount",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$"
+        },
+        "description": "Human-readable decimal token amount."
+      },
+      "ReceiptId": {
+        "name": "receipt_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "UniFi payment receipt ID."
+      },
+      "SortByLatest": {
+        "name": "sort_by_latest",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "boolean"
+        },
+        "description": "Sort newest receipts first when true."
+      },
+      "FromStart": {
+        "name": "from_start",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "boolean"
+        },
+        "description": "Start a fresh history traversal when true."
+      },
+      "SessionId": {
+        "name": "session_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "UniFi session ID."
       }
     },
     "responses": {
       "BadRequest": {
-        "description": "The request is invalid or cannot be executed in the current state.",
+        "description": "The request is invalid or cannot be completed in the current state.",
         "content": {
           "text/plain": {
             "schema": {
               "type": "string"
-            },
-            "example": "Invalid recipient address."
+            }
           }
         }
       },
       "Unauthorized": {
-        "description": "The bearer credential is missing, invalid, or not allowed to access this user.",
+        "description": "The bearer credential is missing, invalid, or not authorized for this user.",
         "content": {
           "text/plain": {
             "schema": {
               "type": "string"
-            },
-            "example": "Unauthorized API key"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The requested resource does not exist.",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "The operation conflicts with the resource's current state.",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "The credential has exceeded its current request allowance.",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            }
           }
         }
       },
       "ServerError": {
-        "description": "The service could not complete the request.",
+        "description": "The API could not complete the request.",
         "content": {
           "text/plain": {
             "schema": {
               "type": "string"
-            },
-            "example": "Service temporarily unavailable. Please retry later."
+            }
           }
         }
       },
@@ -716,8 +1908,7 @@
           "text/plain": {
             "schema": {
               "type": "string"
-            },
-            "example": "Ethereum is temporarily unavailable. Please try again in a moment."
+            }
           }
         }
       }
@@ -725,16 +1916,28 @@
     "schemas": {
       "Chain": {
         "type": "string",
-        "enum": ["Ethereum", "Polygon", "Sepolia"],
-        "description": "Canonical public chain value. Availability can vary by account and product configuration."
+        "enum": [
+          "Ethereum",
+          "Polygon",
+          "Sepolia"
+        ],
+        "description": "Production-supported mainnets and public testnets exposed by the public reference."
       },
       "Stablecoin": {
         "type": "string",
-        "enum": ["USDT", "USDC", "DAI"]
+        "enum": [
+          "USDT",
+          "USDC",
+          "DAI"
+        ]
       },
-      "ReceiptStatus": {
+      "Currency": {
         "type": "string",
-        "enum": ["Processing", "Failed", "Confirmed", "Finalized", "Reorged"]
+        "enum": [
+          "USD",
+          "INR",
+          "EUR"
+        ]
       },
       "Platform": {
         "type": "string",
@@ -749,28 +1952,93 @@
           "WindowsDesktop"
         ]
       },
+      "ApiPlan": {
+        "type": "string",
+        "enum": [
+          "Free",
+          "Starter",
+          "Growth",
+          "Scale",
+          "Enterprise"
+        ]
+      },
+      "PaidPlanDuration": {
+        "type": "string",
+        "enum": [
+          "Month",
+          "Quarter",
+          "HalfYear",
+          "Year"
+        ]
+      },
+      "ReceiptStatus": {
+        "type": "string",
+        "enum": [
+          "Processing",
+          "Failed",
+          "Confirmed",
+          "Finalized",
+          "Reorged"
+        ]
+      },
       "HealthResponse": {
         "type": "object",
-        "required": ["status", "data", "server_uptime"],
+        "required": [
+          "status",
+          "data",
+          "server_uptime"
+        ],
         "properties": {
           "status": {
-            "type": "string",
-            "example": "200 OK"
+            "type": "string"
           },
           "data": {
-            "type": "string",
-            "example": "API server is healthy"
+            "type": "string"
           },
           "server_uptime": {
             "type": "integer",
             "format": "int64",
-            "description": "Server timestamp value returned by the current service."
+            "description": "Unix timestamp in seconds."
+          }
+        }
+      },
+      "StringResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string"
+          }
+        }
+      },
+      "MessageResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "message"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
           }
         }
       },
       "AuthChallengeRequest": {
         "type": "object",
-        "required": ["domain", "uri", "chain_id"],
+        "required": [
+          "domain",
+          "uri",
+          "chain_id"
+        ],
         "properties": {
           "domain": {
             "type": "string",
@@ -779,7 +2047,7 @@
           "uri": {
             "type": "string",
             "format": "uri",
-            "description": "Expected application origin or URI."
+            "description": "Expected application origin or sign-in URI."
           },
           "chain_id": {
             "type": "integer",
@@ -790,11 +2058,15 @@
       },
       "AuthChallenge": {
         "type": "object",
-        "required": ["message", "nonce", "expires_at"],
+        "required": [
+          "message",
+          "nonce",
+          "expires_at"
+        ],
         "properties": {
           "message": {
             "type": "string",
-            "description": "The exact message the wallet must sign."
+            "description": "Sign this exact message without modification."
           },
           "nonce": {
             "type": "string"
@@ -802,17 +2074,19 @@
           "expires_at": {
             "type": "integer",
             "format": "int64",
-            "description": "Challenge expiry as a Unix timestamp."
+            "description": "Unix timestamp in seconds."
           }
         }
       },
       "AuthChallengeResponse": {
         "type": "object",
-        "required": ["status", "data"],
+        "required": [
+          "status",
+          "data"
+        ],
         "properties": {
           "status": {
-            "type": "string",
-            "example": "200 OK"
+            "type": "string"
           },
           "data": {
             "$ref": "#/components/schemas/AuthChallenge"
@@ -821,14 +2095,18 @@
       },
       "JwtExchangeRequest": {
         "type": "object",
-        "required": ["message", "signature", "nonce", "platform"],
+        "required": [
+          "message",
+          "signature",
+          "nonce",
+          "platform"
+        ],
         "properties": {
           "message": {
             "type": "string"
           },
           "signature": {
-            "type": "string",
-            "description": "Hex-encoded wallet signature."
+            "type": "string"
           },
           "nonce": {
             "type": "string"
@@ -838,111 +2116,438 @@
           }
         }
       },
-      "StringResponse": {
+      "ApiKey": {
         "type": "object",
-        "required": ["status", "data"],
+        "required": [
+          "name",
+          "value",
+          "created_at"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "created_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix timestamp in seconds."
+          }
+        }
+      },
+      "ApiMetadata": {
+        "type": "object",
+        "required": [
+          "plan",
+          "duration",
+          "credits",
+          "img_credits",
+          "expiry_at"
+        ],
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/ApiPlan"
+          },
+          "duration": {
+            "$ref": "#/components/schemas/PaidPlanDuration"
+          },
+          "credits": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "img_credits": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "expiry_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix timestamp in seconds."
+          }
+        }
+      },
+      "ApiAccount": {
+        "type": "object",
+        "required": [
+          "metadata",
+          "keys"
+        ],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/ApiMetadata"
+          },
+          "keys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKey"
+            }
+          }
+        }
+      },
+      "ApiAccountResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
         "properties": {
           "status": {
-            "type": "string",
-            "example": "200 OK"
+            "type": "string"
           },
           "data": {
+            "$ref": "#/components/schemas/ApiAccount"
+          }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "nickname": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true,
+            "description": "When present, the address is verified."
+          },
+          "preferred_fiat_currency": {
+            "$ref": "#/components/schemas/Currency",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserProfileResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
             "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UserProfile"
+          }
+        }
+      },
+      "WalletAddresses": {
+        "type": "object",
+        "properties": {
+          "Evm": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$"
+          }
+        },
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "WalletAddressesResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WalletAddresses"
+          }
+        }
+      },
+      "StablecoinBalanceMap": {
+        "type": "object",
+        "properties": {
+          "USDT": {
+            "type": "string"
+          },
+          "USDC": {
+            "type": "string"
+          },
+          "DAI": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StablecoinBalanceMapResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/StablecoinBalanceMap"
+          }
+        }
+      },
+      "WalletBalancesByChainCoinDetails": {
+        "type": "object",
+        "required": [
+          "price_usd",
+          "balance",
+          "value_usd"
+        ],
+        "properties": {
+          "price_usd": {
+            "type": "string"
+          },
+          "balance": {
+            "type": "string"
+          },
+          "value_usd": {
+            "type": "string"
+          }
+        }
+      },
+      "WalletBalancesByChainEntry": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "description": "A [stablecoin, details] tuple.",
+        "items": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Stablecoin"
+            },
+            {
+              "$ref": "#/components/schemas/WalletBalancesByChainCoinDetails"
+            }
+          ]
+        }
+      },
+      "WalletBalancesByChain": {
+        "type": "object",
+        "required": [
+          "total_usd",
+          "coin_details"
+        ],
+        "properties": {
+          "total_usd": {
+            "type": "string"
+          },
+          "coin_details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletBalancesByChainEntry"
+            }
+          }
+        }
+      },
+      "WalletBalancesByChainResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WalletBalancesByChain"
+          }
+        }
+      },
+      "WalletBalancesByCoinChainDetails": {
+        "type": "object",
+        "required": [
+          "balance",
+          "value_usd"
+        ],
+        "properties": {
+          "balance": {
+            "type": "string"
+          },
+          "value_usd": {
+            "type": "string"
+          }
+        }
+      },
+      "WalletBalancesByCoinEntry": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "description": "A [chain, details] tuple.",
+        "items": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Chain"
+            },
+            {
+              "$ref": "#/components/schemas/WalletBalancesByCoinChainDetails"
+            }
+          ]
+        }
+      },
+      "WalletBalancesByCoin": {
+        "type": "object",
+        "required": [
+          "total_usd",
+          "price_usd",
+          "chain_details"
+        ],
+        "properties": {
+          "total_usd": {
+            "type": "string"
+          },
+          "price_usd": {
+            "type": "string"
+          },
+          "chain_details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletBalancesByCoinEntry"
+            }
+          }
+        }
+      },
+      "WalletBalancesByCoinResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WalletBalancesByCoin"
+          }
+        }
+      },
+      "WalletBalancesEntry": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "description": "A [stablecoin, aggregate] tuple.",
+        "items": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/Stablecoin"
+            },
+            {
+              "$ref": "#/components/schemas/WalletBalancesByCoin"
+            }
+          ]
+        }
+      },
+      "WalletBalances": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/WalletBalancesEntry"
+        },
+        "description": "Assets ordered by total USD value."
+      },
+      "WalletBalancesResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WalletBalances"
           }
         }
       },
       "PreflightValues": {
         "type": "object",
-        "required": ["is_coin_allowance_zero", "balance", "est_fee"],
+        "required": [
+          "is_coin_allowance_zero",
+          "balance",
+          "est_fee"
+        ],
         "properties": {
           "is_coin_allowance_zero": {
             "type": "boolean"
           },
           "balance": {
-            "type": "string",
-            "description": "Formatted stablecoin balance."
+            "type": "string"
           },
           "est_fee": {
-            "type": "string",
-            "description": "Formatted estimated fee in the stablecoin."
+            "type": "string"
           }
         }
       },
       "PreflightResponse": {
         "type": "object",
-        "required": ["status", "data"],
+        "required": [
+          "status",
+          "data"
+        ],
         "properties": {
           "status": {
-            "type": "string",
-            "example": "200 OK"
+            "type": "string"
           },
           "data": {
             "$ref": "#/components/schemas/PreflightValues"
           }
         }
       },
-      "Permit2Allowance": {
-        "type": "object",
-        "required": ["is_suff", "required_allowance", "is_max_allowance"],
-        "properties": {
-          "is_suff": {
-            "type": "boolean",
-            "description": "Whether the current Permit2 allowance covers the payment."
-          },
-          "required_allowance": {
-            "type": "string",
-            "description": "Additional formatted token allowance required."
-          },
-          "is_max_allowance": {
-            "type": "boolean",
-            "description": "Whether the wallet has granted the maximum ERC-20 allowance to Permit2."
-          }
-        }
-      },
-      "NonCustodialPreflightValues": {
-        "type": "object",
-        "required": ["allowance", "balance", "est_fee"],
-        "properties": {
-          "allowance": {
-            "$ref": "#/components/schemas/Permit2Allowance"
-          },
-          "balance": {
-            "type": "string",
-            "description": "Formatted stablecoin balance."
-          },
-          "est_fee": {
-            "type": "string",
-            "description": "Formatted estimated fee in the stablecoin."
-          }
-        }
-      },
-      "NonCustodialPreflightResponse": {
-        "type": "object",
-        "required": ["status", "data"],
-        "properties": {
-          "status": {
-            "type": "string",
-            "example": "200 OK"
-          },
-          "data": {
-            "$ref": "#/components/schemas/NonCustodialPreflightValues"
-          }
-        }
-      },
       "Memo": {
-        "description": "Payment purpose. Unit variants serialize as strings; a custom purpose serializes as an object.",
+        "description": "Payment purpose. Unit variants serialize as strings; data-carrying variants serialize as objects.",
         "oneOf": [
           {
             "type": "string",
-            "enum": ["General", "FliqPay", "FliqPayMerchant", "BulkPay"]
+            "enum": [
+              "General",
+              "FliqPay",
+              "FliqPayMerchant",
+              "BulkPay"
+            ]
           },
           {
             "type": "object",
-            "required": ["Custom"],
+            "required": [
+              "Custom"
+            ],
             "properties": {
               "Custom": {
                 "type": "string",
                 "maxLength": 48
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "SubscribeApi"
+            ],
+            "properties": {
+              "SubscribeApi": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "string"
+                },
+                "example": [
+                  "Starter",
+                  "Month"
+                ]
               }
             },
             "additionalProperties": false
@@ -951,7 +2556,13 @@
       },
       "PaymentPayload": {
         "type": "object",
-        "required": ["chain", "coin", "to_address", "amount", "memo"],
+        "required": [
+          "chain",
+          "coin",
+          "to_address",
+          "amount",
+          "memo"
+        ],
         "properties": {
           "chain": {
             "$ref": "#/components/schemas/Chain"
@@ -971,122 +2582,40 @@
           "memo": {
             "$ref": "#/components/schemas/Memo"
           }
-        }
+        },
+        "additionalProperties": false
       },
       "Schedule": {
         "type": "object",
-        "required": ["id", "is_recurring"],
+        "required": [
+          "id",
+          "is_recurring"
+        ],
         "properties": {
           "id": {
-            "type": "string",
-            "description": "Existing scheduled payment identifier."
+            "type": "string"
           },
           "is_recurring": {
             "type": "boolean"
           }
-        }
-      },
-      "NonCustodialPaymentBase": {
-        "type": "object",
-        "required": ["chain", "coin", "to_address", "amount", "est_fee", "deadline"],
-        "properties": {
-          "chain": {
-            "$ref": "#/components/schemas/Chain"
-          },
-          "coin": {
-            "$ref": "#/components/schemas/Stablecoin"
-          },
-          "to_address": {
-            "type": "string",
-            "pattern": "^0x[a-fA-F0-9]{40}$"
-          },
-          "amount": {
-            "type": "string",
-            "pattern": "^[0-9]+(\\.[0-9]+)?$"
-          },
-          "est_fee": {
-            "type": "string",
-            "pattern": "^[0-9]+(\\.[0-9]+)?$"
-          },
-          "deadline": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Unix timestamp. UniFi's user flow uses current time plus 15 minutes."
-          }
-        }
-      },
-      "PermitSigningData": {
-        "type": "object",
-        "required": ["domain", "permit"],
-        "properties": {
-          "domain": {
-            "type": "object",
-            "description": "EIP-712 domain returned by UniFi.",
-            "additionalProperties": true
-          },
-          "permit": {
-            "type": "object",
-            "description": "Permit2 batch transfer data returned by UniFi.",
-            "additionalProperties": true
-          }
-        }
-      },
-      "PermitSigningDataResponse": {
-        "type": "object",
-        "required": ["status", "data"],
-        "properties": {
-          "status": {
-            "type": "string",
-            "example": "200 OK"
-          },
-          "data": {
-            "$ref": "#/components/schemas/PermitSigningData"
-          }
-        }
-      },
-      "SignedNonCustodialPayload": {
-        "type": "object",
-        "required": ["base", "nonce", "sig", "memo"],
-        "properties": {
-          "base": {
-            "$ref": "#/components/schemas/NonCustodialPaymentBase"
-          },
-          "nonce": {
-            "type": "string",
-            "description": "Permit2 nonce as a base-10 integer string."
-          },
-          "sig": {
-            "type": "string",
-            "description": "Wallet signature over the returned Permit2 typed data."
-          },
-          "memo": {
-            "$ref": "#/components/schemas/Memo"
-          }
-        }
-      },
-      "NonCustodialPaymentRequest": {
-        "type": "object",
-        "required": ["payload"],
-        "properties": {
-          "payload": {
-            "$ref": "#/components/schemas/SignedNonCustodialPayload"
-          },
-          "sched": {
-            "$ref": "#/components/schemas/Schedule"
-          }
-        }
+        },
+        "additionalProperties": false
       },
       "PayOnchainRequest": {
         "type": "object",
-        "required": ["payload"],
+        "required": [
+          "payload"
+        ],
         "properties": {
           "payload": {
             "$ref": "#/components/schemas/PaymentPayload"
           },
           "sched": {
-            "$ref": "#/components/schemas/Schedule"
+            "$ref": "#/components/schemas/Schedule",
+            "nullable": true
           }
-        }
+        },
+        "additionalProperties": false
       },
       "Receipt": {
         "type": "object",
@@ -1166,11 +2695,13 @@
       },
       "ReceiptResponse": {
         "type": "object",
-        "required": ["status", "data"],
+        "required": [
+          "status",
+          "data"
+        ],
         "properties": {
           "status": {
-            "type": "string",
-            "example": "200 OK"
+            "type": "string"
           },
           "data": {
             "$ref": "#/components/schemas/Receipt"
@@ -1179,7 +2710,11 @@
       },
       "History": {
         "type": "object",
-        "required": ["has_prev", "receipts", "has_next"],
+        "required": [
+          "has_prev",
+          "receipts",
+          "has_next"
+        ],
         "properties": {
           "has_prev": {
             "type": "boolean"
@@ -1197,22 +2732,99 @@
       },
       "HistoryResponse": {
         "type": "object",
-        "required": ["status", "data"],
+        "required": [
+          "status",
+          "data"
+        ],
         "properties": {
           "status": {
-            "type": "string",
-            "example": "200 OK"
+            "type": "string"
           },
           "data": {
             "$ref": "#/components/schemas/History"
           }
         }
+      },
+      "FalconIpo": {
+        "type": "object",
+        "required": [
+          "enabled",
+          "freq_secs"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "freq_secs": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 60
+          }
+        },
+        "additionalProperties": false
+      },
+      "FalconHeartbeat": {
+        "type": "object",
+        "required": [
+          "spo_enabled"
+        ],
+        "properties": {
+          "ipo": {
+            "$ref": "#/components/schemas/FalconIpo",
+            "nullable": true
+          },
+          "spo_enabled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSessionRequest": {
+        "type": "object",
+        "properties": {
+          "falcon_heartbeat": {
+            "$ref": "#/components/schemas/FalconHeartbeat",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserSession": {
+        "type": "object",
+        "required": [
+          "user_id",
+          "jwt"
+        ],
+        "properties": {
+          "user_id": {
+            "type": "string"
+          },
+          "jwt": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "falcon_heartbeat": {
+            "$ref": "#/components/schemas/FalconHeartbeat",
+            "nullable": true
+          }
+        }
+      },
+      "SessionResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UserSession"
+          }
+        }
       }
     }
-  },
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ]
+  }
 }
