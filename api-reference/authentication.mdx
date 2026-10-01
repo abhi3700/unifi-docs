@@ -10,10 +10,10 @@ Protected operations accept a UniFi API key or user JWT as a bearer credential:
 Authorization: Bearer <credential>
 ```
 
-| Credential | Use it for | How to obtain it |
-| --- | --- | --- |
-| API key | Trusted backend services | Create a named key from the UniFi web app or API-key endpoint |
-| User JWT | Requests made for a signed-in wallet user | Complete the signed-wallet challenge flow |
+| Credential | Use it for                                | How to obtain it                                              |
+| ---------- | ----------------------------------------- | ------------------------------------------------------------- |
+| API key    | Trusted backend services                  | Create a named key from the UniFi web app or API-key endpoint |
+| User JWT   | Requests made for a signed-in wallet user | Complete the signed-wallet challenge flow                     |
 
 ## API keys for server integrations
 
@@ -21,7 +21,7 @@ Create a named API key in the UniFi web app and store it in a server-side secret
 
 ```bash
 curl --request GET \
-  --url https://unifi-api-4a5e.onrender.com/wallet/onchain/balance/USER_ID/Ethereum/USDT \
+  --url https://api.payunifi.com/wallet/onchain/balance/USER_ID/Ethereum/USDT \
   --header "Authorization: Bearer $UNIFI_API_KEY"
 ```
 
@@ -33,25 +33,30 @@ browser JavaScript, a public repository, a mobile binary, logs, or analytics eve
 The challenge endpoints do not require an existing bearer credential.
 
 <Steps>
-  <Step title="Request a challenge">
-    POST the expected domain, URI, and chain ID for the wallet address. The server returns a short-lived message, nonce, and expiry.
-  </Step>
-  <Step title="Sign the exact message">
-    Ask the wallet to sign the returned message without altering whitespace or fields.
-  </Step>
-  <Step title="Exchange it for a JWT">
-    POST the message, signature, nonce, and platform. The challenge is single-use.
-  </Step>
-  <Step title="Send the JWT">
-    Use the returned JWT as the bearer credential for protected user routes.
-  </Step>
+    <Step title="Request a challenge">
+        POST the expected domain, URI, and chain ID for the wallet address. The
+        server returns a short-lived message, nonce, and expiry.
+    </Step>
+    <Step title="Sign the exact message">
+        Ask the wallet to sign the returned message without altering whitespace
+        or fields.
+    </Step>
+    <Step title="Exchange it for a JWT">
+        POST the message, signature, nonce, and platform. The challenge is
+        single-use.
+    </Step>
+    <Step title="Send the JWT">
+        Use the returned JWT as the bearer credential for protected user routes.
+    </Step>
 </Steps>
 
 <Warning>
-Validate that the challenge domain and URI match the application the user is viewing. Reject expired challenges and never reuse a nonce.
+    Validate that the challenge domain and URI match the application the user is
+    viewing. Reject expired challenges and never reuse a nonce.
 </Warning>
 
 <Note>
-Email-based and AWS KMS integrations authenticate through their managed UniFi flow. The signed
-challenge described here is specifically for self-custodial wallets.
+    Email-based and AWS KMS integrations authenticate through their managed
+    UniFi flow. The signed challenge described here is specifically for
+    self-custodial wallets.
 </Note>

@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://unifi-api-4a5e.onrender.com",
+      "url": "https://api.payunifi.com",
       "description": "Production"
     }
   ],

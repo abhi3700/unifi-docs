@@ -14,7 +14,7 @@ part of the public contract.
 ## Base URL
 
 ```text
-https://unifi-api-4a5e.onrender.com
+https://api.payunifi.com
 ```
 
 All requests use HTTPS and JSON unless an endpoint states otherwise.
@@ -31,8 +31,8 @@ Use a server-side API key for backend integrations or a user JWT returned by the
 challenge flow. The liveness check and the two wallet-challenge operations are public.
 
 <Warning>
-Never expose an API key in browser code, a mobile application, a public repository, logs, or
-analytics events.
+    Never expose an API key in browser code, a mobile application, a public
+    repository, logs, or analytics events.
 </Warning>
 
 ## Response envelope
@@ -41,8 +41,8 @@ Successful data responses use a consistent envelope:
 
 ```json
 {
-  "status": "200 OK",
-  "data": {}
+    "status": "200 OK",
+    "data": {}
 }
 ```
 
@@ -60,10 +60,18 @@ Non-custodial signing, bulk-payment orchestration, and internal payment-session 
 included in this public reference yet.
 
 <CardGroup cols={2}>
-  <Card title="Authentication" icon="key" href="/api-reference/authentication">
-    Choose an API key or signed-wallet JWT and send it safely.
-  </Card>
-  <Card title="Errors and payment state" icon="triangle-exclamation" href="/api-reference/errors">
-    Handle retries, receipt states, and duplicate-payment risk.
-  </Card>
+    <Card
+        title="Authentication"
+        icon="key"
+        href="/api-reference/authentication"
+    >
+        Choose an API key or signed-wallet JWT and send it safely.
+    </Card>
+    <Card
+        title="Errors and payment state"
+        icon="triangle-exclamation"
+        href="/api-reference/errors"
+    >
+        Handle retries, receipt states, and duplicate-payment risk.
+    </Card>
 </CardGroup>
