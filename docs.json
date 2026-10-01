@@ -65,8 +65,34 @@
       },
       {
         "tab": "💳 Payment Gateway",
-        "pages": [
-          "payment-gateway/overview"
+        "groups": [
+          {
+            "group": "Start",
+            "pages": [
+              "payment-gateway/overview",
+              "payment-gateway/quickstart"
+            ]
+          },
+          {
+            "group": "Integration guides",
+            "pages": [
+              "payment-gateway/react",
+              "payment-gateway/headless",
+              "payment-gateway/server-proxy"
+            ]
+          },
+          {
+            "group": "Operate payments",
+            "pages": [
+              "payment-gateway/lifecycle"
+            ]
+          },
+          {
+            "group": "Reference implementation",
+            "pages": [
+              "payment-gateway/fliq-market"
+            ]
+          }
         ]
       },
       {

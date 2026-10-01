@@ -1,0 +1,163 @@
+---
+title: "Quickstart"
+description: "Install the UniFi Pay widget and complete a first end-to-end checkout."
+icon: "bolt"
+---
+
+This guide uses the complete React widget and a Cloudflare Pages Function. The same browser-facing
+code works with any Fetch API-compatible server route.
+
+## Before you begin
+
+You need:
+
+- Node.js 20 or newer;
+- a UniFi account and API key;
+- the merchant wallet address that will receive payments; and
+- a deployment that can run a server or edge function.
+
+Create an account at [payunifi.com](https://payunifi.com/app/auth/signup), then generate an API key
+from the [API plan and key flow](/webapp/api_key).
+
+## 1. Install the package
+
+The package currently tracks the `main` branch on GitHub:
+
+```sh
+npm install --save 'github:abhi3700/unifi-pay-widget#main'
+```
+
+Declare the dependency and permit its Git dependency `prepare` build in `package.json`:
+
+```json
+{
+  "dependencies": {
+    "unifi-pay-widget": "github:abhi3700/unifi-pay-widget#main"
+  },
+  "allowScripts": {
+    "github:abhi3700/unifi-pay-widget": true
+  }
+}
+```
+
+Import its stylesheet once near the application entry point:
+
+```tsx
+import "unifi-pay-widget/styles.css";
+```
+
+<Note>
+  npm resolves `main` to a commit and records that SHA in `package-lock.json`. Review and commit the
+  lockfile so production installs the exact integration you tested.
+</Note>
+
+## 2. Configure the merchant
+
+Both values are required in production:
+
+```makefile
+UNIFI_API_KEY=
+MERCHANT_WALLET_ADDRESS=
+```
+
+| Value | Visibility | Usage |
+| --- | --- | --- |
+| `UNIFI_API_KEY` | Secret | Read only by the server proxy and added to upstream status requests |
+| `MERCHANT_WALLET_ADDRESS` | Public configuration | Passed by the application to the widget as `recipient` |
+
+Use the deployment provider's encrypted secret store for the API key. Return the wallet address
+through a non-secret runtime-config endpoint or inject it as public application configuration.
+
+<Warning>
+  Never expose `UNIFI_API_KEY` through `VITE_*`, `NEXT_PUBLIC_*`, generated JavaScript, HTML, source
+  maps, browser logs, or browser network requests.
+</Warning>
+
+## 3. Add the status proxy
+
+Create `functions/api/unifi/[[path]].ts` in a Cloudflare Pages project:
+
+```ts
+import { createCloudflarePagesFunction } from "unifi-pay-widget/server";
+
+type Env = {
+  UNIFI_API_KEY: string;
+  UNIFI_API_BASE_URL?: string;
+};
+
+export const onRequest = createCloudflarePagesFunction<Env>();
+```
+
+The browser now checks payment status through the same-origin
+`/api/unifi/payment/merchant/session/:sessionId` route. Most production merchants should leave
+`UNIFI_API_BASE_URL` unset and use the package's built-in production endpoint.
+
+## 4. Render the widget
+
+```tsx
+import { UniFiPayWidget, UniFiReceiptLink } from "unifi-pay-widget/react";
+import "unifi-pay-widget/styles.css";
+
+export function Checkout({ merchantWalletAddress }: {
+  merchantWalletAddress: string;
+}) {
+  return (
+    <UniFiPayWidget
+      amount="32.46"
+      recipient={merchantWalletAddress}
+      onSession={(session) => {
+        // Associate session.sessionId with your order before fulfilment.
+        console.log("UniFi session", session.sessionId);
+      }}
+      onPaid={(receiptId) => {
+        console.log("UniFi payment confirmed", receiptId);
+      }}
+      onError={(error) => console.error(error)}
+    />
+  );
+}
+
+export function Receipt({ receiptId }: { receiptId: string }) {
+  return <UniFiReceiptLink receiptId={receiptId} />;
+}
+```
+
+Required props are `amount` and `recipient`. The widget handles pair selection, session creation,
+hosted-checkout launch, the 20-minute countdown, manual status checking, and the paid callback.
+
+## 5. Test the complete flow
+
+<Steps>
+  <Step title="Open the merchant checkout">
+    Confirm the displayed amount and recipient come from a trusted order record.
+  </Step>
+  <Step title="Choose Sepolia">
+    Use Sepolia for a test payment. Confirm the selected asset and network remain unchanged when the
+    pair picker closes.
+  </Step>
+  <Step title="Open UniFi">
+    Keep the merchant page open while the hosted checkout opens in a new tab.
+  </Step>
+  <Step title="Complete and check">
+    Authorize the payment, return to the merchant tab, and use the status action. A successful check
+    returns the receipt ID through `onPaid`.
+  </Step>
+  <Step title="Verify your records">
+    Confirm the order now contains its UniFi session ID and receipt ID. Do not rely on the temporary
+    UniFi lookup as your order history.
+  </Step>
+</Steps>
+
+## 6. Deploy the tested dependency
+
+```sh
+npm ci
+npm run build
+```
+
+When you deliberately refresh the GitHub dependency, run `npm update --save unifi-pay-widget`, test
+the new resolved commit, and commit the resulting lockfile.
+
+<Card title="See the production checklist" icon="list-check" href="/payment-gateway/lifecycle">
+  Validate pending, paid, failed, expired, mobile, keyboard, upstream-outage, and finality behavior.
+</Card>

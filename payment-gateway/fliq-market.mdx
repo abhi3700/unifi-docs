@@ -1,0 +1,115 @@
+---
+title: "FliQ Market example"
+description: "Walk through a working UniFi merchant checkout integration."
+icon: "cart-shopping"
+---
+
+[FliQ Market](https://github.com/abhi3700/fliq-market) is a lightweight marketplace that places
+UniFi beside card and UPI options. UniFi payments are live; the other methods are deliberately
+demo-only. Use Sepolia when exercising the public example.
+
+<CardGroup cols={2}>
+  <Card title="Open the live demo" icon="arrow-up-right-from-square" href="https://fliqm.pages.dev/">
+    Run the checkout flow in the deployed FliQ Market application.
+  </Card>
+  <Card title="Read the source" icon="github" href="https://github.com/abhi3700/fliq-market">
+    Inspect the React checkout, Cloudflare Pages Function, and deployment scripts.
+  </Card>
+</CardGroup>
+
+## 1. UniFi joins the merchant checkout
+
+`UniFiPaymentOption` participates in the same payment-method group as card and UPI. The merchant
+continues to own product quantity, tax, order totals, the primary Pay button, and completion UI.
+
+<Frame caption="FliQ Market keeps the UniFi option and order summary together on desktop.">
+  <img
+    className="w-full h-auto"
+    src="/images/payment-gateway/merchant-checkout.jpg"
+    alt="FliQ Market checkout showing UniFi selected and an order total of 1.40 dollars"
+  />
+</Frame>
+
+## 2. The payer chooses an exact pair
+
+The widget's bottom sheet offers USDT, USDC, and DAI across Ethereum, Polygon, and Sepolia. Closing
+or confirming the sheet returns the selected pair to the host checkout; the widget does not silently
+substitute another pair.
+
+<Frame caption="The responsive asset and network picker is supplied by the widget library.">
+  <img
+    className="w-full h-auto"
+    src="/images/payment-gateway/asset-network-picker.jpg"
+    alt="Asset and network picker showing USDT, USDC, DAI, Ethereum, Polygon and Sepolia"
+  />
+</Frame>
+
+## 3. UniFi handles payment authorization
+
+When the customer presses Pay, FliQ Market calls `createUniFiPayment` with the selected pair, trusted
+order total, and configured merchant wallet. It records the session ID, opens the generated hosted
+checkout URL, and leaves the merchant tab available for reconciliation.
+
+<Frame caption="The hosted UniFi flow presents the exact stablecoin, network, amount, fee estimate, and recipient.">
+  <img
+    style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+    src="/images/payment-gateway/hosted-payment.jpg"
+    alt="UniFi hosted checkout ready to confirm a 1.4 USDT payment on Sepolia"
+  />
+</Frame>
+
+## 4. The merchant reconciles the result
+
+FliQ Market opens `UniFiPaymentStatusSheet` with the pay link, countdown, and manual status action.
+The status check calls the merchant's `/api/unifi` route; the API key never enters the browser.
+
+<Frame caption="The status sheet keeps the payment link available and lets the customer check after returning from UniFi.">
+  <img
+    style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+    src="/images/payment-gateway/payment-status.jpg"
+    alt="FliQ Market UniFi status sheet waiting for payment and showing a check payment status button"
+  />
+</Frame>
+
+## Integration map
+
+| Concern | FliQ Market implementation | Widget API |
+| --- | --- | --- |
+| Import shared styles | `src/main.tsx` | `unifi-pay-widget/styles.css` |
+| Payment method and pair picker | `src/App.tsx` | `UniFiPaymentOption` |
+| Session and hosted URL | `src/App.tsx` | `createUniFiPayment` |
+| Status sheet | `src/App.tsx` | `UniFiPaymentStatusSheet` |
+| Status request | `src/App.tsx` | `checkUniFiPaymentStatus` |
+| Receipt link | `src/App.tsx` | `UniFiReceiptLink` |
+| Public merchant configuration | `GET /api/config` | Host-application responsibility |
+| Secret-bearing API route | `functions/api/[[path]].ts` | `createCloudflarePagesFunction` |
+
+## Configuration boundary
+
+FliQ Market uses one Cloudflare Pages Function for two responsibilities:
+
+- `GET /api/config` returns the public `MERCHANT_WALLET_ADDRESS` and optional local checkout
+  override; and
+- `/api/unifi/payment/merchant/session/:sessionId` delegates to the widget's narrow server proxy,
+  which reads `UNIFI_API_KEY` only in the server runtime.
+
+```makefile
+UNIFI_API_KEY=
+MERCHANT_WALLET_ADDRESS=
+```
+
+The API base URL and web-app base URL are optional UniFi admin/local overrides. Leave them unset in
+a normal merchant production deployment.
+
+## What to copy—and what to replace
+
+Copy the integration boundaries: public recipient configuration, server-only API key, shared widget
+components, session persistence, same-origin status checks, and receipt reconciliation.
+
+Replace the demo commerce layer with your own trusted catalog, pricing, tax, inventory, order,
+fulfilment, and customer-support systems. FliQ Market demonstrates the payment integration; it is
+not a production order database.
+
+<Card title="Start your own integration" icon="bolt" href="/payment-gateway/quickstart">
+  Install the widget and reproduce the same browser/server boundary in your application.
+</Card>

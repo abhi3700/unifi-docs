@@ -1,0 +1,155 @@
+---
+title: "React integration"
+description: "Use the complete UniFi widget or compose its checkout components."
+icon: "react"
+---
+
+Import React components from `unifi-pay-widget/react` and load
+`unifi-pay-widget/styles.css` once. React 18 and 19 are supported.
+
+## Complete widget
+
+`UniFiPayWidget` is the shortest integration path. It combines asset/network selection, session
+creation, checkout launch, a 20-minute countdown, manual status checking, and paid/error callbacks.
+
+```tsx
+import { UniFiPayWidget } from "unifi-pay-widget/react";
+import "unifi-pay-widget/styles.css";
+
+export function StablecoinPayment({
+  total,
+  merchantWalletAddress,
+  saveSession,
+  markPaid,
+}: {
+  total: string;
+  merchantWalletAddress: string;
+  saveSession: (sessionId: string) => void;
+  markPaid: (receiptId: string) => void;
+}) {
+  return (
+    <UniFiPayWidget
+      amount={total}
+      recipient={merchantWalletAddress}
+      defaultValue={{ asset: "USDT", network: "Ethereum" }}
+      onSession={(session) => saveSession(session.sessionId)}
+      onPaid={(receiptId) => markPaid(receiptId)}
+      onError={(error) => console.error(error)}
+    />
+  );
+}
+```
+
+### Widget props
+
+| Prop | Required | Purpose |
+| --- | --- | --- |
+| `amount` | Yes | Decimal string or number to request |
+| `recipient` | Yes | Merchant wallet address that receives the payment |
+| `value`, `onChange` | No | Controlled asset/network selection |
+| `defaultValue` | No | Initial uncontrolled selection |
+| `onSession` | No | Persist the generated session ID against the order |
+| `onStatus` | No | Observe `pending`, `paid`, or `failed` results |
+| `onPaid` | No | Receive the receipt ID and payment session |
+| `onError` | No | Handle invalid input or unexpected failures |
+| `expirySeconds` | No | Override the default 1,200-second UI countdown |
+| `buttonLabel` | No | Replace the default Pay button label |
+| `disabled` | No | Disable pair selection and payment launch |
+| `openInNewTab` | No | Open the hosted checkout in a new tab; defaults to `true` |
+| `proxyBaseUrl` | No | Override the default same-origin `/api/unifi` proxy prefix |
+| `checkoutBaseUrl` | No | Admin/local override for the hosted checkout base URL |
+
+## Compose into an existing checkout
+
+Use `UniFiPaymentOption` when the merchant page owns its payment-method radio group, Pay button,
+status state, and order-completion UI.
+
+```tsx
+import { useState } from "react";
+import { UniFiPaymentOption } from "unifi-pay-widget/react";
+import {
+  createUniFiPayment,
+  type UniFiPaymentSelection,
+} from "unifi-pay-widget";
+
+const [selection, setSelection] = useState<UniFiPaymentSelection>({
+  asset: "USDT",
+  network: "Ethereum",
+});
+
+<UniFiPaymentOption
+  radioName="payment-method"
+  selected={paymentMethod === "unifi"}
+  onSelect={() => setPaymentMethod("unifi")}
+  value={selection}
+  onChange={setSelection}
+/>;
+
+function payWithUniFi() {
+  const payment = createUniFiPayment({
+    ...selection,
+    amount: order.total,
+    recipient: merchantWalletAddress,
+  });
+
+  saveSession(order.id, payment.sessionId);
+  window.open(payment.payUrl, "_blank", "noopener,noreferrer");
+}
+```
+
+<Frame caption="The pair picker is part of the merchant checkout, so the customer never loses order context.">
+  <img
+    className="w-full h-auto"
+    src="/images/payment-gateway/asset-network-picker.jpg"
+    alt="UniFi asset and network picker open over the FliQ Market checkout"
+  />
+</Frame>
+
+## Add the status sheet
+
+`UniFiPaymentStatusSheet` is controlled by your application. Supply its visibility, countdown,
+status text, generated payment URL, and handlers:
+
+```tsx
+<UniFiPaymentStatusSheet
+  open={statusOpen}
+  secondsLeft={secondsLeft}
+  statusText={statusText}
+  payUrl={payment?.payUrl}
+  onCheckStatus={checkCurrentPayment}
+  onClose={() => setStatusOpen(false)}
+/>;
+```
+
+When `checking` is omitted, the component manages its own button-loading state while it awaits
+`onCheckStatus`. The sheet handles Escape-to-close, initial close-button focus, body scroll locking,
+and a copyable hosted checkout link.
+
+## Link a receipt
+
+```tsx
+import { UniFiReceiptLink } from "unifi-pay-widget/react";
+
+<UniFiReceiptLink receiptId={order.unifiReceiptId}>
+  View payment receipt
+</UniFiReceiptLink>;
+```
+
+## Theme the components
+
+Class names use the `unifi-widget` prefix. Override CSS variables near the host checkout root:
+
+```css
+.my-checkout {
+  --unifi-primary: #321967;
+  --unifi-primary-hover: #281252;
+  --unifi-accent: #6d28d9;
+  --unifi-accent-soft: #f5f3ff;
+}
+```
+
+The widget inherits the host application's font.
+
+<Card title="See the complete FliQ Market composition" icon="cart-shopping" href="/payment-gateway/fliq-market">
+  Inspect how the payment option, hosted checkout, status sheet, and receipt link work together.
+</Card>

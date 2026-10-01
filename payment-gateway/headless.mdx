@@ -1,0 +1,116 @@
+---
+title: "Headless TypeScript"
+description: "Build custom payment UI with UniFi sessions, status checks, and receipt URLs."
+icon: "code"
+---
+
+The root `unifi-pay-widget` entry point has no React dependency. Use it when your application owns
+all presentation or uses another framework.
+
+## Create a payment
+
+```ts
+import { createUniFiPayment } from "unifi-pay-widget";
+
+const payment = createUniFiPayment({
+  asset: "USDC",
+  network: "Polygon",
+  amount: "25.00",
+  recipient: merchantWalletAddress,
+});
+
+await savePaymentAttempt({
+  orderId: order.id,
+  sessionId: payment.sessionId,
+  asset: payment.asset,
+  network: payment.network,
+  amount: payment.amount,
+  recipient: payment.recipient,
+});
+
+window.open(payment.payUrl, "_blank", "noopener,noreferrer");
+```
+
+`createUniFiPayment` validates and normalizes the input, generates a cryptographically random
+32-byte session ID encoded as 64 hexadecimal characters, and returns the hosted checkout URL.
+
+### Input
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `asset` | Yes | `USDT`, `USDC`, or `DAI` |
+| `network` | Yes | `Ethereum`, `Polygon`, or `Sepolia` |
+| `amount` | Yes | Positive decimal string or number |
+| `recipient` | Yes | Merchant receiving wallet address |
+| `sessionId` | No | Existing compatible ID when your order system pre-generates one |
+| `startTimestampSeconds` | No | Existing checkout start time for deterministic URL recreation |
+| `checkoutBaseUrl` | No | Local, staging, or self-hosted checkout override |
+
+<Note>
+  Do not encode customer names, email addresses, order details, or other private data into a custom
+  session ID.
+</Note>
+
+## Check payment status
+
+The client requests the same-origin `/api/unifi` proxy by default:
+
+```ts
+import { UniFiClient } from "unifi-pay-widget";
+
+const client = new UniFiClient();
+const status = await client.checkPaymentStatus(payment.sessionId);
+
+switch (status.state) {
+  case "pending":
+    showMessage("Payment is still pending.");
+    break;
+  case "paid":
+    await recordReceipt(order.id, status.receiptId);
+    showReceipt(status.receiptId);
+    break;
+  case "failed":
+    showError(status.message);
+    break;
+}
+```
+
+For a single check without retaining a client instance:
+
+```ts
+import { checkUniFiPaymentStatus } from "unifi-pay-widget";
+
+const status = await checkUniFiPaymentStatus(payment.sessionId);
+```
+
+The result is always one of:
+
+```ts
+{ state: "pending" }
+{ state: "paid", receiptId: string }
+{ state: "failed", message: string }
+```
+
+An empty upstream value maps to `pending`; a non-empty value maps to `paid` with the receipt ID.
+Network errors, non-success responses, and invalid response bodies map to `failed`.
+
+## Build a receipt link
+
+```ts
+import { createUniFiReceiptUrl } from "unifi-pay-widget";
+
+const receiptUrl = createUniFiReceiptUrl(receiptId);
+```
+
+Store the receipt ID itself in the merchant database. Recreate the public link when rendering order
+history, customer support tools, or a payment confirmation page.
+
+## Runtime requirements
+
+Core helpers use Web Crypto, Fetch, URL, Request, and Response APIs. Modern browsers, Node.js 20+,
+Cloudflare Workers/Pages, Deno, and Bun provide these primitives. You can supply a custom `fetch`
+implementation to `UniFiClient` for another compatible runtime or for tests.
+
+<Card title="Add the protected status route" icon="server" href="/payment-gateway/server-proxy">
+  The browser client intentionally talks to your server, never directly to the secret-bearing API.
+</Card>

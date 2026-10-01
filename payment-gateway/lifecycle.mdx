@@ -1,0 +1,120 @@
+---
+title: "Lifecycle and production readiness"
+description: "Persist orders, reconcile receipts, handle failures, and separate payment detection from chain finality."
+icon: "rotate"
+---
+
+A checkout session is temporary coordination state. A merchant order is a durable business record.
+Keep those responsibilities separate from the first line of code.
+
+## Merchant data model
+
+At minimum, persist:
+
+| Field | Why it matters |
+| --- | --- |
+| Merchant order ID | Stable idempotency and support reference |
+| Expected amount, asset, and network | Prevent browser-side order manipulation |
+| Expected recipient | Ensure funds are routed to the configured merchant wallet |
+| UniFi session ID | Correlate the hosted checkout and status request |
+| Session creation and expiry time | Handle abandoned or expired attempts |
+| UniFi receipt ID | Durable link to the detected payment |
+| Fulfilment status | Make fulfilment idempotent and auditable |
+| Finality status or confirmation count | Apply the risk policy for the selected network |
+
+Create a new payment attempt without mutating a completed attempt. Enforce one-way fulfilment state
+transitions so repeated status checks cannot ship or credit the same order twice.
+
+## Status returned by the widget
+
+The TypeScript client normalizes a status check into:
+
+| State | Meaning | Merchant action |
+| --- | --- | --- |
+| `pending` | No receipt ID is available for the session yet | Keep the order unpaid and let the customer check again |
+| `paid` | UniFi returned a receipt ID | Store the receipt, verify the order details, and apply your finality policy |
+| `failed` | The request, proxy, upstream API, or response failed | Show a recoverable message and preserve the order for retry |
+
+<Warning>
+  In the widget API, `paid` means that a receipt ID is available. It does not by itself prove the
+  number of blockchain confirmations required for irreversible fulfilment.
+</Warning>
+
+## Temporary session lookup
+
+UniFi retains the `session_id → receipt_id` mapping in Redis for two hours. This window is designed
+for checkout polling and return-to-merchant status checks.
+
+Before that lookup expires:
+
+1. record the session ID against the order;
+2. store the returned receipt ID durably;
+3. verify the receipt belongs to the expected order details; and
+4. move fulfilment through your own idempotent state machine.
+
+Do not use the temporary lookup as customer order history, accounting storage, or the only way to
+recover a receipt.
+
+## Receipt detection and finality
+
+These are separate milestones:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Created
+    Created --> Pending: checkout opened
+    Pending --> ReceiptDetected: receipt ID returned
+    Pending --> Expired: session window elapsed
+    Pending --> Failed: unrecoverable attempt
+    ReceiptDetected --> Finalized: confirmation policy satisfied
+    ReceiptDetected --> Reorged: chain reorganization
+    Finalized --> Fulfilled: idempotent merchant action
+```
+
+The appropriate confirmation policy depends on the selected network and the risk of the goods or
+service. Digital access, high-value physical goods, withdrawals, and irreversible account credits
+may require different policies.
+
+## Failure handling
+
+- **Customer closed the UniFi tab:** keep the merchant order pending and retain the pay link until
+  the UI expiry.
+- **Status remains pending:** allow another manual check without creating a second order.
+- **Session expired:** create a new payment attempt with a new session ID; preserve the old attempt
+  for auditability.
+- **API key rejected:** disable fulfilment, alert the operator, and correct the server secret.
+- **UniFi API unavailable:** return a recoverable message and retry with bounded backoff from the
+  merchant workflow.
+- **Receipt reorged or failed:** keep fulfilment blocked or begin the merchant's recovery process.
+
+## Production checklist
+
+### Security
+
+- [ ] The API key exists only in the server secret store.
+- [ ] The browser calls a same-origin or explicitly allowlisted proxy.
+- [ ] Amount, asset, network, and recipient originate from a trusted order record.
+- [ ] The proxy exposes only the required status route.
+- [ ] No signing material or API key appears in logs.
+
+### Checkout behavior
+
+- [ ] Successful Sepolia payment and receipt link.
+- [ ] Pending payment and repeated manual status checks.
+- [ ] Expired session and a new payment attempt.
+- [ ] Invalid or rejected API key.
+- [ ] Upstream timeout or outage.
+- [ ] Narrow mobile viewport, keyboard navigation, Escape-to-close, and return from the UniFi tab.
+
+### Operations
+
+- [ ] Order, session ID, and receipt ID are stored durably.
+- [ ] Fulfilment is idempotent.
+- [ ] Monitoring distinguishes merchant errors, proxy errors, and upstream errors.
+- [ ] Rate limits match expected checkout traffic.
+- [ ] The tested widget commit is pinned in the lockfile and deployed with `npm ci`.
+- [ ] The network-specific confirmation policy is documented and enforced.
+
+<Card title="Review the server boundary" icon="shield-halved" href="/payment-gateway/server-proxy">
+  Confirm secret handling, route allowlisting, CORS, and response behavior before production.
+</Card>
