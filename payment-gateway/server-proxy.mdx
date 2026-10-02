@@ -1,6 +1,6 @@
 ---
 title: "Server proxy"
-description: "Keep the UniFi API key server-side behind a narrow payment-status route."
+description: "Keep the UniFi API key server-side behind narrow session and receipt-status routes."
 icon: "server"
 ---
 
@@ -8,14 +8,19 @@ The payment widget checks status through a same-origin merchant route. The serve
 the request, adds `UNIFI_API_KEY`, calls the UniFi API, and returns the upstream status response.
 
 ```mermaid
-flowchart LR
-    Browser[Browser] -->|GET /api/unifi/payment/merchant/session/:id| Proxy[Merchant proxy]
+flowchart TD
+    Browser[Browser] -->|GET session/:id| Proxy[Merchant proxy]
+    Browser -->|GET receipt/:receiptId| Proxy
     Key[(UNIFI_API_KEY)] -. server environment .-> Proxy
     Proxy -->|Bearer token| API[api.payunifi.com]
 ```
 
-The proxy is intentionally narrow. It accepts only `GET` and `OPTIONS`, and only the payment-status
-path containing a valid 64-character hexadecimal session ID. It is not an arbitrary API passthrough.
+The proxy is intentionally narrow. It accepts only `GET` and `OPTIONS`, and only these paths:
+
+- `/payment/merchant/session/:sessionId` with a valid 64-character hexadecimal session ID; and
+- `/payment/onchain/receipt/:receiptId` with a valid UniFi receipt ID.
+
+It is not an arbitrary API passthrough.
 
 ## Cloudflare Pages
 
@@ -93,7 +98,7 @@ secret-bearing proxy.
 - Keep `UNIFI_API_KEY` in the runtime's encrypted secret store.
 - Search generated JavaScript, HTML, source maps, logs, and browser requests for accidental key
   exposure before launch.
-- Keep the allowlist limited to the payment-status route.
+- Keep the allowlist limited to the session lookup and single-receipt status routes.
 - Add merchant-side monitoring and rate limits appropriate for checkout traffic.
 - Reject status checks that are not associated with a known merchant order when your server owns
   that association.

@@ -40,6 +40,9 @@ The TypeScript client normalizes a status check into:
   number of blockchain confirmations required for irreversible fulfilment.
 </Warning>
 
+The session result uses the historical name `paid`, but merchants should present it as **Payment
+submitted** or **Order confirmation in progress** until the receipt itself reaches `Finalized`.
+
 ## Temporary session lookup
 
 UniFi retains the `session_id → receipt_id` mapping in Redis for two hours. This window is designed
@@ -75,6 +78,22 @@ The appropriate confirmation policy depends on the selected network and the risk
 service. Digital access, high-value physical goods, withdrawals, and irreversible account credits
 may require different policies.
 
+## Receipt refresh policy
+
+After the session lookup returns a receipt ID:
+
+1. fetch `/payment/onchain/receipt/:receiptId` immediately;
+2. show `Processing` as payment submitted and `Confirmed` as confirmed on-chain but still waiting
+   for finality;
+3. while either state remains active, refresh automatically every 15 minutes to conserve API
+   credits;
+4. provide a clearly labeled refresh icon or button for an immediate customer-requested check; and
+5. stop automatic checks for `Finalized`, `Failed`, or `Reorged`.
+
+Only `Finalized` should change the merchant UI to **Order confirmed**. If a refresh request fails,
+preserve the last known state and keep fulfilment blocked rather than treating the transport error
+as a failed or finalized payment.
+
 ## Failure handling
 
 - **Customer closed the UniFi tab:** keep the merchant order pending and retain the pay link until
@@ -101,6 +120,8 @@ may require different policies.
 
 - [ ] Successful Sepolia payment and receipt link.
 - [ ] Pending payment and repeated manual status checks.
+- [ ] Receipt `Processing` and `Confirmed` states, 15-minute automatic refresh, and immediate manual refresh.
+- [ ] `Finalized` is the only state that confirms the order; `Failed` and `Reorged` remain unfulfilled.
 - [ ] Expired session and a new payment attempt.
 - [ ] Invalid or rejected API key.
 - [ ] Upstream timeout or outage.

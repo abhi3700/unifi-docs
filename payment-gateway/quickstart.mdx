@@ -88,8 +88,9 @@ type Env = {
 export const onRequest = createCloudflarePagesFunction<Env>();
 ```
 
-The browser now checks payment status through the same-origin
-`/api/unifi/payment/merchant/session/:sessionId` route. Most production merchants should leave
+The browser now checks the session through
+`/api/unifi/payment/merchant/session/:sessionId` and the resulting receipt through
+`/api/unifi/payment/onchain/receipt/:receiptId`. Most production merchants should leave
 `UNIFI_API_BASE_URL` unset and use the package's built-in production endpoint.
 
 ## 4. Render the widget
@@ -110,7 +111,7 @@ export function Checkout({ merchantWalletAddress }: {
         console.log("UniFi session", session.sessionId);
       }}
       onPaid={(receiptId) => {
-        console.log("UniFi payment confirmed", receiptId);
+        console.log("UniFi receipt detected", receiptId);
       }}
       onError={(error) => console.error(error)}
     />
@@ -123,7 +124,8 @@ export function Receipt({ receiptId }: { receiptId: string }) {
 ```
 
 Required props are `amount` and `recipient`. The widget handles pair selection, session creation,
-hosted-checkout launch, the 20-minute countdown, manual status checking, and the paid callback.
+hosted-checkout launch, the 15-minute countdown, manual status checking, and the receipt-detected
+callback.
 
 ## 5. Test the complete flow
 
@@ -140,7 +142,11 @@ hosted-checkout launch, the 20-minute countdown, manual status checking, and the
   </Step>
   <Step title="Complete and check">
     Authorize the payment, return to the merchant tab, and use the status action. A successful check
-    returns the receipt ID through `onPaid`.
+    returns the receipt ID through `onPaid`. The order is not confirmed yet.
+  </Step>
+  <Step title="Wait for finality">
+    Check the receipt immediately, then every 15 minutes while it is `Processing` or `Confirmed`.
+    Offer a manual refresh action and confirm the order only after `Finalized`.
   </Step>
   <Step title="Verify your records">
     Confirm the order now contains its UniFi session ID and receipt ID. Do not rely on the temporary

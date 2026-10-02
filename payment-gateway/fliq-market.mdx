@@ -71,6 +71,18 @@ The status check calls the merchant's `/api/unifi` route; the API key never ente
   />
 </Frame>
 
+The first successful session lookup returns a receipt ID, not proof of chain finality. FliQ Market
+then calls `/api/unifi/payment/onchain/receipt/:receiptId` immediately and presents a distinct order
+state:
+
+- `Processing` — **Payment submitted**; the order is not confirmed;
+- `Confirmed` — included on-chain and waiting for finality;
+- `Finalized` — payment complete and the order can be confirmed; and
+- `Failed` or `Reorged` — unsuccessful terminal state, so the order remains unconfirmed.
+
+While finality is pending, the page checks again every 15 minutes to conserve API credits. A refresh
+icon lets the customer request an immediate check without waiting for the next automatic interval.
+
 ## Integration map
 
 | Concern | FliQ Market implementation | Widget API |
@@ -80,6 +92,7 @@ The status check calls the merchant's `/api/unifi` route; the API key never ente
 | Session and hosted URL | `src/App.tsx` | `createUniFiPayment` |
 | Status sheet | `src/App.tsx` | `UniFiPaymentStatusSheet` |
 | Status request | `src/App.tsx` | `checkUniFiPaymentStatus` |
+| Receipt finality | `src/App.tsx` | `GET /payment/onchain/receipt/:receiptId` |
 | Receipt link | `src/App.tsx` | `UniFiReceiptLink` |
 | Public merchant configuration | `GET /api/config` | Host-application responsibility |
 | Secret-bearing API route | `functions/api/[[path]].ts` | `createCloudflarePagesFunction` |

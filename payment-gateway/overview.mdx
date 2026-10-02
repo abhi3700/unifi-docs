@@ -48,11 +48,14 @@ layer allowed to access `UNIFI_API_KEY`.
 ```mermaid
 flowchart LR
     Browser[Merchant checkout] -->|Create session and open URL| Checkout[UniFi hosted checkout]
-    Browser -->|Same-origin status request| Proxy[Merchant server proxy]
+    Browser -->|Session or receipt-status request| Proxy[Merchant server proxy]
     Secret[(UNIFI_API_KEY)] -. server only .-> Proxy
     Proxy -->|Authenticated status request| API[UniFi API]
     API -->|Pending or receipt ID| Proxy
-    Proxy -->|Normalized status| Browser
+    Proxy -->|Receipt detected| Browser
+    Browser -->|Immediate, every 15 min, or manual receipt check| Proxy
+    API -->|Processing, Confirmed, Finalized, Failed, or Reorged| Proxy
+    Proxy -->|Latest receipt status| Browser
 ```
 
 <Note>
@@ -79,9 +82,10 @@ flowchart LR
     The merchant browser requests `/api/unifi/payment/merchant/session/:sessionId`. The same-origin
     server proxy validates the route and adds the API key server-side.
   </Step>
-  <Step title="Persist the receipt and fulfil">
-    Store the confirmed receipt ID with the order. Apply the finality policy appropriate for the
-    selected network before irreversible fulfilment.
+  <Step title="Track finality and fulfil">
+    Store the detected receipt ID with the order, check its receipt status immediately, and refresh
+    non-terminal states every 15 minutes or when the customer requests a manual check. Keep
+    `Processing` and `Confirmed` in progress; confirm and fulfil the order only after `Finalized`.
   </Step>
 </Steps>
 

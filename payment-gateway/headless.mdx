@@ -67,7 +67,7 @@ switch (status.state) {
     break;
   case "paid":
     await recordReceipt(order.id, status.receiptId);
-    showReceipt(status.receiptId);
+    showMessage("Payment submitted. Waiting for on-chain finality.");
     break;
   case "failed":
     showError(status.message);
@@ -93,6 +93,35 @@ The result is always one of:
 
 An empty upstream value maps to `pending`; a non-empty value maps to `paid` with the receipt ID.
 Network errors, non-success responses, and invalid response bodies map to `failed`.
+
+The `paid` state is the historical name for **receipt detected**. Check the receipt before confirming
+the order:
+
+```ts
+import { checkUniFiReceiptStatus } from "unifi-pay-widget";
+
+const result = await checkUniFiReceiptStatus(receiptId);
+
+if (result.state === "received") {
+  switch (result.receipt.status) {
+    case "Processing":
+    case "Confirmed":
+      showMessage("Order confirmation in progress.");
+      break;
+    case "Finalized":
+      await confirmOrderIdempotently(order.id);
+      break;
+    case "Failed":
+    case "Reorged":
+      keepOrderUnconfirmed(order.id);
+      break;
+  }
+}
+```
+
+Check once immediately after receipt detection. If the state is `Processing` or `Confirmed`, wait 15
+minutes before the next automatic check to conserve API credits. A user-triggered refresh may check
+immediately. Stop automatic checks after `Finalized`, `Failed`, or `Reorged`.
 
 ## Build a receipt link
 
