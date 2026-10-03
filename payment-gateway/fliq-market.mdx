@@ -17,71 +17,156 @@ demo-only. Use Sepolia when exercising the public example.
   </Card>
 </CardGroup>
 
-## 1. UniFi joins the merchant checkout
+## Complete payment journey
 
-`UniFiPaymentOption` participates in the same payment-method group as card and UPI. The merchant
-continues to own product quantity, tax, order totals, the primary Pay button, and completion UI.
+The landing page uses FliQ Market to show the full reference flow—from browsing a product through
+receipt finality and order fulfillment. The merchant keeps ownership of the checkout and order,
+while the widget supplies the reusable UniFi payment, status, and receipt experience.
 
-<Frame caption="FliQ Market keeps the UniFi option and order summary together on desktop.">
-  <img
-    className="w-full h-auto"
-    src="/images/payment-gateway/merchant-checkout.webp"
-    alt="FliQ Market checkout showing UniFi selected and an order total of 1.40 dollars"
-  />
-</Frame>
+<Steps>
+  <Step title="Browse FliQ Market">
+    Start with a product and continue into the merchant checkout. Product details, pricing, delivery
+    estimates, and cart behavior remain application-owned.
 
-## 2. The payer chooses an exact pair
+    <Frame caption="Start with a product in the FliQ Market storefront.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/0_home_mobile.webp"
+        alt="FliQ Market mobile storefront showing products with prices, delivery estimates, and Buy actions"
+      />
+    </Frame>
+  </Step>
 
-The widget's bottom sheet offers USDT, USDC, and DAI across Ethereum, Polygon, and Sepolia. Closing
-or confirming the sheet returns the selected pair to the host checkout; the widget does not silently
-substitute another pair.
+  <Step title="Select UniFi at checkout">
+    `UniFiPaymentOption` joins the same payment-method group as card and UPI. The merchant still owns
+    quantity, tax, the trusted order total, the primary Pay button, and completion UI.
 
-<Frame caption="The responsive asset and network picker is supplied by the widget library.">
-  <img
-    className="w-full h-auto"
-    src="/images/payment-gateway/asset-network-picker.webp"
-    alt="Asset and network picker showing USDT, USDC, DAI, Ethereum, Polygon and Sepolia"
-  />
-</Frame>
+    <Frame caption="Choose UniFi beside familiar payment methods without leaving the merchant checkout.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/1_checkout_mobile.webp"
+        alt="FliQ Market mobile checkout with UniFi selected beside card and UPI payment methods"
+      />
+    </Frame>
+  </Step>
 
-## 3. UniFi handles payment authorization
+  <Step title="Choose asset & network">
+    The widget's responsive picker offers USDT, USDC, and DAI across Ethereum, Polygon, and Sepolia.
+    Confirming the sheet returns the exact pair to the host checkout.
 
-When the customer presses Pay, FliQ Market calls `createUniFiPayment` with the selected pair, trusted
-order total, and configured merchant wallet. It records the session ID, opens the generated hosted
-checkout URL, and leaves the merchant tab available for reconciliation.
+    <Frame caption="Keep asset and network selection inside the merchant checkout.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/2_unifi_pay_select_asset_network_mobile.webp"
+        alt="FliQ Market asset and network picker for USDT, USDC, DAI, Ethereum, Polygon and Sepolia"
+      />
+    </Frame>
+  </Step>
 
-<Frame caption="The hosted UniFi flow presents the exact stablecoin, network, amount, fee estimate, and recipient.">
-  <img
-    style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
-    src="/images/payment-gateway/hosted-payment.webp"
-    alt="UniFi hosted checkout ready to confirm a 1.4 USDT payment on Sepolia"
-  />
-</Frame>
+  <Step title="Authorize with UniFi">
+    When the customer presses Pay, FliQ Market starts a payment with the selected pair, trusted order
+    total, and configured merchant wallet. UniFi opens the hosted flow with the exact amount,
+    recipient, and selected pair.
 
-## 4. The merchant reconciles the result
+    <Frame caption="Authorize the payment in UniFi's hosted payment flow.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/3_unifi_payment_gateway_mobile.webp"
+        alt="UniFi hosted payment screen ready for the payer to confirm a USDT payment"
+      />
+    </Frame>
+  </Step>
 
-FliQ Market opens `UniFiPaymentStatusSheet` with the pay link, countdown, and manual status action.
-The status check calls the merchant's `/api/unifi` route; the API key never enters the browser.
+  <Step title="Submit the payment">
+    UniFi reports when the payment has been submitted and lets the payer return to FliQ Market.
+    Submission is an intermediate state; it does not mean the payment is finalized on-chain.
 
-<Frame caption="The status sheet keeps the payment link available and lets the customer check after returning from UniFi.">
-  <img
-    style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
-    src="/images/payment-gateway/payment-status.webp"
-    alt="FliQ Market UniFi status sheet waiting for payment and showing a check payment status button"
-  />
-</Frame>
+    <Frame caption="Return to the merchant after UniFi submits the payment.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/4_payment_submitted_mobile.webp"
+        alt="UniFi payment submitted confirmation with an action to close the hosted page"
+      />
+    </Frame>
+  </Step>
 
-The first successful session lookup returns a receipt ID, not proof of chain finality. FliQ Market
-then calls `/api/unifi/payment/onchain/receipt/:receiptId` immediately and presents a distinct order
-state:
+  <Step title="Check payment status">
+    FliQ Market opens `UniFiPaymentStatusSheet` with the pay link and a manual status action. Status
+    requests go through the merchant's `/api/unifi` route, so the API key never enters the browser.
+
+    <Frame caption="Keep the pay link available while the merchant waits for confirmation.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/5_wait_for_payment_mobile.webp"
+        alt="FliQ Market waiting for UniFi payment confirmation with pay-link and status actions"
+      />
+    </Frame>
+  </Step>
+
+  <Step title="Follow finality">
+    The first successful session lookup returns a receipt ID, not proof of finality. FliQ Market
+    checks that receipt immediately and keeps the order unconfirmed while the on-chain payment is
+    `Processing` or `Confirmed`.
+
+    <Frame caption="Show the confirmed on-chain payment while the order waits for finality.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/6_payment_finalizing_mobile.webp"
+        alt="FliQ Market order confirmation in progress with on-chain confirmation and finality status"
+      />
+    </Frame>
+  </Step>
+
+  <Step title="Keep the receipt">
+    `UniFiReceiptLink` keeps the receipt reachable from the merchant experience. The UniFi receipt
+    records the transfer, blockchain reference, and finality state.
+
+    <Frame caption="Retain the UniFi receipt and its confirmation progress.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/7_pay_receipt_mobile.webp"
+        alt="UniFi Pay receipt showing the transfer, blockchain reference and confirmation progress"
+      />
+    </Frame>
+  </Step>
+
+  <Step title="Track the order">
+    FliQ Market persists the demo order in the browser and carries the payment state into its order
+    and delivery timeline. Pending UniFi orders resume receipt checks when the Orders page opens.
+
+    <Frame caption="Carry payment state into the merchant order and delivery timeline.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/8_track_order_mobile.webp"
+        alt="FliQ Market orders page showing payment finality and shipment tracking"
+      />
+    </Frame>
+  </Step>
+
+  <Step title="Dispatch the order">
+    Only `Finalized` confirms the UniFi payment. The demo then moves the order into preparation and,
+    after five minutes, marks it dispatched with an estimated delivery date.
+
+    <Frame caption="Move the finalized payment into fulfillment.">
+      <img
+        style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
+        src="/images/payment-gateway/9_payment_finalized_order_dispatched_mobile.webp"
+        alt="FliQ Market order marked dispatched after the UniFi payment finalized"
+      />
+    </Frame>
+  </Step>
+</Steps>
+
+## Payment states
 
 - `Processing` — **Payment submitted**; the order is not confirmed;
 - `Confirmed` — included on-chain and waiting for finality;
-- `Finalized` — payment complete and the order can be confirmed; and
+- `Finalized` — payment complete and the order can enter fulfillment; and
 - `Failed` or `Reorged` — unsuccessful terminal state, so the order remains unconfirmed.
 
 While finality is pending, the page checks again every 15 minutes to conserve API credits. A refresh
 icon lets the customer request an immediate check without waiting for the next automatic interval.
+Terminal states remove that action because no further status check is needed.
 
 ## Integration map
 
@@ -89,11 +174,12 @@ icon lets the customer request an immediate check without waiting for the next a
 | --- | --- | --- |
 | Import shared styles | `src/main.tsx` | `unifi-pay-widget/styles.css` |
 | Payment method and pair picker | `src/App.tsx` | `UniFiPaymentOption` |
-| Session and hosted URL | `src/App.tsx` | `createUniFiPayment` |
+| Session, hosted URL, and status | `src/App.tsx` | `useUniFiPayment` |
 | Status sheet | `src/App.tsx` | `UniFiPaymentStatusSheet` |
-| Status request | `src/App.tsx` | `checkUniFiPaymentStatus` |
-| Receipt finality | `src/App.tsx` | `GET /payment/onchain/receipt/:receiptId` |
-| Receipt link | `src/App.tsx` | `UniFiReceiptLink` |
+| Receipt finality | `src/App.tsx`, `src/orders/OrdersView.tsx` | `UniFiReceiptStatusCard` |
+| Receipt link | `src/App.tsx`, `src/components/PaymentMethodSummary.tsx` | `UniFiReceiptLink` |
+| Browser-local order storage | `src/orders/db.ts`, `src/orders/model.ts` | Host-application responsibility |
+| Shipment timeline | `src/orders/OrdersView.tsx` | Host-application responsibility |
 | Public merchant configuration | `GET /api/config` | Host-application responsibility |
 | Secret-bearing API route | `functions/api/[[path]].ts` | `createCloudflarePagesFunction` |
 
