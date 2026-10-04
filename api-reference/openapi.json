@@ -3,7 +3,7 @@
   "info": {
     "title": "UniFi Public API",
     "version": "1.0.0",
-    "description": "Production API operations exposed through the public UniFi developer kit. Internal administration, worker, dashboard, support, scheduling, and Falcon orchestration routes are intentionally excluded."
+    "description": "Production API operations organized around the UniFi payment lifecycle. Internal administration, worker, dashboard, support, scheduling, and Falcon orchestration routes are intentionally excluded."
   },
   "servers": [
     {
@@ -18,48 +18,28 @@
   ],
   "tags": [
     {
-      "name": "Service",
-      "description": "Service availability and dependency health."
+      "name": "Health",
+      "description": "Check API process availability and dependency health."
     },
     {
-      "name": "API keys",
-      "description": "Manage named API credentials for a UniFi user."
-    },
-    {
-      "name": "Authentication",
-      "description": "Authenticate a self-custodial wallet with a signed challenge."
-    },
-    {
-      "name": "Profile",
-      "description": "Read and update a UniFi user profile."
+      "name": "Deposit",
+      "description": "Resolve deposit addresses for a UniFi wallet."
     },
     {
       "name": "Wallet",
-      "description": "Resolve wallet addresses and stablecoin balances."
+      "description": "Read stablecoin balances across wallets and chains."
     },
     {
-      "name": "Payment setup",
-      "description": "Read spendable balances and estimated payment fees."
+      "name": "Preflight",
+      "description": "Check balances, allowances, and estimated fees before submitting a payment."
     },
     {
-      "name": "Payments",
-      "description": "Create managed-wallet stablecoin payments."
+      "name": "Pay",
+      "description": "Create managed-wallet, merchant, and self-custodial payments."
     },
     {
-      "name": "Receipts",
-      "description": "Read payment status and paginated history."
-    },
-    {
-      "name": "Notifications",
-      "description": "Notify a payer about a payment request."
-    },
-    {
-      "name": "Sessions",
-      "description": "Create and retrieve short-lived UniFi sessions."
-    },
-    {
-      "name": "Testnet",
-      "description": "Request test stablecoins on supported public test networks."
+      "name": "History",
+      "description": "Track payment sessions, receipts, finality, and history."
     }
   ],
   "paths": {
@@ -69,7 +49,7 @@
         "summary": "Check API process availability",
         "description": "Lightweight liveness check. It does not test the database, blockchain RPCs, or every downstream dependency.",
         "tags": [
-          "Service"
+          "Health"
         ],
         "security": [],
         "responses": {
@@ -103,7 +83,7 @@
         "summary": "Check API dependencies",
         "description": "Runs the deeper service health check, including production dependencies. This operation consumes protected API capacity.",
         "tags": [
-          "Service"
+          "Health"
         ],
         "responses": {
           "200": {
@@ -145,452 +125,13 @@
         }
       }
     },
-    "/api_key/generate/{user_id}/{name}": {
-      "post": {
-        "operationId": "generateApiKey",
-        "summary": "Generate a named API key",
-        "description": "Creates an API key for the authenticated user. Store the returned value immediately in a server-side secret manager.",
-        "tags": [
-          "API keys"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/UserId"
-          },
-          {
-            "$ref": "#/components/parameters/ApiKeyName"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The new API key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StringResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "data": "ufi_live_redacted"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
-    "/api/{user_id}": {
-      "get": {
-        "operationId": "getApiAccount",
-        "summary": "Get API plan and keys",
-        "description": "Returns the user's API plan metadata and named API-key records.",
-        "tags": [
-          "API keys"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/UserId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "API plan and key information.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiAccountResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "data": {
-                    "metadata": {
-                      "plan": "Free",
-                      "duration": "Month",
-                      "credits": 100000,
-                      "img_credits": 0,
-                      "expiry_at": 1792584000
-                    },
-                    "keys": [
-                      {
-                        "name": "backend",
-                        "value": "ufi_live_redacted",
-                        "created_at": 1789992000
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
-    "/api_key/del/{user_id}/{name}": {
-      "delete": {
-        "operationId": "deleteApiKey",
-        "summary": "Delete a named API key",
-        "description": "Deletes the API key identified by its user-scoped name.",
-        "tags": [
-          "API keys"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/UserId"
-          },
-          {
-            "$ref": "#/components/parameters/ApiKeyName"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The key was deleted.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "message": "The API key has been deleted successfully."
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
-    "/auth/challenge/{address}": {
-      "post": {
-        "operationId": "createWalletChallenge",
-        "summary": "Create a wallet sign-in challenge",
-        "description": "Creates a short-lived, single-use challenge for an EVM wallet address.",
-        "tags": [
-          "Authentication"
-        ],
-        "security": [],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/Address"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AuthChallengeRequest"
-              },
-              "example": {
-                "domain": "app.payunifi.com",
-                "uri": "https://app.payunifi.com",
-                "chain_id": 1
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Challenge message, nonce, and expiration.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthChallengeResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "data": {
-                    "message": "Sign in to UniFi...",
-                    "nonce": "single-use-nonce",
-                    "expires_at": 1790000000
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
-    "/auth/generate_jwt/{address}": {
-      "post": {
-        "operationId": "exchangeWalletChallenge",
-        "summary": "Exchange a signed challenge for a JWT",
-        "description": "Verifies the exact challenge message and signature, consumes the nonce, and returns a bearer JWT.",
-        "tags": [
-          "Authentication"
-        ],
-        "security": [],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/Address"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JwtExchangeRequest"
-              },
-              "example": {
-                "message": "Sign in to UniFi...",
-                "signature": "0xsignature",
-                "nonce": "single-use-nonce",
-                "platform": "Web"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "A bearer JWT.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StringResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "data": "eyJhbGciOi..."
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
-    "/profile/{user_id}": {
-      "get": {
-        "operationId": "getUserProfile",
-        "summary": "Get a user profile",
-        "description": "Returns the public profile fields available to the authenticated caller.",
-        "tags": [
-          "Profile"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/UserId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The user profile.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserProfileResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "data": {
-                    "name": "Ada Lovelace",
-                    "nickname": "ada",
-                    "preferred_fiat_currency": "USD"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      },
-      "post": {
-        "operationId": "setUserProfile",
-        "summary": "Create or update a user profile",
-        "description": "Sets the supplied profile fields for the authenticated user.",
-        "tags": [
-          "Profile"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/UserId"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserProfile"
-              },
-              "example": {
-                "name": "Ada Lovelace",
-                "nickname": "ada",
-                "preferred_fiat_currency": "USD"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The profile was saved.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "message": "User profile saved successfully."
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
     "/wallet/address/{user_id}/{chain}": {
       "get": {
         "operationId": "getUserWalletAddress",
         "summary": "Get a wallet address for a chain",
         "description": "Resolves the user's wallet address for the requested chain.",
         "tags": [
-          "Wallet"
+          "Deposit"
         ],
         "parameters": [
           {
@@ -645,7 +186,7 @@
         "summary": "Get wallet addresses by protocol",
         "description": "Returns the user's wallet address for every supported chain protocol.",
         "tags": [
-          "Wallet"
+          "Deposit"
         ],
         "parameters": [
           {
@@ -696,7 +237,7 @@
     "/wallet/onchain/balance/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getStablecoinBalance",
-        "summary": "Get one stablecoin balance",
+        "summary": "Get a stablecoin balance",
         "description": "Returns the formatted net balance for one user, chain, and stablecoin.",
         "tags": [
           "Wallet"
@@ -1041,7 +582,7 @@
         "summary": "Get spendable payment balance",
         "description": "Returns the user's formatted net balance before creating a payment.",
         "tags": [
-          "Payment setup"
+          "Preflight"
         ],
         "parameters": [
           {
@@ -1099,7 +640,7 @@
         "summary": "Estimate the payment fee",
         "description": "Returns the formatted estimated total stablecoin fee for the selected route.",
         "tags": [
-          "Payment setup"
+          "Preflight"
         ],
         "parameters": [
           {
@@ -1157,7 +698,7 @@
         "summary": "Get payment balance and fee",
         "description": "Combines spendable balance, estimated fee, and allowance state for the selected route.",
         "tags": [
-          "Payment setup"
+          "Preflight"
         ],
         "parameters": [
           {
@@ -1213,39 +754,224 @@
         }
       }
     },
-    "/faucet/{user_id}/{coin}/{chain}/{create_session}": {
+    "/payment/onchain/balance_est_fee_ncw/{user_id}/{is_fee_incl}": {
       "post": {
-        "operationId": "requestTestnetFaucet",
-        "summary": "Request testnet stablecoins",
-        "description": "Requests stablecoins for a registered user on a supported public testnet. This operation is not available for mainnet funding.",
+        "operationId": "getSelfCustodialPaymentBalanceAndFee",
+        "summary": "Prepare a self-custodial payment",
+        "description": "Checks the sender balance and Permit2 allowance, then estimates the payment fee for one self-custodial payment.",
         "tags": [
-          "Testnet"
+          "Preflight"
         ],
         "parameters": [
           {
             "$ref": "#/components/parameters/UserId"
           },
           {
-            "$ref": "#/components/parameters/Coin"
+            "$ref": "#/components/parameters/IsFeeInclusive"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentPayload"
+              },
+              "example": {
+                "chain": "Sepolia",
+                "coin": "USDT",
+                "to_address": "0x2222222222222222222222222222222222222222",
+                "amount": "10.25",
+                "memo": "General"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The balance, allowance, and estimated fee required for the payment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrePayNcwResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "allowance": {
+                      "is_suff": false,
+                      "required_allowance": "10.37",
+                      "is_max_allowance": false
+                    },
+                    "balance": "125.50",
+                    "est_fee": "0.12"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/balance_est_fee_ncw_bulkpay/{user_id}/{is_fee_incl}": {
+      "post": {
+        "operationId": "getSelfCustodialBulkPaymentBalanceAndFee",
+        "summary": "Prepare self-custodial bulk payments",
+        "description": "Checks balances and Permit2 allowances by coin, then estimates the total fee for a self-custodial bulk payment.",
+        "tags": [
+          "Preflight"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/IsFeeInclusive"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkPayItemRequest"
+              },
+              "example": {
+                "chain": "Sepolia",
+                "items": [
+                  {
+                    "coin": "USDT",
+                    "to_address": "0x2222222222222222222222222222222222222222",
+                    "amount": "10.25",
+                    "memo": "BulkPay"
+                  },
+                  {
+                    "coin": "USDC",
+                    "to_address": "0x3333333333333333333333333333333333333333",
+                    "amount": "4.50",
+                    "memo": "BulkPay"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Balances and allowances by coin, plus the total estimated fee.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrePayNcwBulkResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "coin_entries": {
+                      "USDT": {
+                        "allowance": {
+                          "is_suff": false,
+                          "required_allowance": "10.25",
+                          "is_max_allowance": false
+                        },
+                        "balance": "125.50"
+                      },
+                      "USDC": {
+                        "allowance": {
+                          "is_suff": true,
+                          "required_allowance": "0",
+                          "is_max_allowance": false
+                        },
+                        "balance": "50.00"
+                      }
+                    },
+                    "tot_est_fee": "0.18"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/ncw/pre_fetch_balance_est_fee_params/{user_id}/{chain}/{coin}": {
+      "get": {
+        "operationId": "getSelfCustodialPaymentCalculationInputs",
+        "summary": "Get self-custodial fee inputs",
+        "description": "Returns raw allowance, balance, gas, and price inputs for client-side self-custodial payment calculations.",
+        "tags": [
+          "Preflight"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
           },
           {
             "$ref": "#/components/parameters/Chain"
           },
           {
-            "$ref": "#/components/parameters/CreateSession"
+            "$ref": "#/components/parameters/Coin"
           }
         ],
         "responses": {
           "200": {
-            "description": "A session identifier when requested; otherwise an empty string.",
+            "description": "The raw inputs used to calculate balance and fee requirements.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StringResponse"
+                  "$ref": "#/components/schemas/PrePayNcwParamsResponse"
                 },
                 "example": {
                   "status": "200 OK",
-                  "data": "session_123"
+                  "data": {
+                    "allowance": "0",
+                    "balance": "125.50",
+                    "gas_price": 1000000000,
+                    "gas_token_price": 2500.25,
+                    "coin_price": 1.0
+                  }
                 }
               }
             }
@@ -1280,7 +1006,7 @@
         "summary": "Create a stablecoin payment",
         "description": "Submits a payment from a UniFi-managed wallet. The response is a receipt ID; query the receipt endpoint for settlement progress.",
         "tags": [
-          "Payments"
+          "Pay"
         ],
         "parameters": [
           {
@@ -1348,42 +1074,543 @@
         }
       }
     },
-    "/payment/onchain/fliq/notify/payer/{pid}/{chain}/{coin}/{to_address}/{amount}": {
-      "get": {
-        "operationId": "notifyFliqPayer",
-        "summary": "Notify a payer",
-        "description": "Sends a payment-request notification to the payer identified by the UniFi payment ID.",
+    "/payment/onchain/merchant/{user_id}/{is_fee_incl}/{session_id}": {
+      "post": {
+        "operationId": "createManagedWalletMerchantPayment",
+        "summary": "Create a managed-wallet merchant payment",
+        "description": "Submits a merchant payment from a UniFi-managed wallet and associates its receipt with the supplied payment session.",
         "tags": [
-          "Notifications"
+          "Pay"
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/PaymentId"
+            "$ref": "#/components/parameters/UserId"
           },
           {
-            "$ref": "#/components/parameters/Chain"
+            "$ref": "#/components/parameters/IsFeeInclusive"
           },
           {
-            "$ref": "#/components/parameters/Coin"
+            "$ref": "#/components/parameters/SessionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentPayload"
+              },
+              "example": {
+                "chain": "Sepolia",
+                "coin": "USDT",
+                "to_address": "0x2222222222222222222222222222222222222222",
+                "amount": "10.25",
+                "memo": "FliqPayMerchant"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new receipt ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "1reb05f9d5f2791616e3c"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/ncw/create_domain_permit/{user_id}": {
+      "post": {
+        "operationId": "createSelfCustodialPaymentPermit",
+        "summary": "Create a self-custodial payment permit",
+        "description": "Builds the EIP-712 domain and Permit2 message that the sender signs before submitting one self-custodial payment.",
+        "tags": [
+          "Pay"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelfCustodialPaymentBase"
+              },
+              "example": {
+                "chain": "Sepolia",
+                "coin": "USDT",
+                "to_address": "0x2222222222222222222222222222222222222222",
+                "amount": "10.25",
+                "est_fee": "0.12",
+                "deadline": 1893456000
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The EIP-712 domain and Permit2 message to sign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainPermitResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "domain": {
+                      "name": "Permit2",
+                      "chainId": "11155111",
+                      "verifyingContract": "0x000000000022d473030f116ddee9f6b43ac78ba3"
+                    },
+                    "permit": {
+                      "permitted": [
+                        {
+                          "token": "0x1111111111111111111111111111111111111111",
+                          "amount": "10370000"
+                        }
+                      ],
+                      "spender": "0x4444444444444444444444444444444444444444",
+                      "nonce": "0",
+                      "deadline": "1893456000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/ncw/create_domain_permit_bulkpay/{user_id}": {
+      "post": {
+        "operationId": "createSelfCustodialBulkPaymentPermit",
+        "summary": "Create a self-custodial bulk-payment permit",
+        "description": "Builds the EIP-712 domain and Permit2 message that the sender signs before submitting a self-custodial bulk payment.",
+        "tags": [
+          "Pay"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkPaymentBase"
+              },
+              "example": {
+                "chain": "Sepolia",
+                "batch": [
+                  {
+                    "coin": "USDT",
+                    "to_address": "0x2222222222222222222222222222222222222222",
+                    "amount": "10.25",
+                    "memo": "BulkPay"
+                  },
+                  {
+                    "coin": "USDC",
+                    "to_address": "0x3333333333333333333333333333333333333333",
+                    "amount": "4.50",
+                    "memo": "BulkPay"
+                  }
+                ],
+                "tot_est_fee": "0.18",
+                "deadline": 1893456000
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The EIP-712 domain and Permit2 message to sign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainPermitResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "domain": {
+                      "name": "Permit2",
+                      "chainId": "11155111",
+                      "verifyingContract": "0x000000000022d473030f116ddee9f6b43ac78ba3"
+                    },
+                    "permit": {
+                      "permitted": [
+                        {
+                          "token": "0x1111111111111111111111111111111111111111",
+                          "amount": "10370000"
+                        },
+                        {
+                          "token": "0x5555555555555555555555555555555555555555",
+                          "amount": "4500000"
+                        }
+                      ],
+                      "spender": "0x4444444444444444444444444444444444444444",
+                      "nonce": "0",
+                      "deadline": "1893456000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/ncw/{user_id}": {
+      "post": {
+        "operationId": "createSelfCustodialPayment",
+        "summary": "Create a self-custodial payment",
+        "description": "Submits one payment with the sender's Permit2 nonce and signature. The response is a receipt ID; query the receipt endpoint for settlement progress.",
+        "tags": [
+          "Pay"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelfCustodialPaymentRequest"
+              },
+              "example": {
+                "payload": {
+                  "base": {
+                    "chain": "Sepolia",
+                    "coin": "USDT",
+                    "to_address": "0x2222222222222222222222222222222222222222",
+                    "amount": "10.25",
+                    "est_fee": "0.12",
+                    "deadline": 1893456000
+                  },
+                  "nonce": "0",
+                  "sig": "0xpermit2-signature",
+                  "memo": "General"
+                },
+                "sched": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new receipt ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "1reb05f9d5f2791616e3c"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/ncw_bulkpay/{user_id}": {
+      "post": {
+        "operationId": "createSelfCustodialBulkPayment",
+        "summary": "Create self-custodial bulk payments",
+        "description": "Submits a signed Permit2 batch and returns the receipt IDs created for its individual payments.",
+        "tags": [
+          "Pay"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelfCustodialBulkPaymentRequest"
+              },
+              "example": {
+                "payload": {
+                  "base": {
+                    "chain": "Sepolia",
+                    "batch": [
+                      {
+                        "coin": "USDT",
+                        "to_address": "0x2222222222222222222222222222222222222222",
+                        "amount": "10.25",
+                        "memo": "BulkPay"
+                      },
+                      {
+                        "coin": "USDC",
+                        "to_address": "0x3333333333333333333333333333333333333333",
+                        "amount": "4.50",
+                        "memo": "BulkPay"
+                      }
+                    ],
+                    "tot_est_fee": "0.18",
+                    "deadline": 1893456000
+                  },
+                  "nonce": "0",
+                  "sig": "0xpermit2-signature"
+                },
+                "scheds": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The receipt IDs created for the batch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPaymentResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "receipt_ids": [
+                      "1reb05f9d5f2791616e3c",
+                      "7cca24fc3e804598a813"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/onchain/ncw/merchant/{user_id}/{session_id}": {
+      "post": {
+        "operationId": "createSelfCustodialMerchantPayment",
+        "summary": "Create a self-custodial merchant payment",
+        "description": "Submits a signed self-custodial merchant payment and associates its receipt with the supplied payment session.",
+        "tags": [
+          "Pay"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
           },
           {
-            "$ref": "#/components/parameters/ToAddress"
+            "$ref": "#/components/parameters/SessionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelfCustodialPaymentPayload"
+              },
+              "example": {
+                "base": {
+                  "chain": "Sepolia",
+                  "coin": "USDT",
+                  "to_address": "0x2222222222222222222222222222222222222222",
+                  "amount": "10.25",
+                  "est_fee": "0.12",
+                  "deadline": 1893456000
+                },
+                "nonce": "0",
+                "sig": "0xpermit2-signature",
+                "memo": "FliqPayMerchant"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new receipt ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": "1reb05f9d5f2791616e3c"
+                }
+              }
+            }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/payment/merchant/session/{session_id}": {
+      "get": {
+        "operationId": "getPaymentSessionStatus",
+        "summary": "Get a merchant payment session status",
+        "description": "Returns the receipt ID associated with a merchant payment session. An empty data string means that no receipt has been attached yet.",
+        "tags": [
+          "History"
+        ],
+        "parameters": [
           {
-            "$ref": "#/components/parameters/Amount"
+            "$ref": "#/components/parameters/SessionId"
           }
         ],
         "responses": {
           "200": {
-            "description": "The notification was accepted.",
+            "description": "The associated receipt ID, or an empty string while the session is waiting for payment.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
+                  "$ref": "#/components/schemas/StringResponse"
                 },
                 "example": {
                   "status": "200 OK",
-                  "message": "Notification sent to Payer on Telegram!"
+                  "data": "1reb05f9d5f2791616e3c"
                 }
               }
             }
@@ -1418,7 +1645,7 @@
         "summary": "Get a payment receipt",
         "description": "Returns the latest known state of one stablecoin payment.",
         "tags": [
-          "Receipts"
+          "History"
         ],
         "parameters": [
           {
@@ -1487,7 +1714,7 @@
         "summary": "Get payment history",
         "description": "Returns a cursor-like page of receipts. Use next_or_previous with the returned has_next and has_prev flags.",
         "tags": [
-          "Receipts"
+          "History"
         ],
         "parameters": [
           {
@@ -1580,124 +1807,6 @@
           }
         }
       }
-    },
-    "/session/create/{user_id}": {
-      "post": {
-        "operationId": "createSession",
-        "summary": "Create a UniFi session",
-        "description": "Creates a short-lived session for the user. Falcon heartbeat settings are optional.",
-        "tags": [
-          "Sessions"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/UserId"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateSessionRequest"
-              },
-              "example": {}
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The new session ID.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StringResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "data": "session_123"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
-    "/session/{session_id}": {
-      "get": {
-        "operationId": "getSession",
-        "summary": "Get session data",
-        "description": "Returns the user and authentication data associated with a session ID.",
-        "tags": [
-          "Sessions"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/SessionId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The session data.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "data": {
-                    "user_id": "user@example.com",
-                    "jwt": "eyJhbGciOi..."
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
     }
   },
   "components": {
@@ -1705,8 +1814,8 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "API key or JWT",
-        "description": "Use a server-side UniFi API key or a user JWT issued by the wallet challenge flow."
+        "bearerFormat": "API key",
+        "description": "Use a UniFi API key generated from the web app and stored server-side."
       }
     },
     "parameters": {
@@ -2822,6 +2931,429 @@
           },
           "data": {
             "$ref": "#/components/schemas/UserSession"
+          }
+        }
+      },
+      "BulkPayItem": {
+        "type": "object",
+        "required": [
+          "coin",
+          "to_address",
+          "amount",
+          "memo"
+        ],
+        "properties": {
+          "coin": {
+            "$ref": "#/components/schemas/Stablecoin"
+          },
+          "to_address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[0-9]+(\\.[0-9]+)?$",
+            "description": "Human-readable decimal token amount."
+          },
+          "memo": {
+            "$ref": "#/components/schemas/Memo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BulkPayItemRequest": {
+        "type": "object",
+        "required": [
+          "chain",
+          "items"
+        ],
+        "properties": {
+          "chain": {
+            "$ref": "#/components/schemas/Chain"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/BulkPayItem"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PrePayAllowance": {
+        "type": "object",
+        "required": [
+          "is_suff",
+          "required_allowance",
+          "is_max_allowance"
+        ],
+        "properties": {
+          "is_suff": {
+            "type": "boolean",
+            "description": "Whether the current Permit2 allowance covers the payment."
+          },
+          "required_allowance": {
+            "type": "string",
+            "description": "Additional human-readable token allowance required."
+          },
+          "is_max_allowance": {
+            "type": "boolean",
+            "description": "Whether the sender has granted the maximum allowance."
+          }
+        }
+      },
+      "PrePayNcwValues": {
+        "type": "object",
+        "required": [
+          "allowance",
+          "balance",
+          "est_fee"
+        ],
+        "properties": {
+          "allowance": {
+            "$ref": "#/components/schemas/PrePayAllowance"
+          },
+          "balance": {
+            "type": "string",
+            "description": "Human-readable spendable balance."
+          },
+          "est_fee": {
+            "type": "string",
+            "description": "Human-readable estimated fee."
+          }
+        }
+      },
+      "PrePayNcwResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PrePayNcwValues"
+          }
+        }
+      },
+      "PrePayNcwCoinValues": {
+        "type": "object",
+        "required": [
+          "allowance",
+          "balance"
+        ],
+        "properties": {
+          "allowance": {
+            "$ref": "#/components/schemas/PrePayAllowance"
+          },
+          "balance": {
+            "type": "string",
+            "description": "Human-readable spendable balance for this coin."
+          }
+        }
+      },
+      "PrePayNcwBulkValues": {
+        "type": "object",
+        "required": [
+          "coin_entries",
+          "tot_est_fee"
+        ],
+        "properties": {
+          "coin_entries": {
+            "type": "object",
+            "description": "Balance and allowance details keyed by stablecoin ticker.",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PrePayNcwCoinValues"
+            }
+          },
+          "tot_est_fee": {
+            "type": "string",
+            "description": "Human-readable total estimated fee."
+          }
+        }
+      },
+      "PrePayNcwBulkResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PrePayNcwBulkValues"
+          }
+        }
+      },
+      "PrePayNcwParams": {
+        "type": "object",
+        "required": [
+          "allowance",
+          "balance",
+          "gas_price",
+          "gas_token_price",
+          "coin_price"
+        ],
+        "properties": {
+          "allowance": {
+            "type": "string",
+            "description": "Raw Permit2 allowance as a base-unit integer string."
+          },
+          "balance": {
+            "type": "string",
+            "description": "Human-readable net balance."
+          },
+          "gas_price": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Current gas price in wei."
+          },
+          "gas_token_price": {
+            "type": "number",
+            "format": "double",
+            "description": "Current gas-token price in USD."
+          },
+          "coin_price": {
+            "type": "number",
+            "format": "double",
+            "description": "Current stablecoin price in USD."
+          }
+        }
+      },
+      "PrePayNcwParamsResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PrePayNcwParams"
+          }
+        }
+      },
+      "SelfCustodialPaymentBase": {
+        "type": "object",
+        "required": [
+          "chain",
+          "coin",
+          "to_address",
+          "amount",
+          "est_fee",
+          "deadline"
+        ],
+        "properties": {
+          "chain": {
+            "$ref": "#/components/schemas/Chain"
+          },
+          "coin": {
+            "$ref": "#/components/schemas/Stablecoin"
+          },
+          "to_address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[0-9]+(\\.[0-9]+)?$",
+            "description": "Human-readable decimal token amount."
+          },
+          "est_fee": {
+            "type": "string",
+            "pattern": "^[0-9]+(\\.[0-9]+)?$",
+            "description": "Human-readable estimated fee."
+          },
+          "deadline": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Permit expiry as a Unix timestamp in seconds."
+          }
+        },
+        "additionalProperties": false
+      },
+      "SelfCustodialPaymentPayload": {
+        "type": "object",
+        "required": [
+          "base",
+          "nonce",
+          "sig",
+          "memo"
+        ],
+        "properties": {
+          "base": {
+            "$ref": "#/components/schemas/SelfCustodialPaymentBase"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "Permit2 nonce as a decimal integer string."
+          },
+          "sig": {
+            "type": "string",
+            "description": "Sender's Permit2 signature."
+          },
+          "memo": {
+            "$ref": "#/components/schemas/Memo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SelfCustodialPaymentRequest": {
+        "type": "object",
+        "required": [
+          "payload"
+        ],
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/SelfCustodialPaymentPayload"
+          },
+          "sched": {
+            "$ref": "#/components/schemas/Schedule",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BulkPaymentBase": {
+        "type": "object",
+        "required": [
+          "chain",
+          "batch",
+          "tot_est_fee",
+          "deadline"
+        ],
+        "properties": {
+          "chain": {
+            "$ref": "#/components/schemas/Chain"
+          },
+          "batch": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/BulkPayItem"
+            }
+          },
+          "tot_est_fee": {
+            "type": "string",
+            "pattern": "^[0-9]+(\\.[0-9]+)?$",
+            "description": "Human-readable total estimated fee."
+          },
+          "deadline": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Permit expiry as a Unix timestamp in seconds."
+          }
+        },
+        "additionalProperties": false
+      },
+      "SelfCustodialBulkPaymentPayload": {
+        "type": "object",
+        "required": [
+          "base",
+          "nonce",
+          "sig"
+        ],
+        "properties": {
+          "base": {
+            "$ref": "#/components/schemas/BulkPaymentBase"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "Permit2 nonce as a decimal integer string."
+          },
+          "sig": {
+            "type": "string",
+            "description": "Sender's Permit2 signature."
+          }
+        },
+        "additionalProperties": false
+      },
+      "SelfCustodialBulkPaymentRequest": {
+        "type": "object",
+        "required": [
+          "payload"
+        ],
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/SelfCustodialBulkPaymentPayload"
+          },
+          "scheds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Schedule"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "DomainPermitForSignature": {
+        "type": "object",
+        "required": [
+          "domain",
+          "permit"
+        ],
+        "properties": {
+          "domain": {
+            "type": "object",
+            "description": "EIP-712 signing domain.",
+            "additionalProperties": true
+          },
+          "permit": {
+            "type": "object",
+            "description": "Permit2 batch-transfer message to sign.",
+            "additionalProperties": true
+          }
+        }
+      },
+      "DomainPermitResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DomainPermitForSignature"
+          }
+        }
+      },
+      "BulkPaymentResult": {
+        "type": "object",
+        "required": [
+          "receipt_ids"
+        ],
+        "properties": {
+          "receipt_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BulkPaymentResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/BulkPaymentResult"
           }
         }
       }

@@ -8,7 +8,11 @@ Auth is the gate for wallet, payment, history, and API-management routes. The ro
 the user originally requested and returns there after a successful session is established.
 
 <Frame caption="Choose an email account or MetaMask to continue.">
-  <img className="w-full h-auto" src="/images/web-app/auth.png" alt="UniFi account screen with an email field and MetaMask option" />
+    <img
+        className="w-full h-auto"
+        src="/images/web-app/auth.png"
+        alt="UniFi account screen with an email field and MetaMask option"
+    />
 </Frame>
 
 ## Email account flow
@@ -16,19 +20,21 @@ the user originally requested and returns there after a successful session is es
 For a new email account, the implementation proceeds through:
 
 <Steps>
-  <Step title="Verify the email">
-    Enter a valid email address and submit the six-digit OTP sent by the configured email service.
-  </Step>
-  <Step title="Set a password">
-    The password is hashed client-side with the account identifier before the login request.
-  </Step>
-  <Step title="Enable authenticator 2FA">
-    Scan the generated TOTP QR and confirm a current six-digit code.
-  </Step>
-  <Step title="Open the requested page">
-    The web session is stored in the `unifi_user_id` and `unifi_jwt` cookies and the original route
-    is resumed.
-  </Step>
+    <Step title="Verify the email">
+        Enter a valid email address and submit the six-digit OTP sent by the
+        configured email service.
+    </Step>
+    <Step title="Set a password">
+        The password is hashed client-side with the account identifier before
+        the login request.
+    </Step>
+    <Step title="Enable authenticator 2FA">
+        Scan the generated TOTP QR and confirm a current six-digit code.
+    </Step>
+    <Step title="Open the requested page">
+        The web session is stored in the `unifi_user_id` and `unifi_jwt` cookies
+        and the original route is resumed.
+    </Step>
 </Steps>
 
 Returning email users complete password and authenticator checks when the backend reports that a
@@ -40,9 +46,41 @@ The wallet flow requests a server-issued challenge, signs it in MetaMask, and ex
 signature for a web JWT. The server checks that the challenge address, origin, chain context,
 nonce, and expiry match before issuing the session.
 
+The challenge endpoints do not require an existing bearer credential.
+
+<Steps>
+    <Step title="Request a challenge">
+        POST the expected domain, URI, and chain ID for the wallet address. The
+        server returns a short-lived message, nonce, and expiry.
+    </Step>
+    <Step title="Sign the exact message">
+        Ask the wallet to sign the returned message without altering whitespace
+        or fields.
+    </Step>
+    <Step title="Exchange it for a JWT">
+        POST the message, signature, nonce, and platform. The challenge is
+        single-use.
+    </Step>
+    <Step title="Send the JWT">
+        Use the returned JWT as the bearer credential for protected user routes.
+    </Step>
+</Steps>
+
 <Warning>
-UniFi never needs a seed phrase or private key. A legitimate login asks the wallet to sign the
-displayed authentication challenge, not to reveal wallet secrets.
+    Validate that the challenge domain and URI match the application the user is
+    viewing. Reject expired challenges and never reuse a nonce.
+</Warning>
+
+<Note>
+    Email-based and AWS KMS integrations authenticate through their managed
+    UniFi flow. The signed challenge described here is specifically for
+    self-custodial wallets.
+</Note>
+
+<Warning>
+    UniFi never needs a seed phrase or private key. A legitimate login asks the
+    wallet to sign the displayed authentication challenge, not to reveal wallet
+    secrets.
 </Warning>
 
 ## Session exit

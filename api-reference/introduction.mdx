@@ -1,15 +1,14 @@
 ---
 title: "Introduction"
-description: "Use the production UniFi API for authentication, wallets, stablecoin payments, receipts, and sessions."
+description: "Use the production UniFi API for deposit, wallet, payments, history & more."
 icon: "code"
 ---
 
-The UniFi API lets a backend authenticate users, inspect supported wallet balances, create
-stablecoin payments, and follow each payment through settlement.
+The UniFi API gives developers a simple way to integrate stablecoin payments without dealing with the complexity
+of UniFi Infra directly.
 
-This reference is deliberately limited to operations available through the public UniFi developer
-kit. Administrative, worker, dashboard, support, scheduling, and agent-orchestration routes are not
-part of the public contract.
+It abstracts the underlying payment infrastructure into a clean set of API endpoints,
+so you can build checkout flows, manage wallets, and process payments through a straightforward developer interface.
 
 ## Base URL
 
@@ -21,14 +20,13 @@ All requests use HTTPS and JSON unless an endpoint states otherwise.
 
 ## Authentication
 
-Most operations require a bearer credential:
+Almost all operations require a bearer credential:
 
 ```http
 Authorization: Bearer <credential>
 ```
 
-Use a server-side API key for backend integrations or a user JWT returned by the signed-wallet
-challenge flow. The liveness check and the two wallet-challenge operations are public.
+Use a server-side API key for backend integrations.
 
 <Warning>
     Never expose an API key in browser code, a mobile application, a public
@@ -50,22 +48,13 @@ Operations that do not return a resource use `message` instead of `data`. Error 
 currently plain text, so application logic should branch on the HTTP status rather than parsing the
 message.
 
-## Payment scope
-
-The public developer kit currently exposes payment creation for UniFi-managed wallets. The API
-returns a receipt ID immediately; use the receipt endpoint to track the payment from `Processing`
-through `Confirmed` and `Finalized`.
-
-Non-custodial signing, bulk-payment orchestration, and internal payment-session operations are not
-included in this public reference yet.
-
 <CardGroup cols={2}>
     <Card
         title="Authentication"
         icon="key"
         href="/api-reference/authentication"
     >
-        Choose an API key or signed-wallet JWT and send it safely.
+        Choose an API key & use it safely.
     </Card>
     <Card
         title="Errors and payment state"

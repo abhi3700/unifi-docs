@@ -1,23 +1,97 @@
 ---
 title: "Authentication"
-description: "Use bearer API keys for servers or a signed wallet challenge for users."
+description: "Use bearer API keys for accessing the endpoints."
 icon: "key"
 ---
 
-Protected operations accept a UniFi API key or user JWT as a bearer credential:
+Protected operations accept a `UNIFI_API_KEY`:
 
 ```http
 Authorization: Bearer <credential>
 ```
 
-| Credential | Use it for                                | How to obtain it                                              |
-| ---------- | ----------------------------------------- | ------------------------------------------------------------- |
-| API key    | Trusted backend services                  | Create a named key from the UniFi web app or API-key endpoint |
-| User JWT   | Requests made for a signed-in wallet user | Complete the signed-wallet challenge flow                     |
+**Q. How to obtain it?** \
+**A.** Create a named key from the UniFi [web app](https://payunifi.com/app/api).
 
 ## API keys for server integrations
 
 Create a named API key in the UniFi web app and store it in a server-side secret manager.
+
+### Create a key in the web app
+
+<Steps>
+  <Step title="Open API Keys">
+    Sign in, open the [API page](https://payunifi.com/app/api), and select **New API Key**. The Keys
+    tab shows the number of active keys allowed by the current plan.
+
+    <Columns cols={2}>
+      <Frame caption="Start from the empty Keys view.">
+        <img
+          className="w-full h-auto"
+          src="/images/web-app/api_0_mobile.png"
+          alt="UniFi API Keys tab with no API keys and a New API Key action"
+        />
+      </Frame>
+      <Frame caption="Open the Create API key sheet.">
+        <img
+          className="w-full h-auto"
+          src="/images/web-app/api_1_create_api_key.png"
+          alt="Create API key sheet asking for a unique key name"
+        />
+      </Frame>
+    </Columns>
+
+  </Step>
+
+  <Step title="Name, create, and copy the key">
+    Enter a clear, unique name, select **Create key**, and complete the authenticator check if
+    prompted. Use the copy action beside the new key, then place the credential in your server-side
+    secret manager.
+
+    <Columns cols={2}>
+      <Frame caption="Use a name that identifies the integration.">
+        <img
+          className="w-full h-auto"
+          src="/images/web-app/api_2_set_name.png"
+          alt="Create API key sheet with marketplace entered as the key name"
+        />
+      </Frame>
+      <Frame caption="Copy the created key from its row.">
+        <img
+          className="w-full h-auto"
+          src="/images/web-app/api_3_created.png"
+          alt="UniFi API Keys tab showing the newly created marketplace key with copy and delete actions"
+        />
+      </Frame>
+    </Columns>
+
+  </Step>
+
+  <Step title="Monitor usage and revoke unused keys">
+    Use **Quota** to review the active plan, remaining credits, and renewal date. Delete a key when
+    an integration no longer needs it; deletion takes effect immediately.
+
+    <Columns cols={2}>
+      <Frame caption="Review plan and credit usage from Quota.">
+        <img
+          className="w-full h-auto"
+          src="/images/web-app/api_4_quota.png"
+          alt="UniFi API Quota tab showing the active Free plan, remaining credits, and next renewal"
+        />
+      </Frame>
+      <Frame caption="Confirm before permanently revoking a key.">
+        <img
+          className="w-full h-auto"
+          src="/images/web-app/api_5_del.png"
+          alt="Delete API key confirmation warning that applications using the key will lose access"
+        />
+      </Frame>
+    </Columns>
+
+  </Step>
+</Steps>
+
+This is a sample curl API request for getting USDT balance on Ethereum.
 
 ```bash
 curl --request GET \
@@ -27,36 +101,3 @@ curl --request GET \
 
 The credential must be authorized for the `user_id` in user-scoped routes. Never ship the key in
 browser JavaScript, a public repository, a mobile binary, logs, or analytics events.
-
-## Wallet JWTs
-
-The challenge endpoints do not require an existing bearer credential.
-
-<Steps>
-    <Step title="Request a challenge">
-        POST the expected domain, URI, and chain ID for the wallet address. The
-        server returns a short-lived message, nonce, and expiry.
-    </Step>
-    <Step title="Sign the exact message">
-        Ask the wallet to sign the returned message without altering whitespace
-        or fields.
-    </Step>
-    <Step title="Exchange it for a JWT">
-        POST the message, signature, nonce, and platform. The challenge is
-        single-use.
-    </Step>
-    <Step title="Send the JWT">
-        Use the returned JWT as the bearer credential for protected user routes.
-    </Step>
-</Steps>
-
-<Warning>
-    Validate that the challenge domain and URI match the application the user is
-    viewing. Reject expired challenges and never reuse a nonce.
-</Warning>
-
-<Note>
-    Email-based and AWS KMS integrations authenticate through their managed
-    UniFi flow. The signed challenge described here is specifically for
-    self-custodial wallets.
-</Note>
