@@ -91,14 +91,17 @@ while the widget supplies the reusable UniFi payment, status, and receipt experi
   </Step>
 
   <Step title="Check payment status">
-    FliQ Market opens `UniFiPaymentStatusSheet` with the pay link and a manual status action. Status
-    requests go through the merchant's `/api/unifi` route, so the API key never enters the browser.
+    FliQ Market opens `UniFiPaymentStatusSheet` with the pay link. With
+    `PAYMENT_STATUS_POLL_INTERVAL` unset or empty, the customer checks manually. A positive interval
+    enables a compact automatic-check card with a draining progress ring, countdown, last-check
+    time, and an immediate refresh control. Status requests still go through the merchant's
+    `/api/unifi` route, so the API key never enters the browser.
 
-    <Frame caption="Keep the pay link available while the merchant waits for confirmation.">
+    <Frame caption="Show the automatic countdown while keeping the pay link and immediate refresh available.">
       <img
         style={{ display: "block", width: "min(420px, 100%)", height: "auto", margin: "0 auto" }}
         src="/images/payment-gateway/5_wait_for_payment_mobile.webp"
-        alt="FliQ Market waiting for UniFi payment confirmation with pay-link and status actions"
+        alt="FliQ Market waiting for UniFi payment confirmation with an automatic status countdown, refresh control, and pay link"
       />
     </Frame>
   </Step>
@@ -157,7 +160,7 @@ while the widget supplies the reusable UniFi payment, status, and receipt experi
   </Step>
 </Steps>
 
-## Payment states
+## Receipt finality states
 
 - `Processing` — **Payment submitted**; the order is not confirmed;
 - `Confirmed` — included on-chain and waiting for finality;
@@ -175,27 +178,35 @@ Terminal states remove that action because no further status check is needed.
 | Import shared styles | `src/main.tsx` | `unifi-pay-widget/styles.css` |
 | Payment method and pair picker | `src/App.tsx` | `UniFiPaymentOption` |
 | Session, hosted URL, and status | `src/App.tsx` | `useUniFiPayment` |
-| Status sheet | `src/App.tsx` | `UniFiPaymentStatusSheet` |
+| Status sheet and automatic-check countdown | `src/App.tsx` | `UniFiPaymentStatusSheet` |
 | Receipt finality | `src/App.tsx`, `src/orders/OrdersView.tsx` | `UniFiReceiptStatusCard` |
 | Receipt link | `src/App.tsx`, `src/components/PaymentMethodSummary.tsx` | `UniFiReceiptLink` |
 | Browser-local order storage | `src/orders/db.ts`, `src/orders/model.ts` | Host-application responsibility |
 | Shipment timeline | `src/orders/OrdersView.tsx` | Host-application responsibility |
-| Public merchant configuration | `GET /api/config` | Host-application responsibility |
+| Public merchant and polling configuration | `GET /api/config` | Host-application responsibility |
 | Secret-bearing API route | `functions/api/[[path]].ts` | `createCloudflarePagesFunction` |
 
 ## Configuration boundary
 
 FliQ Market uses one Cloudflare Pages Function for two responsibilities:
 
-- `GET /api/config` returns the public `MERCHANT_WALLET_ADDRESS` and optional local checkout
-  override; and
+- `GET /api/config` returns the public `MERCHANT_WALLET_ADDRESS`, optional
+  `PAYMENT_STATUS_POLL_INTERVAL`, and optional local checkout override; and
 - `/api/unifi/payment/merchant/session/:sessionId` delegates to the widget's narrow server proxy,
   which reads `UNIFI_API_KEY` only in the server runtime.
 
 ```makefile
 UNIFI_API_KEY=
 MERCHANT_WALLET_ADDRESS=
+
+# unset / empty = manual check only
+PAYMENT_STATUS_POLL_INTERVAL=
 ```
+
+`PAYMENT_STATUS_POLL_INTERVAL` is optional and public. FliQ Market accepts a positive whole number
+of seconds such as `30`, `60`, or `120`, returns it from `/api/config`, converts it to milliseconds,
+and passes it to the widget as `statusPollIntervalMs`. An unset or empty value preserves the manual
+**Check payment status** flow.
 
 The API base URL and web-app base URL are optional UniFi admin/local overrides. Leave them unset in
 a normal merchant production deployment.

@@ -48,7 +48,7 @@ layer allowed to access `UNIFI_API_KEY`.
 ```mermaid
 flowchart LR
     Browser[Merchant checkout] -->|Create session and open URL| Checkout[UniFi hosted checkout]
-    Browser -->|Session or receipt-status request| Proxy[Merchant server proxy]
+    Browser -->|Manual or configured session check| Proxy[Merchant server proxy]
     Secret[(UNIFI_API_KEY)] -. server only .-> Proxy
     Proxy -->|Authenticated status request| API[UniFi API]
     API -->|Pending or receipt ID| Proxy
@@ -60,7 +60,8 @@ flowchart LR
 
 <Note>
   `MERCHANT_WALLET_ADDRESS` is public merchant configuration passed to the widget as `recipient`.
-  `UNIFI_API_KEY` is a secret and must stay behind the server proxy.
+  `PAYMENT_STATUS_POLL_INTERVAL` is optional public application configuration for automatic session
+  checks. `UNIFI_API_KEY` is a secret and must stay behind the server proxy.
 </Note>
 
 ## Checkout lifecycle
@@ -80,7 +81,8 @@ flowchart LR
   </Step>
   <Step title="Check through your proxy">
     The merchant browser requests `/api/unifi/payment/merchant/session/:sessionId`. The same-origin
-    server proxy validates the route and adds the API key server-side.
+    server proxy validates the route and adds the API key server-side. Checks are manual by default;
+    a merchant can opt into a fixed automatic cadence with `statusPollIntervalMs`.
   </Step>
   <Step title="Track finality and fulfil">
     Store the detected receipt ID with the order, check its receipt status immediately, and refresh

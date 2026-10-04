@@ -53,20 +53,33 @@ import "unifi-pay-widget/styles.css";
 
 ## 2. Configure the merchant
 
-Both values are required in production:
+These two values are required in production:
 
 ```makefile
 UNIFI_API_KEY=
 MERCHANT_WALLET_ADDRESS=
 ```
 
+Automatic session-status checks are optional:
+
+```makefile
+# unset / empty = manual check only
+PAYMENT_STATUS_POLL_INTERVAL=
+```
+
 | Value | Visibility | Usage |
 | --- | --- | --- |
 | `UNIFI_API_KEY` | Secret | Read only by the server proxy and added to upstream status requests |
 | `MERCHANT_WALLET_ADDRESS` | Public configuration | Passed by the application to the widget as `recipient` |
+| `PAYMENT_STATUS_POLL_INTERVAL` | Optional public configuration | Positive whole seconds between automatic session-status checks; unset or empty keeps manual checking |
 
-Use the deployment provider's encrypted secret store for the API key. Return the wallet address
-through a non-secret runtime-config endpoint or inject it as public application configuration.
+Use the deployment provider's encrypted secret store for the API key. Return the wallet address and
+optional polling interval through a non-secret runtime-config endpoint or inject them as public
+application configuration.
+
+The widget does not read application environment variables directly. Convert the configured
+seconds to milliseconds and pass the result as `statusPollIntervalMs`. For example, `30` becomes
+`30_000`. Values such as `60` and `120` work the same way.
 
 <Warning>
   Never expose `UNIFI_API_KEY` through `VITE_*`, `NEXT_PUBLIC_*`, generated JavaScript, HTML, source
@@ -99,13 +112,18 @@ The browser now checks the session through
 import { UniFiPayWidget, UniFiReceiptLink } from "unifi-pay-widget/react";
 import "unifi-pay-widget/styles.css";
 
-export function Checkout({ merchantWalletAddress }: {
+export function Checkout({
+  merchantWalletAddress,
+  paymentStatusPollIntervalMs,
+}: {
   merchantWalletAddress: string;
+  paymentStatusPollIntervalMs?: number;
 }) {
   return (
     <UniFiPayWidget
       amount="32.46"
       recipient={merchantWalletAddress}
+      statusPollIntervalMs={paymentStatusPollIntervalMs}
       onSession={(session) => {
         // Associate session.sessionId with your order before fulfilment.
         console.log("UniFi session", session.sessionId);
@@ -124,8 +142,10 @@ export function Receipt({ receiptId }: { receiptId: string }) {
 ```
 
 Required props are `amount` and `recipient`. The widget handles pair selection, session creation,
-hosted-checkout launch, the 15-minute countdown, manual status checking, and the receipt-detected
-callback.
+hosted-checkout launch, the 15-minute session countdown, status checking, and the receipt-detected
+callback. If `statusPollIntervalMs` is omitted, the customer uses the **Check payment status**
+button. A positive interval enables a compact automatic-check countdown with an immediate refresh
+control and last-check time.
 
 ## 5. Test the complete flow
 
@@ -141,8 +161,9 @@ callback.
     Keep the merchant page open while the hosted checkout opens in a new tab.
   </Step>
   <Step title="Complete and check">
-    Authorize the payment, return to the merchant tab, and use the status action. A successful check
-    returns the receipt ID through `onPaid`. The order is not confirmed yet.
+    Authorize the payment and return to the merchant tab. Use the status action in manual mode, or
+    wait for the configured automatic check. A successful check returns the receipt ID through
+    `onPaid`. The order is not confirmed yet.
   </Step>
   <Step title="Wait for finality">
     Check the receipt immediately, then every 15 minutes while it is `Processing` or `Confirmed`.

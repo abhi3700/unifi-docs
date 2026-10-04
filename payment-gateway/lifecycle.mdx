@@ -58,6 +58,24 @@ Before that lookup expires:
 Do not use the temporary lookup as customer order history, accounting storage, or the only way to
 recover a receipt.
 
+## Session polling policy
+
+Before a receipt ID exists, the widget checks the temporary session lookup. This step is manual by
+default: the waiting sheet retains the **Check payment status** button and makes no background
+status requests.
+
+Set `statusPollIntervalMs` to a positive number to opt into automatic checks. The automatic variant
+shows a draining progress ring and countdown, reports when the last check ran, and keeps a compact
+refresh control available for an immediate check. The controller avoids starting a second request
+while a check is already in flight.
+
+An application-level setting such as `PAYMENT_STATUS_POLL_INTERVAL` can expose this cadence as
+public configuration in seconds. Treat an unset or empty value as manual mode, accept only positive
+whole seconds, and convert the value to milliseconds before passing it to the widget.
+
+This session cadence only detects when a receipt becomes available. It is separate from receipt
+finality checks after detection.
+
 ## Receipt detection and finality
 
 These are separate milestones:
@@ -98,7 +116,8 @@ as a failed or finalized payment.
 
 - **Customer closed the UniFi tab:** keep the merchant order pending and retain the pay link until
   the UI expiry.
-- **Status remains pending:** allow another manual check without creating a second order.
+- **Status remains pending:** wait for the next configured check or allow an immediate manual check
+  without creating a second order.
 - **Session expired:** create a new payment attempt with a new session ID; preserve the old attempt
   for auditability.
 - **API key rejected:** disable fulfilment, alert the operator, and correct the server secret.
@@ -119,7 +138,8 @@ as a failed or finalized payment.
 ### Checkout behavior
 
 - [ ] Successful Sepolia payment and receipt link.
-- [ ] Pending payment and repeated manual status checks.
+- [ ] Pending payment with the default manual-only status action.
+- [ ] Configured automatic session checks, draining progress ring, countdown, last-check time, and immediate refresh.
 - [ ] Receipt `Processing` and `Confirmed` states, 15-minute automatic refresh, and immediate manual refresh.
 - [ ] `Finalized` is the only state that confirms the order; `Failed` and `Reorged` remain unfulfilled.
 - [ ] Expired session and a new payment attempt.

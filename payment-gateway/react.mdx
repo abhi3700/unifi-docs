@@ -10,8 +10,8 @@ Import React components from `unifi-pay-widget/react` and load
 ## Complete widget
 
 `UniFiPayWidget` is the shortest integration path. It combines asset/network selection, session
-creation, checkout launch, a 15-minute countdown, manual session-status checking, and
-receipt-detected/error callbacks.
+creation, checkout launch, a 15-minute countdown, manual or opt-in automatic session-status
+checking, and receipt-detected/error callbacks.
 
 ```tsx
 import { UniFiPayWidget } from "unifi-pay-widget/react";
@@ -33,6 +33,7 @@ export function StablecoinPayment({
       amount={total}
       recipient={merchantWalletAddress}
       defaultValue={{ asset: "USDT", network: "Ethereum" }}
+      statusPollIntervalMs={30_000}
       onSession={(session) => saveSession(session.sessionId)}
       onPaid={(receiptId) => saveDetectedReceipt(receiptId)}
       onError={(error) => console.error(error)}
@@ -59,6 +60,18 @@ export function StablecoinPayment({
 | `openInNewTab` | No | Open the hosted checkout in a new tab; defaults to `true` |
 | `proxyBaseUrl` | No | Override the default same-origin `/api/unifi` proxy prefix |
 | `checkoutBaseUrl` | No | Admin/local override for the hosted checkout base URL |
+| `statusPollIntervalMs` | No | Positive milliseconds between automatic session-status checks; omitted or `null` keeps manual checking |
+
+### Automatic session checks
+
+Automatic checking is opt-in. Pass a positive `statusPollIntervalMs` value, such as `30_000`,
+`60_000`, or `120_000`. The waiting card then shows a draining progress ring, the time until the
+next check, the last-check time, and a compact refresh control for an immediate check. While a
+request is in flight, the controller suppresses overlapping checks.
+
+Omit the prop or pass `null` to retain the manual **Check payment status** button. If your
+application exposes a public value such as `PAYMENT_STATUS_POLL_INTERVAL`, parse it as positive
+whole seconds and multiply it by `1_000` before passing it to the widget.
 
 ## Compose into an existing checkout
 
@@ -117,6 +130,10 @@ status text, generated payment URL, and handlers:
   secondsLeft={secondsLeft}
   statusText={statusText}
   payUrl={payment?.payUrl}
+  statusPollIntervalMs={paymentStatusPollIntervalMs}
+  autoCheckSecondsLeft={autoCheckSecondsLeft}
+  autoCheckActive={autoCheckActive}
+  lastCheckedAt={lastCheckedAt}
   onCheckStatus={checkCurrentPayment}
   onClose={() => setStatusOpen(false)}
 />;
@@ -124,7 +141,11 @@ status text, generated payment URL, and handlers:
 
 When `checking` is omitted, the component manages its own button-loading state while it awaits
 `onCheckStatus`. The sheet handles Escape-to-close, initial close-button focus, body scroll locking,
-and a copyable hosted checkout link.
+and a copyable hosted checkout link. Its icon-only close control retains an accessible **Close**
+label.
+
+For composed integrations, pass `statusPollIntervalMs`, `autoCheckSecondsLeft`, `autoCheckActive`,
+and `lastCheckedAt` from `useUniFiPayment` to render the automatic-check treatment shown above.
 
 The status sheet finds the receipt ID; it does not establish chain finality. After `onPaid`, call
 `checkUniFiReceiptStatus`, keep `Processing` and `Confirmed` in an in-progress order UI, refresh
