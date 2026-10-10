@@ -1712,7 +1712,7 @@
       "get": {
         "operationId": "getPaymentReceipts",
         "summary": "Get payment history",
-        "description": "Returns a cursor-like page of receipts. Use next_or_previous with the returned has_next and has_prev flags.",
+        "description": "Returns a page of receipts. For a continuation request, set next_or_previous and pass the receipt ID at the current page edge as cursor: the last receipt for the next page or the first receipt for the previous page.",
         "tags": [
           "History"
         ],
@@ -1763,6 +1763,15 @@
               "type": "boolean"
             },
             "description": "true requests the next page; false requests the previous page."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Receipt ID at the current page edge. Required for stateless continuation requests; use the last receipt ID for next and the first receipt ID for previous."
           }
         ],
         "responses": {
