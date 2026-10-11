@@ -1078,7 +1078,7 @@
       "post": {
         "operationId": "createManagedWalletMerchantPayment",
         "summary": "Create a managed-wallet merchant payment",
-        "description": "Submits a merchant payment from a UniFi-managed wallet and associates its receipt with the supplied payment session.",
+        "description": "Submits a merchant payment from a UniFi-managed wallet and associates its receipt with the supplied payment session. A session accepts only one payment; an already-paid or currently-processing session returns 409 Conflict.",
         "tags": [
           "Pay"
         ],
@@ -1513,7 +1513,7 @@
       "post": {
         "operationId": "createSelfCustodialMerchantPayment",
         "summary": "Create a self-custodial merchant payment",
-        "description": "Submits a signed self-custodial merchant payment and associates its receipt with the supplied payment session.",
+        "description": "Submits a signed self-custodial merchant payment and associates its receipt with the supplied payment session. A session accepts only one payment; an already-paid or currently-processing session returns 409 Conflict.",
         "tags": [
           "Pay"
         ],
