@@ -427,6 +427,67 @@
         }
       }
     },
+    "/wallet/balance/by_pair/{user_id}/{chain}/{coin}": {
+      "get": {
+        "operationId": "getWalletBalanceByPair",
+        "summary": "Get the latest wallet balance for one pair",
+        "description": "Returns the latest-block wallet balance and USD value for one stablecoin-chain pair. This is not a finality-protected spending limit. The custodial calculation is onchain@latest minus pending and collected fees; the self-custodial calculation is onchain@latest minus pending.",
+        "tags": [
+          "Wallet"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          },
+          {
+            "$ref": "#/components/parameters/Coin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The selected pair's latest wallet balance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletBalanceByPairResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "balance": "125.25",
+                    "value_usd": "125.25"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
     "/wallet/balances/by_chain/{user_id}/{chain}": {
       "get": {
         "operationId": "getWalletBalancesByChain",
@@ -2530,6 +2591,21 @@
           },
           "value_usd": {
             "type": "string"
+          }
+        }
+      },
+      "WalletBalanceByPairResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WalletBalancesByCoinChainDetails"
           }
         }
       },
