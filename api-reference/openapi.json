@@ -1712,7 +1712,7 @@
       "get": {
         "operationId": "getPaymentReceipts",
         "summary": "Get payment history",
-        "description": "Returns a page of receipts. For a continuation request, set next_or_previous and pass the receipt ID at the current page edge as cursor: the last receipt for the next page or the first receipt for the previous page.",
+        "description": "Returns a page of receipts sent or received by the user. pending=true matches Processing and Confirmed receipts; pending=false excludes both. Do not combine pending with status. For a continuation request, set next_or_previous and pass the receipt ID at the current page edge as cursor: the last receipt for the next page or the first receipt for the previous page.",
         "tags": [
           "History"
         ],
@@ -1736,6 +1736,15 @@
             "description": "Filter by chain."
           },
           {
+            "name": "coin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Stablecoin"
+            },
+            "description": "Filter by stablecoin."
+          },
+          {
             "name": "status",
             "in": "query",
             "required": false,
@@ -1743,6 +1752,24 @@
               "$ref": "#/components/schemas/ReceiptStatus"
             },
             "description": "Filter by receipt state."
+          },
+          {
+            "name": "pending",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "true matches Processing and Confirmed; false excludes both. Cannot be combined with status."
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PaymentDirection"
+            },
+            "description": "Filter by payments sent or received by the user."
           },
           {
             "name": "limit",
@@ -2097,6 +2124,13 @@
           "Confirmed",
           "Finalized",
           "Reorged"
+        ]
+      },
+      "PaymentDirection": {
+        "type": "string",
+        "enum": [
+          "Sent",
+          "Received"
         ]
       },
       "HealthResponse": {
