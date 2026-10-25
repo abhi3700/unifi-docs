@@ -14,7 +14,7 @@ transactions on secp256k1 chains. Transaction signing returns a signed raw trans
 not broadcast it.
 
 <Warning>
-  A Unio access key authorizes signatures for as long as Agent Mode is running, even when the
+  A Unio access key authorizes signatures for as long as Agentic Mode is running, even when the
   interactive wallet is locked. Create a separate key for each agent, keep keys out of source
   control and logs, and revoke a key as soon as its agent no longer needs wallet access.
 </Warning>
@@ -23,7 +23,7 @@ not broadcast it.
 
 <CardGroup cols={3}>
   <Card title="App" icon="desktop" href="#1-app">
-    Create and use a wallet in the UniFi native or web app. Agent Mode requires the native desktop
+    Create and use a wallet in the UniFi native or web app. Agentic Mode requires the native desktop
     app.
   </Card>
   <Card title="TUI" icon="terminal" href="#2-terminal-ui-tui">
@@ -34,7 +34,7 @@ not broadcast it.
   </Card>
 </CardGroup>
 
-The default Agent Mode endpoint is the same in all three distributions:
+The default Agentic Mode endpoint is the same in all three distributions:
 
 ```text
 http://localhost:34567/unio/server
@@ -42,11 +42,11 @@ http://localhost:34567/unio/server
 
 ## 1. App
 
-Use this distribution when you already use Unio inside UniFi and want a graphical Agent Mode
+Use this distribution when you already use Unio inside UniFi and want a graphical Agentic Mode
 manager.
 
 <Note>
-  The Unio wallet works in both the native and web versions of the UniFi app. Agent Mode works only
+  The Unio wallet works in both the native and web versions of the UniFi app. Agentic Mode works only
   in the native desktop app because a browser or installed PWA cannot host the local signing
   server.
 </Note>
@@ -68,11 +68,11 @@ manager.
   </Step>
 </Steps>
 
-### Enable Agent Mode
+### Enable Agentic Mode
 
 <Steps>
-  <Step title="Open Agent Mode">
-    In the wallet sheet, select **Manage Agent mode**, or open `/unio` directly in the native app.
+  <Step title="Open Agentic Mode">
+    In the wallet sheet, select **Manage Agentic Mode**, or open `/unio` directly in the native app.
     Only an account signed in with Unio can manage this page.
   </Step>
   <Step title="Create an access key">
@@ -92,18 +92,18 @@ manager.
 
 Creating or deleting a key and starting or stopping the server require owner verification. There
 is no product-imposed limit on access keys. Deleting one revokes that agent immediately without
-interrupting other keys. Starting Agent Mode creates an isolated in-memory signer. Locking the
-interactive wallet does not interrupt authorized agents; stopping Agent Mode clears that signer.
+interrupting other keys. Starting Agentic Mode creates an isolated in-memory signer. Locking the
+interactive wallet does not interrupt authorized agents; stopping Agentic Mode clears that signer.
 
 The `/unio` page remains available offline and does not show the app's network-offline card. The
 encrypted vault, server state, access-key metadata, access-key hashes, signing payloads, and
 signatures stay on the device. Closing the native app stops its local signing server.
 
-{/* TODO: Add portrait-mode Unio Agent Mode product screenshots here. */}
+{/* TODO: Add portrait-mode Unio Agentic Mode product screenshots here. */}
 
 ## 2. Terminal UI (TUI)
 
-Use the TUI when you want the full wallet and Agent Mode workflow without the graphical UniFi app.
+Use the TUI when you want the full wallet and Agentic Mode workflow without the graphical UniFi app.
 It runs natively on macOS, Windows, and Linux.
 
 ### Choose an archive
@@ -248,7 +248,7 @@ Windows, when running directly from the extracted directory.
   </Accordion>
 </AccordionGroup>
 
-### Set up Agent Mode
+### Set up Agentic Mode
 
 <Steps>
   <Step title="Initialize the encrypted vault">
@@ -280,7 +280,7 @@ Windows and Linux currently use the wallet password.
 
 The TUI displays its local data directory at the top of the screen. Override it with `--data-dir`
 or `UNIO_DATA_DIR` as shown in [Command usage](#command-usage). Do not place this directory in
-source control or a cloud-synchronized folder. Destroying the wallet stops Agent Mode and deletes
+source control or a cloud-synchronized folder. Destroying the wallet stops Agentic Mode and deletes
 every local access-key record.
 
 ### Run headlessly without Docker
@@ -392,7 +392,7 @@ The Compose setup reads the password from `unio-password.txt`, which is ignored 
 
 ## Configure an agent
 
-After starting Agent Mode with any distribution, provide these values to the agent process. Do not
+After starting Agentic Mode with any distribution, provide these values to the agent process. Do not
 commit them to a repository or write the access key to application logs.
 
 On macOS or Linux:
@@ -500,10 +500,10 @@ Use `GET $UNIO_SERVER_URL` without an access key to inspect server version and c
 
 ## Locking, revocation, and errors
 
-- Locking the interactive wallet does not interrupt a running Agent Mode server.
-- Stopping Agent Mode closes the listener after owner verification.
+- Locking the interactive wallet does not interrupt a running Agentic Mode server.
+- Stopping Agentic Mode closes the listener after owner verification.
 - Deleting an access key revokes it immediately, including while the server is running.
-- Destroying the wallet stops Agent Mode and deletes every access-key record.
+- Destroying the wallet stops Agentic Mode and deletes every access-key record.
 - `401 Unauthorized` means the access key is missing or invalid.
 - `422 Unprocessable Entity` means the signing payload is invalid.
 - `503 Service Unavailable` means the local signer is unavailable.
