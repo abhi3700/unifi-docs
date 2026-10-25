@@ -302,93 +302,215 @@ manifest.
   permissions.
 </Warning>
 
-### Initialize the Docker wallet
+### Run the one-command launcher
 
-Set the release image, create a persistent volume, and open the TUI inside a temporary container:
+The launcher is the recommended Docker workflow on AMD64 and ARM64 macOS or Linux. It pulls
+`abhi3700/unio:latest`, selects the matching architecture, creates a persistent `unio-data` volume,
+guides first-time setup, and publishes the API only on host loopback.
 
-```sh
-export UNIO_IMAGE=ghcr.io/abhi3700/unio:<version>
-docker volume create unio-data
-docker run --rm -it \
-  --volume unio-data:/data \
-  "$UNIO_IMAGE" tui
+<Tabs>
+  <Tab title="Source checkout">
+    Run from the UniFi Echo repository root:
+
+    ```sh
+    ./unio/scripts/docker-run.sh
+    ```
+  </Tab>
+  <Tab title="Release folder">
+    Run the packaged launcher:
+
+    ```sh
+    cd docker
+    ./docker-run.sh
+    ```
+  </Tab>
+</Tabs>
+
+On macOS, the launcher can discover or install the Homebrew Docker CLI and Colima and start Colima
+when no Docker daemon is available. Linux requires an installed, accessible Docker engine. The
+first run opens the TUI because the wallet password, recovery backup, wallet, and first access key
+must be created interactively. Choose `/data/recovery` as the custom recovery-backup directory so
+the launcher can copy the backup to the host.
+
+After setup, the launcher reports the local URL:
+
+```text
+Unio is ready: http://127.0.0.1:34567/unio/server
 ```
 
-Inside the TUI:
+The examples below use the source-checkout path. If you are in the release bundle's `docker/`
+directory, replace `./unio/scripts/docker-run.sh` with `./docker-run.sh`. Expand an operation for
+its command and expected behavior.
 
-<Steps>
-  <Step title="Initialize and add the wallet">
-    Initialize the vault, then create or import the single EVM account. Do not save a plaintext
-    recovery backup only inside the temporary container; use a secure host-mounted directory if a
-    file backup is required.
-  </Step>
-  <Step title="Create an access key">
-    Create a separately named key for each agent and copy each key when it is displayed.
-  </Step>
-  <Step title="Exit the TUI">
-    Quit after setup. The temporary container is removed, while the encrypted vault and key hashes
-    remain in the `unio-data` volume.
-  </Step>
-</Steps>
+<AccordionGroup>
+  <Accordion title="Show launcher help and configuration" icon="circle-info">
+    ```sh
+    ./unio/scripts/docker-run.sh --help
+    ```
 
-### Start the Docker server
+    ```text
+    Usage:
+      ./scripts/docker-run.sh [options]
+      ./scripts/docker-run.sh --setup
+      ./scripts/docker-run.sh --status | --logs | --stop
 
-Create a local file containing only the same wallet password used during initialization. For
-example, create `unio-password.txt` in a local editor and restrict it on macOS or Linux:
+    Options:
+      --image <image>       Multi-architecture image (default: abhi3700/unio:latest)
+      --port <port>         Host loopback port (default: 34567)
+      --setup               Open the TUI before starting the signing server
+      --no-pull             Use an image already present in the Docker engine
+      --status              Show the managed container and health status
+      --logs                Follow the managed container logs
+      --stop                Stop the managed container without deleting wallet data
+      -h, --help            Show this help
+    ```
 
-```sh
-chmod 600 unio-password.txt
-```
+    Environment overrides are available for the image, host port, container and volume names,
+    password file, Docker configuration directory, recovery directory, and fallback image version.
+  </Accordion>
+  <Accordion title="Open setup to manage the wallet or access keys" icon="sliders">
+    ```sh
+    ./unio/scripts/docker-run.sh --setup
+    ```
 
-Start the container with the API port published only on host loopback:
+    The launcher stops and replaces its managed server container, opens the TUI against the
+    existing `unio-data` volume, and starts a fresh headless server after the TUI exits. Use this
+    flow to initialize or destroy the wallet and to create or revoke access keys. Existing wallet
+    data remains intact unless you explicitly select **Destroy wallet**.
+  </Accordion>
+  <Accordion title="Check container and server health" icon="heart-pulse">
+    ```sh
+    ./unio/scripts/docker-run.sh --status
+    ```
 
-```sh
-docker run --detach \
-  --name unio \
-  --restart unless-stopped \
-  --publish 127.0.0.1:34567:34567 \
-  --volume unio-data:/data \
-  --mount type=bind,src="$PWD/unio-password.txt",dst=/run/secrets/unio_password,readonly \
-  "$UNIO_IMAGE"
-```
+    A healthy result shows the `unio` container, a loopback mapping such as
+    `127.0.0.1:34567->34567/tcp`, and `healthy`.
+  </Accordion>
+  <Accordion title="Follow signing-server logs" icon="rectangle-terminal">
+    ```sh
+    ./unio/scripts/docker-run.sh --logs
+    ```
 
-Verify the service:
+    Representative startup output:
 
-```sh
-docker exec unio unio health --address 127.0.0.1:34567
-```
+    ```text
+    Unio signing server listening at 0.0.0.0:34567/unio/server
+    Wallet: 0x...
+    Press Ctrl-C to stop Unio.
+    ```
 
-Never change the publication to `34567:34567` on a shared or internet-connected host. The explicit
-`127.0.0.1` prefix prevents other machines from reaching the wallet API directly.
+    `0.0.0.0` is the bind address inside the container. The launcher still publishes the host port
+    only on `127.0.0.1`. Pressing **Ctrl+C** stops log following, not the container.
+  </Accordion>
+  <Accordion title="View the externally managed wallet" icon="eye">
+    With the default container name:
 
-### Manage the Docker wallet later
+    ```sh
+    docker exec -it unio unio
+    ```
 
-Only one Unio process should mount the data volume at a time. Stop the server container before
-opening the TUI against the same wallet:
+    The TUI reports **Running externally** and is intentionally read-only because the headless
+    process owns the signer, wallet data, and server lifecycle. Quitting this view leaves the
+    background server running. Use `./unio/scripts/docker-run.sh --setup` for supported wallet or
+    access-key changes.
+  </Accordion>
+  <Accordion title="Inspect server identity and capabilities" icon="magnifying-glass">
+    ```sh
+    curl --silent http://127.0.0.1:34567/unio/server | jq .
+    ```
 
-```sh
-docker stop unio
-docker run --rm -it --volume unio-data:/data "$UNIO_IMAGE" tui
-docker start unio
-```
+    ```json
+    {
+      "name": "Unio Agentic signing server",
+      "version": "0.1.0",
+      "localOnly": true,
+      "signingPath": "/unio/server",
+      "authentication": "Authorization: Bearer <UNIO_ACCESS_KEY>",
+      "capabilities": [
+        "eip191_personal_message",
+        "eip712_typed_data",
+        "evm_legacy_transaction"
+      ]
+    }
+    ```
 
-Use this flow to unlock or lock the wallet, create or revoke access keys, or destroy the local
-wallet. The headless server authenticates once from the password file and keeps only its isolated
-signer in memory until the container stops.
+    This discovery request needs no access key and exposes no wallet secret.
+  </Accordion>
+  <Accordion title="Stop Unio without deleting wallet data" icon="stop">
+    ```sh
+    ./unio/scripts/docker-run.sh --stop
+    ```
 
-### Use the included Compose file
+    The managed container stops while the encrypted wallet and access-key hashes remain in the
+    `unio-data` volume. Run the launcher again to replace and restart the server.
+  </Accordion>
+</AccordionGroup>
 
-When running from the Unio source repository, its `compose.yaml` provides the same persistent
-volume, password secret, and loopback-only port:
+### Manual Docker workflows
 
-```sh
-docker compose build
-docker compose run --rm --service-ports unio tui
-docker compose up -d
-docker compose exec unio unio health --address 127.0.0.1:34567
-```
+<AccordionGroup>
+  <Accordion title="Use docker run directly" icon="docker" iconType="brands">
+    Set a pinned image version, create a persistent volume, and open the TUI in a temporary
+    container:
 
-The Compose setup reads the password from `unio-password.txt`, which is ignored by the repository.
+    ```sh
+    export UNIO_IMAGE=abhi3700/unio:<version>
+    docker volume create unio-data
+    docker run --rm -it \
+      --volume unio-data:/data \
+      "$UNIO_IMAGE" tui
+    ```
+
+    Initialize or import the single EVM account, save any recovery backup to a secure host-mounted
+    directory, create a separately named access key for each agent, and then exit. The temporary
+    container is removed; the encrypted vault and key hashes remain in `unio-data`.
+
+    Create `unio-password.txt` in a local editor with only the wallet password, then restrict it on
+    macOS or Linux:
+
+    ```sh
+    chmod 600 unio-password.txt
+    ```
+
+    Start the service with the API port published only on host loopback:
+
+    ```sh
+    docker run --detach \
+      --name unio \
+      --restart unless-stopped \
+      --publish 127.0.0.1:34567:34567 \
+      --volume unio-data:/data \
+      --mount type=bind,src="$PWD/unio-password.txt",dst=/run/secrets/unio_password,readonly \
+      "$UNIO_IMAGE"
+    docker exec unio unio health --address 127.0.0.1:34567
+    ```
+
+    Never change the publication to `34567:34567` on a shared or internet-connected host. To manage
+    the same wallet later, stop the server before mounting its volume in the TUI:
+
+    ```sh
+    docker stop unio
+    docker run --rm -it --volume unio-data:/data "$UNIO_IMAGE" tui
+    docker start unio
+    ```
+
+    Only one Unio process should mount the data volume at a time.
+  </Accordion>
+  <Accordion title="Use the included Compose file" icon="layer-group">
+    From the Unio source directory, `compose.yaml` provides the same persistent volume, password
+    secret, and loopback-only port:
+
+    ```sh
+    docker compose build
+    docker compose run --rm --service-ports unio tui
+    docker compose up -d
+    docker compose exec unio unio health --address 127.0.0.1:34567
+    ```
+
+    The Compose setup reads the password from `unio-password.txt`, which is ignored by the
+    repository. Stop the service before opening another TUI against its volume.
+  </Accordion>
+</AccordionGroup>
 
 ## Configure an agent
 
