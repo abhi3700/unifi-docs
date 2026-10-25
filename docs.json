@@ -46,6 +46,7 @@
           "webapp/overview",
           "webapp/home",
           "webapp/auth",
+          "webapp/unio",
           "webapp/deposit",
           "webapp/balance",
           "webapp/pay_send",

@@ -1,0 +1,521 @@
+---
+title: "Unio wallet"
+description: "Use the self-custodial Unio wallet in the UniFi app, a terminal, or Docker."
+icon: "robot"
+---
+
+Unio is a self-custodial EVM wallet that can let a local agent request signatures without exposing
+the wallet's private key. It is distributed through the UniFi app, a cross-platform terminal UI
+(TUI), and a multi-architecture Docker image.
+
+Every distribution uses the same encrypted-vault format and signing behavior. Unio currently
+supports EIP-191 personal messages, EIP-712 typed data, and replay-protected legacy EVM
+transactions on secp256k1 chains. Transaction signing returns a signed raw transaction; it does
+not broadcast it.
+
+<Warning>
+  A Unio access key authorizes signatures for as long as Agent Mode is running, even when the
+  interactive wallet is locked. Create a separate key for each agent, keep keys out of source
+  control and logs, and revoke a key as soon as its agent no longer needs wallet access.
+</Warning>
+
+## Choose a distribution
+
+<CardGroup cols={3}>
+  <Card title="App" icon="desktop" href="#1-app">
+    Create and use a wallet in the UniFi native or web app. Agent Mode requires the native desktop
+    app.
+  </Card>
+  <Card title="TUI" icon="terminal" href="#2-terminal-ui-tui">
+    Run an interactive local wallet on macOS, Windows, or Linux, on AMD64 or ARM64.
+  </Card>
+  <Card title="Docker" icon="container-storage" href="#3-docker">
+    Run the headless signing server as a non-root Linux container on AMD64 or ARM64.
+  </Card>
+</CardGroup>
+
+The default Agent Mode endpoint is the same in all three distributions:
+
+```text
+http://localhost:34567/unio/server
+```
+
+## 1. App
+
+Use this distribution when you already use Unio inside UniFi and want a graphical Agent Mode
+manager.
+
+<Note>
+  The Unio wallet works in both the native and web versions of the UniFi app. Agent Mode works only
+  in the native desktop app because a browser or installed PWA cannot host the local signing
+  server.
+</Note>
+
+### Set up the wallet
+
+<Steps>
+  <Step title="Choose Unio at sign-up">
+    Open [Unio sign-up](https://payunifi.com/app/auth/signup?use=unio), then create a new wallet or
+    import an existing recovery phrase or private key.
+  </Step>
+  <Step title="Protect the local vault">
+    Set a strong wallet password. If the native app offers biometric unlock, enable it for more
+    convenient owner verification. The wallet password remains available as a fallback.
+  </Step>
+  <Step title="Secure the recovery backup">
+    Save the recovery backup to a directory you choose, move it to a secure offline location, and
+    remove any copy left in Downloads or a cloud-synchronized directory.
+  </Step>
+</Steps>
+
+### Enable Agent Mode
+
+<Steps>
+  <Step title="Open Agent Mode">
+    In the wallet sheet, select **Manage Agent mode**, or open `/unio` directly in the native app.
+    Only an account signed in with Unio can manage this page.
+  </Step>
+  <Step title="Create an access key">
+    Enter a name that identifies one agent, select **Create key**, and complete biometric or wallet
+    password verification. Copy the new key immediately; Unio stores only its SHA-256 hash and
+    cannot reveal the original key later.
+  </Step>
+  <Step title="Start the local server">
+    Select **Start server** and complete owner verification. The server binds to
+    `127.0.0.1:34567`, so it is reachable only from this device.
+  </Step>
+  <Step title="Configure the agent">
+    Set `UNIO_SERVER_URL` and `UNIO_ACCESS_KEY` in the agent process using the values shown on the
+    page. See [Configure an agent](#configure-an-agent) for examples.
+  </Step>
+</Steps>
+
+Creating or deleting a key and starting or stopping the server require owner verification. There
+is no product-imposed limit on access keys. Deleting one revokes that agent immediately without
+interrupting other keys. Starting Agent Mode creates an isolated in-memory signer. Locking the
+interactive wallet does not interrupt authorized agents; stopping Agent Mode clears that signer.
+
+The `/unio` page remains available offline and does not show the app's network-offline card. The
+encrypted vault, server state, access-key metadata, access-key hashes, signing payloads, and
+signatures stay on the device. Closing the native app stops its local signing server.
+
+{/* TODO: Add portrait-mode Unio Agent Mode product screenshots here. */}
+
+## 2. Terminal UI (TUI)
+
+Use the TUI when you want the full wallet and Agent Mode workflow without the graphical UniFi app.
+It runs natively on macOS, Windows, and Linux.
+
+### Choose an archive
+
+Download the release archive and its `.sha256` file for your operating system and CPU:
+
+| Operating system | AMD64 | ARM64 |
+| --- | --- | --- |
+| macOS | `unio-macos-amd64.tar.gz` | `unio-macos-arm64.tar.gz` |
+| Windows | `unio-windows-amd64.zip` | `unio-windows-arm64.zip` |
+| Linux | `unio-linux-amd64.tar.gz` | `unio-linux-arm64.tar.gz` |
+
+Expand your operating system, then select the tab matching your machine's architecture.
+
+<AccordionGroup>
+  <Accordion title="macOS: verify, extract, and run" icon="apple" iconType="brands">
+    <Tabs>
+      <Tab title="ARM64 (Apple Silicon)">
+        ```sh
+        shasum -a 256 -c unio-macos-arm64.tar.gz.sha256
+        tar -xzf unio-macos-arm64.tar.gz
+        ./unio
+        ```
+      </Tab>
+      <Tab title="AMD64 (Intel)">
+        ```sh
+        shasum -a 256 -c unio-macos-amd64.tar.gz.sha256
+        tar -xzf unio-macos-amd64.tar.gz
+        ./unio
+        ```
+      </Tab>
+    </Tabs>
+  </Accordion>
+  <Accordion title="Linux: verify, extract, and run" icon="linux" iconType="brands">
+    <Tabs>
+      <Tab title="ARM64">
+        ```sh
+        sha256sum -c unio-linux-arm64.tar.gz.sha256
+        tar -xzf unio-linux-arm64.tar.gz
+        ./unio
+        ```
+      </Tab>
+      <Tab title="AMD64">
+        ```sh
+        sha256sum -c unio-linux-amd64.tar.gz.sha256
+        tar -xzf unio-linux-amd64.tar.gz
+        ./unio
+        ```
+      </Tab>
+    </Tabs>
+  </Accordion>
+  <Accordion title="Windows: verify, extract, and run" icon="windows" iconType="brands">
+    <Tabs>
+      <Tab title="ARM64">
+        ```powershell
+        $expected = (Get-Content .\unio-windows-arm64.zip.sha256).Split()[0].ToLower()
+        $actual = (Get-FileHash .\unio-windows-arm64.zip -Algorithm SHA256).Hash.ToLower()
+        if ($actual -ne $expected) { throw "Unio archive checksum mismatch" }
+        Expand-Archive .\unio-windows-arm64.zip -DestinationPath .\unio
+        .\unio\unio.exe
+        ```
+      </Tab>
+      <Tab title="AMD64">
+        ```powershell
+        $expected = (Get-Content .\unio-windows-amd64.zip.sha256).Split()[0].ToLower()
+        $actual = (Get-FileHash .\unio-windows-amd64.zip -Algorithm SHA256).Hash.ToLower()
+        if ($actual -ne $expected) { throw "Unio archive checksum mismatch" }
+        Expand-Archive .\unio-windows-amd64.zip -DestinationPath .\unio
+        .\unio\unio.exe
+        ```
+      </Tab>
+    </Tabs>
+  </Accordion>
+</AccordionGroup>
+
+### Command usage
+
+The command-line interface has three commands. Expand a command to see its syntax and options. The
+examples use `unio` as if it is on `PATH`; use `./unio` on macOS or Linux, or `.\\unio.exe` on
+Windows, when running directly from the extracted directory.
+
+<AccordionGroup>
+  <Accordion title="unio / unio tui — open the interactive wallet" icon="terminal">
+    `tui` is the default command, so these are equivalent:
+
+    ```sh
+    unio
+    unio tui
+    ```
+
+    Use a specific local wallet directory with the global `--data-dir` option:
+
+    ```sh
+    unio --data-dir /secure/path/unio-data
+    unio tui --data-dir /secure/path/unio-data
+    ```
+
+    `UNIO_DATA_DIR` provides the same setting through the process environment. An explicit
+    `--data-dir` takes precedence. Set `NO_COLOR=1` to use plain terminal output.
+  </Accordion>
+  <Accordion title="unio serve — run the headless signing server" icon="server">
+    ```text
+    unio serve [--bind <IP:PORT>] [--password-file <PATH>] [--allow-non-loopback]
+    ```
+
+    With no options, `serve` binds to `127.0.0.1:34567` and prompts for the wallet password:
+
+    ```sh
+    unio serve
+    ```
+
+    For automation, read the password from an owner-readable local file or Docker secret:
+
+    ```sh
+    unio serve --password-file /secure/path/unio-password
+    ```
+
+    `--allow-non-loopback` is required with a non-loopback `--bind` value. Use that exception only
+    inside a container whose published host port remains restricted to `127.0.0.1`.
+  </Accordion>
+  <Accordion title="unio health — check the signing server" icon="heart-pulse">
+    The default address is `127.0.0.1:34567`:
+
+    ```sh
+    unio health
+    ```
+
+    Check another local address when the server uses a custom bind:
+
+    ```sh
+    unio health --address 127.0.0.1:45678
+    ```
+  </Accordion>
+  <Accordion title="Help and version commands" icon="circle-info">
+    ```sh
+    unio --help
+    unio tui --help
+    unio serve --help
+    unio health --help
+    unio --version
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Set up Agent Mode
+
+<Steps>
+  <Step title="Initialize the encrypted vault">
+    Start `unio`, choose **Initialize wallet**, and enter a strong wallet password.
+  </Step>
+  <Step title="Add the EVM account">
+    Create a new wallet, import a recovery phrase, or import a private key. Unio is a single-account
+    wallet. When creating a wallet, save its recovery backup to a secure custom directory and move
+    it offline.
+  </Step>
+  <Step title="Create an access key">
+    Choose **Create access key**, enter a descriptive agent name, complete owner verification, and
+    copy the key when it is displayed. It cannot be shown again.
+  </Step>
+  <Step title="Start the signing server">
+    Choose **Start signing server** and complete owner verification. Leave this TUI process running
+    while the agent uses the wallet.
+  </Step>
+  <Step title="Configure the agent">
+    Give the local agent the displayed API URL and the access key. See
+    [Configure an agent](#configure-an-agent).
+  </Step>
+</Steps>
+
+On macOS, the first successful password unlock offers to enable Touch ID. The credential remains
+in the local, non-synchronizing Keychain and is released only after Touch ID verifies the currently
+enrolled biometric set. Later unlocks try Touch ID first and retain wallet-password fallback.
+Windows and Linux currently use the wallet password.
+
+The TUI displays its local data directory at the top of the screen. Override it with `--data-dir`
+or `UNIO_DATA_DIR` as shown in [Command usage](#command-usage). Do not place this directory in
+source control or a cloud-synchronized folder. Destroying the wallet stops Agent Mode and deletes
+every local access-key record.
+
+### Run headlessly without Docker
+
+After setting up the wallet and at least one access key in the TUI, use `unio serve` as described
+in [Command usage](#command-usage). Put only the wallet password in a local, owner-readable file;
+do not pass it in an environment variable or command-line argument.
+
+## 3. Docker
+
+Use Docker when the Unio signing server should run as an isolated, restartable local service. The
+image runs as an unprivileged user, stores its encrypted state only under `/data`, and supports
+Linux AMD64 and ARM64. Docker automatically selects the correct image from the multi-architecture
+manifest.
+
+<Warning>
+  A container cannot use the host's Touch ID, Face ID, Windows Hello, or Linux biometric service.
+  Docker uses the wallet-password file. Keep that file outside source control with owner-only
+  permissions.
+</Warning>
+
+### Initialize the Docker wallet
+
+Set the release image, create a persistent volume, and open the TUI inside a temporary container:
+
+```sh
+export UNIO_IMAGE=ghcr.io/abhi3700/unio:<version>
+docker volume create unio-data
+docker run --rm -it \
+  --volume unio-data:/data \
+  "$UNIO_IMAGE" tui
+```
+
+Inside the TUI:
+
+<Steps>
+  <Step title="Initialize and add the wallet">
+    Initialize the vault, then create or import the single EVM account. Do not save a plaintext
+    recovery backup only inside the temporary container; use a secure host-mounted directory if a
+    file backup is required.
+  </Step>
+  <Step title="Create an access key">
+    Create a separately named key for each agent and copy each key when it is displayed.
+  </Step>
+  <Step title="Exit the TUI">
+    Quit after setup. The temporary container is removed, while the encrypted vault and key hashes
+    remain in the `unio-data` volume.
+  </Step>
+</Steps>
+
+### Start the Docker server
+
+Create a local file containing only the same wallet password used during initialization. For
+example, create `unio-password.txt` in a local editor and restrict it on macOS or Linux:
+
+```sh
+chmod 600 unio-password.txt
+```
+
+Start the container with the API port published only on host loopback:
+
+```sh
+docker run --detach \
+  --name unio \
+  --restart unless-stopped \
+  --publish 127.0.0.1:34567:34567 \
+  --volume unio-data:/data \
+  --mount type=bind,src="$PWD/unio-password.txt",dst=/run/secrets/unio_password,readonly \
+  "$UNIO_IMAGE"
+```
+
+Verify the service:
+
+```sh
+docker exec unio unio health --address 127.0.0.1:34567
+```
+
+Never change the publication to `34567:34567` on a shared or internet-connected host. The explicit
+`127.0.0.1` prefix prevents other machines from reaching the wallet API directly.
+
+### Manage the Docker wallet later
+
+Only one Unio process should mount the data volume at a time. Stop the server container before
+opening the TUI against the same wallet:
+
+```sh
+docker stop unio
+docker run --rm -it --volume unio-data:/data "$UNIO_IMAGE" tui
+docker start unio
+```
+
+Use this flow to unlock or lock the wallet, create or revoke access keys, or destroy the local
+wallet. The headless server authenticates once from the password file and keeps only its isolated
+signer in memory until the container stops.
+
+### Use the included Compose file
+
+When running from the Unio source repository, its `compose.yaml` provides the same persistent
+volume, password secret, and loopback-only port:
+
+```sh
+docker compose build
+docker compose run --rm --service-ports unio tui
+docker compose up -d
+docker compose exec unio unio health --address 127.0.0.1:34567
+```
+
+The Compose setup reads the password from `unio-password.txt`, which is ignored by the repository.
+
+## Configure an agent
+
+After starting Agent Mode with any distribution, provide these values to the agent process. Do not
+commit them to a repository or write the access key to application logs.
+
+On macOS or Linux:
+
+```sh
+export UNIO_SERVER_URL=http://localhost:34567/unio/server
+export UNIO_ACCESS_KEY='unio_...'
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:UNIO_SERVER_URL = "http://localhost:34567/unio/server"
+$env:UNIO_ACCESS_KEY = "unio_..."
+```
+
+The Rust client examples in the standalone Unio repository read these variables without
+persisting either value:
+
+```sh
+cargo run --features client --example sign_message -- "Sign this exact message"
+cargo run --features client --example sign_eip712
+cargo run --features client --example sign_transaction
+```
+
+## Request signatures
+
+Send signing requests to `POST $UNIO_SERVER_URL` with the access key as a bearer credential.
+
+### EIP-191 personal message
+
+```sh
+curl "$UNIO_SERVER_URL" \
+  -H "Authorization: Bearer $UNIO_ACCESS_KEY" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "type": "personal_message",
+    "message": "Sign this exact message"
+  }'
+```
+
+### EIP-712 typed data
+
+Pass the complete typed-data object in `typedData`:
+
+```json
+{
+  "type": "eip712",
+  "typedData": {
+    "types": {
+      "EIP712Domain": [
+        { "name": "name", "type": "string" },
+        { "name": "version", "type": "string" },
+        { "name": "chainId", "type": "uint256" }
+      ],
+      "AgentRequest": [
+        { "name": "action", "type": "string" },
+        { "name": "requestId", "type": "bytes32" }
+      ]
+    },
+    "primaryType": "AgentRequest",
+    "domain": { "name": "My agent", "version": "1", "chainId": 1 },
+    "message": {
+      "action": "Approve agent action",
+      "requestId": "0x0000000000000000000000000000000000000000000000000000000000000001"
+    }
+  }
+}
+```
+
+### EVM transaction
+
+Quantity fields use standard RPC hexadecimal form. The response contains the signed raw
+transaction; the calling agent remains responsible for simulation and broadcasting.
+
+```json
+{
+  "type": "evm_transaction",
+  "transaction": {
+    "chainId": 1,
+    "nonce": "0x0",
+    "gasPrice": "0x3b9aca00",
+    "gasLimit": "0x5208",
+    "to": "0x000000000000000000000000000000000000dEaD",
+    "value": "0x0",
+    "data": "0x"
+  }
+}
+```
+
+### Successful response
+
+A message or EIP-712 request returns `resultType: "signature"`. A transaction request returns
+`resultType: "raw_transaction"`.
+
+```json
+{
+  "address": "0x...",
+  "result": "0x...",
+  "resultType": "signature"
+}
+```
+
+Use `GET $UNIO_SERVER_URL` without an access key to inspect server version and capabilities.
+
+## Locking, revocation, and errors
+
+- Locking the interactive wallet does not interrupt a running Agent Mode server.
+- Stopping Agent Mode closes the listener after owner verification.
+- Deleting an access key revokes it immediately, including while the server is running.
+- Destroying the wallet stops Agent Mode and deletes every access-key record.
+- `401 Unauthorized` means the access key is missing or invalid.
+- `422 Unprocessable Entity` means the signing payload is invalid.
+- `503 Service Unavailable` means the local signer is unavailable.
+
+## Local security model
+
+| Distribution | Encrypted wallet location | Owner verification | Network exposure |
+| --- | --- | --- | --- |
+| App | Native app data on the device | Device biometrics when configured, with wallet-password fallback | Loopback only |
+| TUI | Platform application-data directory or `UNIO_DATA_DIR` | Touch ID on macOS when configured; wallet password on every platform | Loopback only |
+| Docker | Persistent `/data` volume | Password file mounted read-only | Host loopback by default |
+
+Unio never sends the wallet password, recovery phrase, private key, or access key to a UniFi
+server. The encrypted vault and SHA-256 access-key hashes remain on the device running Unio. A new
+access key is displayed once, and the original value cannot be recovered from its stored hash.
