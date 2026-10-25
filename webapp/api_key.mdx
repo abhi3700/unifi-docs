@@ -8,15 +8,21 @@ The protected API page has two tabs: **Keys** and **Quota**.
 
 ## Keys
 
-The key table shows a key's name, creation time, and available actions. If the account has no keys,
-the page shows a dedicated empty state and a **New API Key** action.
+The key table shows a key's name, creation time, and revoke action. It never returns or displays an
+existing key's secret. If the account has no keys, the page shows a dedicated empty state and a
+**New API Key** action.
 
-Creating a key asks for a clear, unique name such as `Mobile app`. Deleting a key requires a
+Creating a key asks for a clear, unique name such as `Mobile app`. The generated secret then opens
+in a dedicated **Shown once** sheet, masked by default. Copy it directly or reveal it temporarily,
+save it in a trusted server-side secret manager, and confirm **I've saved it**. After that sheet is
+closed, the original secret cannot be recovered; create a replacement key if it was not saved.
+
+UniFi stores only the key's one-way hash for verification and revocation. Deleting a key requires a
 confirmation step and warns that every app using it will immediately lose API access.
 
 <Warning>
-Treat the generated key as a server-side secret. Do not commit it, expose it in browser code, or
-place it in screenshots and support messages.
+Treat the generated key as a server-side secret. Do not commit it, expose it in browser code, place
+it in screenshots and support messages, or expect UniFi support to recover it later.
 </Warning>
 
 API key creation and deletion use the signed-in session and do not require an additional

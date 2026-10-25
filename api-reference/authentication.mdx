@@ -45,25 +45,21 @@ Create a named API key in the UniFi web app and store it in a server-side secret
 
   <Step title="Name, create, and copy the key">
     Enter a clear, unique name and select **Create key**. Creation uses the signed-in session and
-    does not require an additional authenticator check. Use the copy action beside the new key,
-    then place the credential in your server-side secret manager.
+    does not require an additional authenticator check. UniFi then opens a **Shown once** sheet with
+    the key masked by default. Use **Copy key**, place the credential in your server-side secret
+    manager, and select **I've saved it** only after it is safely stored.
 
-    <Columns cols={2}>
-      <Frame caption="Use a name that identifies the integration.">
-        <img
-          className="w-full h-auto"
-          src="/images/web-app/api_2_set_name.png"
-          alt="Create API key sheet with marketplace entered as the key name"
-        />
-      </Frame>
-      <Frame caption="Copy the created key from its row.">
-        <img
-          className="w-full h-auto"
-          src="/images/web-app/api_3_created.png"
-          alt="UniFi API Keys tab showing the newly created marketplace key with copy and delete actions"
-        />
-      </Frame>
-    </Columns>
+    <Frame caption="Use a name that identifies the integration.">
+      <img
+        className="w-full h-auto"
+        src="/images/web-app/api_2_set_name.png"
+        alt="Create API key sheet with marketplace entered as the key name"
+      />
+    </Frame>
+
+    The secret is returned only by this creation request. UniFi stores a one-way hash and the Keys
+    table retains only the name, creation time, and revoke action. A lost key cannot be revealed;
+    revoke it and create a replacement.
 
   </Step>
 
@@ -100,4 +96,5 @@ curl --request GET \
 ```
 
 The credential must be authorized for the `user_id` in user-scoped routes. Never ship the key in
-browser JavaScript, a public repository, a mobile binary, logs, or analytics events.
+browser JavaScript, a public repository, a mobile binary, logs, or analytics events. Key-creation
+responses use `Cache-Control: no-store`, and the same policy is preserved through the UniFi FEP.

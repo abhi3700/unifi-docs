@@ -2333,16 +2333,11 @@
         "type": "object",
         "required": [
           "name",
-          "value",
           "created_at"
         ],
         "properties": {
           "name": {
             "type": "string"
-          },
-          "value": {
-            "type": "string",
-            "writeOnly": true
           },
           "created_at": {
             "type": "integer",
