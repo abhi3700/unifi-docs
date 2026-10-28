@@ -430,8 +430,8 @@
     "/wallet/balance/by_pair/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getWalletBalanceByPair",
-        "summary": "Get the latest wallet balance for one pair",
-        "description": "Returns the latest-block wallet balance and USD value for one stablecoin-chain pair. This is not a finality-protected spending limit. The custodial calculation is onchain@latest minus pending and collected fees; the self-custodial calculation is onchain@latest minus pending.",
+        "summary": "Get latest and finalized wallet balances for one pair",
+        "description": "Returns comparable latest-block and finalized-block net balances for one stablecoin-chain pair. Both use the same pay formula so finality_status and finality_delta describe only the exact block-finality difference. The balance field remains the two-decimal latest-block balance, while latest_value_usd is its two-decimal USD value.",
         "tags": [
           "Wallet"
         ],
@@ -448,7 +448,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The selected pair's latest wallet balance.",
+            "description": "The selected pair's latest and finalized wallet balances.",
             "content": {
               "application/json": {
                 "schema": {
@@ -458,7 +458,12 @@
                   "status": "200 OK",
                   "data": {
                     "balance": "125.25",
-                    "value_usd": "125.25"
+                    "latest_balance": "125.25",
+                    "latest_value_usd": "125.25",
+                    "finalized_balance": "120",
+                    "finalized_value_usd": "120.00",
+                    "finality_status": "incoming_pending",
+                    "finality_delta": "5.25"
                   }
                 }
               }
@@ -2600,7 +2605,53 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/WalletBalancesByCoinChainDetails"
+            "$ref": "#/components/schemas/WalletBalanceByPairDetails"
+          }
+        }
+      },
+      "WalletBalanceByPairDetails": {
+        "type": "object",
+        "required": [
+          "balance",
+          "latest_balance",
+          "latest_value_usd",
+          "finalized_balance",
+          "finalized_value_usd",
+          "finality_status",
+          "finality_delta"
+        ],
+        "properties": {
+          "balance": {
+            "type": "string",
+            "description": "Two-decimal latest-block balance retained for compatibility."
+          },
+          "latest_balance": {
+            "type": "string",
+            "description": "Exact latest-block balance in human units."
+          },
+          "latest_value_usd": {
+            "type": "string",
+            "description": "Two-decimal USD value of the latest-block balance."
+          },
+          "finalized_balance": {
+            "type": "string",
+            "description": "Exact finalized-block balance using the same net-balance formula."
+          },
+          "finalized_value_usd": {
+            "type": "string",
+            "description": "Two-decimal USD value of the finalized balance."
+          },
+          "finality_status": {
+            "type": "string",
+            "enum": [
+              "synced",
+              "incoming_pending",
+              "outgoing_pending"
+            ]
+          },
+          "finality_delta": {
+            "type": "string",
+            "description": "Exact absolute latest-vs-finalized difference in human units."
           }
         }
       },
