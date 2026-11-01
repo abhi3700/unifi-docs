@@ -43,7 +43,7 @@
     }
   ],
   "paths": {
-    "/healthz": {
+    "/v1/healthz": {
       "get": {
         "operationId": "getHealthz",
         "summary": "Check API process availability",
@@ -77,7 +77,7 @@
         }
       }
     },
-    "/health": {
+    "/v1/health": {
       "get": {
         "operationId": "getHealth",
         "summary": "Check API dependencies",
@@ -125,7 +125,7 @@
         }
       }
     },
-    "/wallet/address/{user_id}/{chain}": {
+    "/v1/wallet/address/{user_id}/{chain}": {
       "get": {
         "operationId": "getUserWalletAddress",
         "summary": "Get a wallet address for a chain",
@@ -180,7 +180,7 @@
         }
       }
     },
-    "/wallet/addresses/{user_id}": {
+    "/v1/wallet/addresses/{user_id}": {
       "get": {
         "operationId": "getUserWalletAddresses",
         "summary": "Get wallet addresses by protocol",
@@ -234,7 +234,7 @@
         }
       }
     },
-    "/wallet/onchain/balance/{user_id}/{chain}/{coin}": {
+    "/v1/wallet/onchain/balance/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getStablecoinBalance",
         "summary": "Get a stablecoin balance",
@@ -292,7 +292,7 @@
         }
       }
     },
-    "/wallet/onchain/balances/{user_id}/{chain}": {
+    "/v1/wallet/onchain/balances/{user_id}/{chain}": {
       "get": {
         "operationId": "getChainStablecoinBalances",
         "summary": "Get all stablecoin balances on a chain",
@@ -351,7 +351,7 @@
         }
       }
     },
-    "/wallet/balances/{user_id}": {
+    "/v1/wallet/balances/{user_id}": {
       "get": {
         "operationId": "getWalletBalances",
         "summary": "Get the complete wallet balance view",
@@ -427,7 +427,7 @@
         }
       }
     },
-    "/wallet/balance/by_pair/{user_id}/{chain}/{coin}": {
+    "/v1/wallet/balance/by_pair/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getWalletBalanceByPair",
         "summary": "Get latest and finalized wallet balances for one pair",
@@ -493,7 +493,7 @@
         }
       }
     },
-    "/wallet/balances/by_chain/{user_id}/{chain}": {
+    "/v1/wallet/balances/by_chain/{user_id}/{chain}": {
       "get": {
         "operationId": "getWalletBalancesByChain",
         "summary": "Get wallet balances by chain",
@@ -568,7 +568,7 @@
         }
       }
     },
-    "/wallet/balances/by_coin/{user_id}/{coin}": {
+    "/v1/wallet/balances/by_coin/{user_id}/{coin}": {
       "get": {
         "operationId": "getWalletBalancesByCoin",
         "summary": "Get wallet balances by stablecoin",
@@ -642,7 +642,7 @@
         }
       }
     },
-    "/payment/onchain/net_balance/{user_id}/{chain}/{coin}": {
+    "/v1/payment/onchain/net_balance/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getPaymentNetBalance",
         "summary": "Get spendable payment balance",
@@ -700,7 +700,7 @@
         }
       }
     },
-    "/payment/onchain/est_fee/{user_id}/{chain}/{coin}": {
+    "/v1/payment/onchain/est_fee/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getEstimatedPaymentFee",
         "summary": "Estimate the payment fee",
@@ -758,7 +758,7 @@
         }
       }
     },
-    "/payment/onchain/balance_est_fee/{user_id}/{chain}/{coin}": {
+    "/v1/payment/onchain/balance_est_fee/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getPaymentBalanceAndFee",
         "summary": "Get payment balance and fee",
@@ -820,7 +820,7 @@
         }
       }
     },
-    "/payment/onchain/balance_est_fee_ncw/{user_id}/{is_fee_incl}": {
+    "/v1/payment/onchain/balance_est_fee_ncw/{user_id}/{is_fee_incl}": {
       "post": {
         "operationId": "getSelfCustodialPaymentBalanceAndFee",
         "summary": "Prepare a self-custodial payment",
@@ -900,7 +900,7 @@
         }
       }
     },
-    "/payment/onchain/balance_est_fee_ncw_bulkpay/{user_id}/{is_fee_incl}": {
+    "/v1/payment/onchain/balance_est_fee_ncw_bulkpay/{user_id}/{is_fee_incl}": {
       "post": {
         "operationId": "getSelfCustodialBulkPaymentBalanceAndFee",
         "summary": "Prepare self-custodial bulk payments",
@@ -1002,7 +1002,7 @@
         }
       }
     },
-    "/payment/onchain/ncw/pre_fetch_balance_est_fee_params/{user_id}/{chain}/{coin}": {
+    "/v1/payment/onchain/ncw/pre_fetch_balance_est_fee_params/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getSelfCustodialPaymentCalculationInputs",
         "summary": "Get self-custodial fee inputs",
@@ -1066,7 +1066,7 @@
         }
       }
     },
-    "/payment/onchain/{user_id}/{is_fee_incl}": {
+    "/v1/payment/onchain/{user_id}/{is_fee_incl}": {
       "post": {
         "operationId": "createManagedWalletPayment",
         "summary": "Create a stablecoin payment",
@@ -1140,7 +1140,7 @@
         }
       }
     },
-    "/payment/onchain/merchant/{user_id}/{is_fee_incl}/{session_id}": {
+    "/v1/payment/onchain/merchant/{user_id}/{is_fee_incl}/{session_id}": {
       "post": {
         "operationId": "createManagedWalletMerchantPayment",
         "summary": "Create a managed-wallet merchant payment",
@@ -1215,7 +1215,7 @@
         }
       }
     },
-    "/payment/onchain/ncw/create_domain_permit/{user_id}": {
+    "/v1/payment/onchain/ncw/create_domain_permit/{user_id}": {
       "post": {
         "operationId": "createSelfCustodialPaymentPermit",
         "summary": "Create a self-custodial payment permit",
@@ -1302,7 +1302,7 @@
         }
       }
     },
-    "/payment/onchain/ncw/create_domain_permit_bulkpay/{user_id}": {
+    "/v1/payment/onchain/ncw/create_domain_permit_bulkpay/{user_id}": {
       "post": {
         "operationId": "createSelfCustodialBulkPaymentPermit",
         "summary": "Create a self-custodial bulk-payment permit",
@@ -1404,7 +1404,7 @@
         }
       }
     },
-    "/payment/onchain/ncw/{user_id}": {
+    "/v1/payment/onchain/ncw/{user_id}": {
       "post": {
         "operationId": "createSelfCustodialPayment",
         "summary": "Create a self-custodial payment",
@@ -1482,7 +1482,7 @@
         }
       }
     },
-    "/payment/onchain/ncw_bulkpay/{user_id}": {
+    "/v1/payment/onchain/ncw_bulkpay/{user_id}": {
       "post": {
         "operationId": "createSelfCustodialBulkPayment",
         "summary": "Create self-custodial bulk payments",
@@ -1575,7 +1575,7 @@
         }
       }
     },
-    "/payment/onchain/ncw/merchant/{user_id}/{session_id}": {
+    "/v1/payment/onchain/ncw/merchant/{user_id}/{session_id}": {
       "post": {
         "operationId": "createSelfCustodialMerchantPayment",
         "summary": "Create a self-custodial merchant payment",
@@ -1653,7 +1653,7 @@
         }
       }
     },
-    "/payment/merchant/session/{session_id}": {
+    "/v1/payment/merchant/session/{session_id}": {
       "get": {
         "operationId": "getPaymentSessionStatus",
         "summary": "Get a merchant payment session status",
@@ -1705,7 +1705,7 @@
         }
       }
     },
-    "/payment/onchain/receipt/{receipt_id}": {
+    "/v1/payment/onchain/receipt/{receipt_id}": {
       "get": {
         "operationId": "getPaymentReceipt",
         "summary": "Get a payment receipt",
@@ -1774,7 +1774,7 @@
         }
       }
     },
-    "/payment/onchain/receipts/{user_id}/{sort_by_latest}/{from_start}": {
+    "/v1/payment/onchain/receipts/{user_id}/{sort_by_latest}/{from_start}": {
       "get": {
         "operationId": "getPaymentReceipts",
         "summary": "Get payment history",

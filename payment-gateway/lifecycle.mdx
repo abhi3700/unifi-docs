@@ -105,7 +105,7 @@ may require different policies.
 
 After the session lookup returns a receipt ID:
 
-1. fetch `/payment/onchain/receipt/:receiptId` immediately;
+1. fetch the proxy's `/payment/onchain/receipt/:receiptId` path immediately;
 2. show `Processing` as payment submitted and `Confirmed` as confirmed on-chain but still waiting
    for finality;
 3. while either state remains active, refresh automatically every 15 minutes to conserve API

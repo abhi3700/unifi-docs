@@ -17,8 +17,10 @@ flowchart TD
 
 The proxy is intentionally narrow. It accepts only `GET` and `OPTIONS`, and only these paths:
 
-- `/payment/merchant/session/:sessionId` with a valid 64-character hexadecimal session ID; and
-- `/payment/onchain/receipt/:receiptId` with a valid UniFi receipt ID.
+- `/payment/merchant/session/:sessionId` below the configured proxy prefix, with a valid
+  64-character hexadecimal session ID; and
+- `/payment/onchain/receipt/:receiptId` below the configured proxy prefix, with a valid UniFi
+  receipt ID.
 
 It is not an arbitrary API passthrough.
 
@@ -66,6 +68,7 @@ Pass the original request so the proxy can validate its URL, method, and origin.
 | `UNIFI_API_BASE_URL` | `https://api.payunifi.com` | UniFi admin, local, staging, or self-hosted infrastructure |
 
 Most production merchants should use the defaults for `apiPrefix` and `UNIFI_API_BASE_URL`.
+The proxy forwards these allowlisted requests to the corresponding `/v1/...` UniFi API routes.
 
 ## Cross-origin frontend
 
