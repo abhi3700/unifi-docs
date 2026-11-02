@@ -820,6 +820,76 @@
         }
       }
     },
+    "/v1/payment/onchain/balance_est_fee_bulkpay/{user_id}/{chain}": {
+      "post": {
+        "operationId": "getManagedWalletBulkPaymentInputs",
+        "summary": "Get custodial bulk-payment inputs",
+        "description": "Returns balances, BundlePay allowances, gas data, and prices for the selected stablecoins on one chain.",
+        "tags": [
+          "Preflight"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          },
+          {
+            "$ref": "#/components/parameters/FetchContacts"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkPreOcpRequest"
+              },
+              "example": {
+                "coins": [
+                  "USDT",
+                  "USDC"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Raw custodial inputs for the selected stablecoins.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPreOcpResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
     "/v1/payment/onchain/balance_est_fee_ncw/{user_id}/{is_fee_incl}": {
       "post": {
         "operationId": "getSelfCustodialPaymentBalanceAndFee",
@@ -1002,7 +1072,7 @@
         }
       }
     },
-    "/v1/payment/onchain/ncw/pre_fetch_balance_est_fee_params/{user_id}/{chain}/{coin}": {
+    "/v1/payment/onchain/ncw/prefetch_balance_est_fee_params/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getSelfCustodialPaymentCalculationInputs",
         "summary": "Get self-custodial fee inputs",
@@ -1038,6 +1108,76 @@
                     "gas_token_price": 2500.25,
                     "coin_price": 1.0
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/payment/onchain/ncw/prefetch_balance_est_fee_params_bulkpay/{user_id}/{chain}": {
+      "post": {
+        "operationId": "getSelfCustodialBulkPaymentCalculationInputs",
+        "summary": "Get self-custodial bulk fee inputs",
+        "description": "Returns raw Permit2 allowances, balances, gas data, and prices for the selected stablecoins on one chain.",
+        "tags": [
+          "Preflight"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/Chain"
+          },
+          {
+            "$ref": "#/components/parameters/FetchContacts"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkPreOcpRequest"
+              },
+              "example": {
+                "coins": [
+                  "USDT",
+                  "USDC"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Raw self-custodial inputs for the selected stablecoins.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPreOcpResponse"
                 }
               }
             }
@@ -1968,6 +2108,16 @@
         },
         "description": "Stablecoin ticker."
       },
+      "FetchContacts": {
+        "name": "fetch_contacts",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean",
+          "default": false
+        },
+        "description": "When true, include the first saved-recipient page for the selected chain protocol."
+      },
       "CreateSession": {
         "name": "create_session",
         "in": "path",
@@ -2777,6 +2927,108 @@
           },
           "data": {
             "$ref": "#/components/schemas/PreflightValues"
+          }
+        }
+      },
+      "BulkPreOcpRequest": {
+        "type": "object",
+        "required": [
+          "coins"
+        ],
+        "properties": {
+          "coins": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/Stablecoin"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "BulkPreOcpCoin": {
+        "type": "object",
+        "required": [
+          "coin",
+          "balance",
+          "allowance",
+          "coin_price"
+        ],
+        "properties": {
+          "coin": {
+            "$ref": "#/components/schemas/Stablecoin"
+          },
+          "balance": {
+            "type": "string",
+            "description": "Human-readable spendable balance."
+          },
+          "allowance": {
+            "type": "string",
+            "description": "Raw base-unit allowance to BundlePay or Permit2."
+          },
+          "coin_price": {
+            "type": "number",
+            "format": "double",
+            "description": "Stablecoin price in USD."
+          }
+        },
+        "additionalProperties": false
+      },
+      "BulkPreOcpValues": {
+        "type": "object",
+        "required": [
+          "coin_entries",
+          "gas_price",
+          "gas_token_price"
+        ],
+        "properties": {
+          "coin_entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulkPreOcpCoin"
+            }
+          },
+          "gas_price": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Current gas price in wei."
+          },
+          "gas_token_price": {
+            "type": "number",
+            "format": "double",
+            "description": "Current gas-token price in USD."
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "contacts_total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "contacts_next_cursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkPreOcpResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/BulkPreOcpValues"
           }
         }
       },
