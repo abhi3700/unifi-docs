@@ -1280,6 +1280,94 @@
         }
       }
     },
+    "/v1/payment/onchain/cw_bulkpay/{user_id}/{is_fee_incl}": {
+      "post": {
+        "operationId": "createManagedWalletBulkPayment",
+        "summary": "Create managed-wallet bulk payments",
+        "description": "Submits two or more same-chain payments from a UniFi-managed wallet. UniFi handles controlled-wallet approval and signing and returns one receipt ID per recipient.",
+        "tags": [
+          "Pay"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/IsFeeInclusive"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayOnchainCwBulkRequest"
+              },
+              "example": {
+                "chain": "Sepolia",
+                "batch": [
+                  {
+                    "coin": "USDT",
+                    "to_address": "0x2222222222222222222222222222222222222222",
+                    "amount": "10.25",
+                    "memo": "BulkPay"
+                  },
+                  {
+                    "coin": "USDC",
+                    "to_address": "0x3333333333333333333333333333333333333333",
+                    "amount": "4.50",
+                    "memo": "BulkPay"
+                  }
+                ],
+                "scheds": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The receipt IDs created for the batch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPaymentResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "receipt_ids": [
+                      "1reb05f9d5f2791616e3c",
+                      "7cca24fc3e804598a813"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
     "/v1/payment/onchain/merchant/{user_id}/{is_fee_incl}/{session_id}": {
       "post": {
         "operationId": "createManagedWalletMerchantPayment",
@@ -3374,6 +3462,34 @@
           },
           "memo": {
             "$ref": "#/components/schemas/Memo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PayOnchainCwBulkRequest": {
+        "type": "object",
+        "required": [
+          "chain",
+          "batch"
+        ],
+        "properties": {
+          "chain": {
+            "$ref": "#/components/schemas/Chain"
+          },
+          "batch": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/BulkPayItem"
+            }
+          },
+          "scheds": {
+            "type": "array",
+            "nullable": true,
+            "description": "Optional schedules aligned one-to-one with batch items.",
+            "items": {
+              "$ref": "#/components/schemas/Schedule"
+            }
           }
         },
         "additionalProperties": false
