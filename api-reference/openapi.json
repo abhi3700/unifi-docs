@@ -3279,6 +3279,10 @@
           "memo": {
             "$ref": "#/components/schemas/Memo"
           },
+          "fee_coin": {
+            "$ref": "#/components/schemas/Stablecoin",
+            "description": "Coin in which est_fee and act_fee are denominated. When omitted for legacy or single-payment receipts, coin is the fee coin."
+          },
           "est_fee": {
             "type": "string"
           },
