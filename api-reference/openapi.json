@@ -1284,7 +1284,7 @@
       "post": {
         "operationId": "createManagedWalletBulkPayment",
         "summary": "Create managed-wallet bulk payments",
-        "description": "Submits two or more same-chain payments from a UniFi-managed wallet. UniFi handles controlled-wallet approval and signing and returns one receipt ID per recipient.",
+        "description": "Submits two or more same-chain payments from a UniFi-managed wallet. UniFi handles controlled-wallet approval and signing and returns one durable bulk payment ID plus one receipt ID per recipient.",
         "tags": [
           "Pay"
         ],
@@ -1326,7 +1326,7 @@
         },
         "responses": {
           "200": {
-            "description": "The receipt IDs created for the batch.",
+            "description": "The bulk payment ID and receipt IDs created for the batch.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1335,9 +1335,10 @@
                 "example": {
                   "status": "200 OK",
                   "data": {
+                    "bulk_pay_id": "1b0123456789abcdef01234567",
                     "receipt_ids": [
-                      "1reb05f9d5f2791616e3c",
-                      "7cca24fc3e804598a813"
+                      "1r0123456789abcdef01234567",
+                      "1r89abcdef0123456701234567"
                     ]
                   }
                 }
@@ -1714,7 +1715,7 @@
       "post": {
         "operationId": "createSelfCustodialBulkPayment",
         "summary": "Create self-custodial bulk payments",
-        "description": "Submits a signed Permit2 batch and returns the receipt IDs created for its individual payments.",
+        "description": "Submits a signed Permit2 batch and returns one durable bulk payment ID plus the receipt IDs created for its individual payments.",
         "tags": [
           "Pay"
         ],
@@ -1761,7 +1762,7 @@
         },
         "responses": {
           "200": {
-            "description": "The receipt IDs created for the batch.",
+            "description": "The bulk payment ID and receipt IDs created for the batch.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1770,9 +1771,10 @@
                 "example": {
                   "status": "200 OK",
                   "data": {
+                    "bulk_pay_id": "1b0123456789abcdef01234567",
                     "receipt_ids": [
-                      "1reb05f9d5f2791616e3c",
-                      "7cca24fc3e804598a813"
+                      "1r0123456789abcdef01234567",
+                      "1r89abcdef0123456701234567"
                     ]
                   }
                 }
@@ -1973,6 +1975,81 @@
                     "status": "Confirmed",
                     "start_ts_us": 1789992000000000,
                     "end_ts_us": 1789992060000000
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/payment/onchain/bulkpay/{bulk_pay_id}": {
+      "get": {
+        "operationId": "getBulkPaymentReceipts",
+        "summary": "Get a bulk payment",
+        "description": "Returns the ordered individual receipts created by one managed-wallet or self-custodial bulk-payment submission.",
+        "tags": [
+          "History"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BulkPayId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The bulk payment and its individual receipts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPayReceiptGroupResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "bulk_pay_id": "1b0123456789abcdef01234567",
+                    "receipts": [
+                      {
+                        "id": "1reb05f9d5f2791616e3c",
+                        "bulk_pay_id": "1b0123456789abcdef01234567",
+                        "entity": "self",
+                        "user_id": "user@example.com",
+                        "is_fee_incl": false,
+                        "chain": "Sepolia",
+                        "coin": "USDT",
+                        "to_address": "0x2222222222222222222222222222222222222222",
+                        "amount": "10.25",
+                        "memo": "BulkPay",
+                        "est_fee": "0.09",
+                        "act_fee": "0",
+                        "tx_hash": "",
+                        "block_num": 0,
+                        "status": "Processing",
+                        "start_ts_us": 1789992000000000,
+                        "end_ts_us": 0
+                      }
+                    ]
                   }
                 }
               }
@@ -2261,6 +2338,16 @@
           "type": "string"
         },
         "description": "UniFi payment receipt ID."
+      },
+      "BulkPayId": {
+        "name": "bulk_pay_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[0-9]+b[a-fA-F0-9]{24}$"
+        },
+        "description": "UniFi identifier shared by every receipt in one bulk-payment submission."
       },
       "SortByLatest": {
         "name": "sort_by_latest",
@@ -3255,6 +3342,10 @@
           "id": {
             "type": "string"
           },
+          "bulk_pay_id": {
+            "type": "string",
+            "description": "Identifier shared by receipts from the same bulk-payment submission. Omitted for legacy and single-payment receipts."
+          },
           "entity": {
             "type": "string"
           },
@@ -3868,9 +3959,13 @@
       "BulkPaymentResult": {
         "type": "object",
         "required": [
+          "bulk_pay_id",
           "receipt_ids"
         ],
         "properties": {
+          "bulk_pay_id": {
+            "type": "string"
+          },
           "receipt_ids": {
             "type": "array",
             "items": {
@@ -3891,6 +3986,39 @@
           },
           "data": {
             "$ref": "#/components/schemas/BulkPaymentResult"
+          }
+        }
+      },
+      "BulkPayReceiptGroup": {
+        "type": "object",
+        "required": [
+          "bulk_pay_id",
+          "receipts"
+        ],
+        "properties": {
+          "bulk_pay_id": {
+            "type": "string"
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Receipt"
+            }
+          }
+        }
+      },
+      "BulkPayReceiptGroupResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/BulkPayReceiptGroup"
           }
         }
       }
