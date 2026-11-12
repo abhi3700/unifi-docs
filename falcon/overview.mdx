@@ -4,9 +4,8 @@ description: "Use an AI-assisted agent to prepare and automate on-chain stableco
 icon: "robot"
 ---
 
-Falcon is your personal payment agent that runs on top of UniFi. It combines AI-assisted instruction handling with
-UniFi's blockchain payment infrastructure so an owner can prepare, review, schedule, and track
-stablecoin payments from chat interface (Telegram, ..).
+Falcon is your personal payment agent built on UniFi. An owner can prepare, review, schedule, and
+track stablecoin payments through Telegram. Also, get continuous notifications based on its wallet tracking rules.
 
 <Info>
     Falcon is powered by both **AI** and **blockchain**: AI helps interpret
@@ -87,10 +86,10 @@ On-chain receipt and finality
 
 ## Gasless payment experience
 
-Traditional ERC-20 payments often require users to hold both the stablecoin and the network's
-native token for transaction fees. UniFi's supported payment flow separates that gas handling from
-the payer experience, allowing Falcon to automate payments while the wallet maintains the required
-stablecoin balance. Also, using web app, user has to do prior approval before payment. But with Falcon, you don't need such pre-payment setup.
+Traditional ERC-20 payments can require both the stablecoin and the network's native token. UniFi's
+supported flow separates payment execution from the payer's gas balance. Falcon's configured
+KMS-backed wallet handles supported approval setup within its workflow; the web app may instead ask
+a connected wallet for approval before payment.
 
 <Note>
     "Gasless" describes the supported UniFi payment execution. Network

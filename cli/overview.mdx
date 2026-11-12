@@ -4,17 +4,17 @@ description: "Manage payments, wallets, and APIs directly from the command line.
 icon: "terminal"
 ---
 
-## What is UniFi CLI?
+## What is the UniFi CLI?
 
-The **UniFi CLI** allows developers to interact with UniFi directly from the terminal — enabling payments, wallet management, and automation workflows.
+The **UniFi CLI** manages payments, wallets, and automation from a terminal.
 
 {/* TODO: Add diagram */}
 
 ---
 
-## Requirements
+## Accounts
 
-To use the CLI effectively, you need the following:
+The CLI supports these account and infrastructure boundaries:
 
 <Columns cols={2}>
   <Card title="Account Setup" icon="key">
@@ -28,8 +28,8 @@ The CLI cannot connect directly to Web3 wallets such as MetaMask. Browser-wallet
 available through the UniFi web app instead.
 
 <Note>
-For automation and unattended workflows, use **AWS KMS** so signing keys remain protected by the
-KMS security boundary.
+    For automation and unattended workflows, use **AWS KMS** so signing keys
+    remain protected by the KMS security boundary.
 </Note>
 
 > Support for additional managed-key providers is planned for a future release.
@@ -38,7 +38,7 @@ KMS security boundary.
 
   <Card title="UniFi Infra" icon="credit-card">
 
-    The CLI works on top of **UniFi’s stablecoin payment infrastructure**, which powers:
+    The CLI uses **UniFi’s stablecoin payment infrastructure** for:
 
     - Gasless transactions
     - Fast and low-cost transfers

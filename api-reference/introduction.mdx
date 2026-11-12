@@ -4,11 +4,8 @@ description: "Use the production UniFi API for deposit, wallet, payments, histor
 icon: "code"
 ---
 
-The UniFi API gives developers a simple way to integrate stablecoin payments without dealing with the complexity
-of UniFi Infra directly.
-
-It abstracts the underlying payment infrastructure into a clean set of API endpoints,
-so you can build checkout flows, manage wallets, and process payments through a straightforward developer interface.
+The UniFi API exposes wallet, payment, history, and checkout operations without requiring callers
+to manage UniFi's internal services.
 
 ## Base URL
 
@@ -54,7 +51,7 @@ message.
         icon="key"
         href="/api-reference/authentication"
     >
-        Choose an API key & use it safely.
+        Choose an API key and use it safely.
     </Card>
     <Card
         title="Errors and payment state"
