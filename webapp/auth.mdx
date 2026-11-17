@@ -42,6 +42,9 @@ fresh login is required. Recovery routes exist for password reset and 2FA renewa
 
 ## MetaMask flow
 
+MetaMask is offered in desktop web and PWA layouts above 699px. Mobile layouts and native apps
+offer email or Unio for sign-in and wallet switching.
+
 The wallet flow requests a server-issued challenge, signs it in MetaMask, and exchanges the
 signature for a web JWT. The server checks that the challenge address, origin, chain context,
 nonce, and expiry match before issuing the session.
