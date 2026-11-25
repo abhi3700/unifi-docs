@@ -375,11 +375,12 @@ body:has(dialog[open]) { overflow: hidden; }
 }
 @media (max-width: 760px) {
   :root { --header-height: 101px; }
-  .header-row { --mobile-control-size: clamp(38px, 11vw, 44px); height: 59px; padding-inline: 11px; display: flex; gap: 6px; }
-  .brand { flex: none; margin-inline-end: auto; gap: 4px; }
-  .brand img { width: 72px; height: 23px; }
+  .header-row { --mobile-control-size: 44px; height: 59px; padding-inline: 15px 4px; display: flex; gap: 0; }
+  .brand { flex: none; margin-inline-end: auto; gap: 6px; }
+  /* The wordmark has transparent space after the lettering. */
+  .brand img { width: 72px; height: 23px; margin-inline-end: -14px; }
   .brand span { padding-left: 8px; font-size: 12px; line-height: 17px; }
-  .header-actions { gap: 6px; }
+  .header-actions { gap: 0; }
   .header-search, .header-actions :is(.icon-button, .launch) { flex: none; width: var(--mobile-control-size); height: var(--mobile-control-size); padding: 0; border: 0; background: transparent; color: var(--muted); }
   .header-search:hover, .header-actions :is(.icon-button, .launch):hover { background: transparent; color: var(--text); }
   .header-search { justify-content: center; }
