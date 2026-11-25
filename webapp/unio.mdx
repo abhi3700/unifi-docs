@@ -4,9 +4,10 @@ description: "Use the self-custodial Unio wallet in the UniFi app, a terminal, o
 icon: "robot"
 ---
 
-Unio is a self-custodial EVM wallet that can let a local agent request signatures without exposing
-the wallet's private key. It is distributed through the UniFi app, a cross-platform terminal UI
-(TUI), and a multi-architecture Docker image.
+Unio is the self-custodial EVM wallet built into UniFi. Create or import a wallet to sign in and
+authorize payments on your device. Unio is also available as a cross-platform terminal UI (TUI)
+and a multi-architecture Docker image. In Agentic Mode, a local agent can request signatures
+without receiving your private key.
 
 Every distribution uses the same encrypted-vault format and signing behavior. Unio currently
 supports EIP-191 personal messages, EIP-712 typed data, and replay-protected legacy EVM
@@ -42,31 +43,33 @@ http://localhost:34567/unio/server
 
 ## 1. App
 
-Use this distribution when you already use Unio inside UniFi and want a graphical Agentic Mode
-manager.
+Use Unio to sign in and pay in the UniFi web app, installed PWA, or native app.
 
 <Note>
-  The Unio wallet works in both the native and web versions of the UniFi app. Agentic Mode works only
-  in the native desktop app because a browser or installed PWA cannot host the local signing
-  server.
+  In the UniFi app, Agentic Mode requires the native desktop app to host the local signing server.
 </Note>
 
 ### Set up the wallet
 
 <Steps>
-  <Step title="Choose Unio at sign-up">
-    Open [Unio sign-up](https://payunifi.com/app/auth/signup?use=unio), then create a new wallet or
-    import an existing recovery phrase or private key.
+  <Step title="Choose Unio and set a password">
+    Open [Unio sign-up](https://payunifi.com/app/auth/signup?use=unio) and set a strong password for
+    the local vault.
   </Step>
-  <Step title="Protect the local vault">
-    Set a strong wallet password. If the native app offers biometric unlock, enable it for more
-    convenient owner verification. The wallet password remains available as a fallback.
+  <Step title="Create or import a wallet">
+    Create a new wallet or import an existing recovery phrase or private key. If biometric unlock is
+    available, you can enable it for quicker verification. Keep your wallet password as a fallback.
   </Step>
   <Step title="Secure the recovery backup">
     Save the recovery backup to a directory you choose, move it to a secure offline location, and
     remove any copy left in Downloads or a cloud-synchronized directory.
   </Step>
 </Steps>
+
+### Pay with Unio
+
+Unlock Unio, choose **Pay**, and review and authorize the payment on your device. See
+[Send](/webapp/pay_send#connected-wallet-approval) for the token approval and signing steps.
 
 ### Enable Agentic Mode
 

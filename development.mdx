@@ -29,8 +29,9 @@ server-side integrations.
     needs to reconcile the transfer.
   </Step>
   <Step title="Authorize the payment">
-    Keep approval in the account's security boundary. Email accounts use authenticator approval;
-    connected wallets approve and sign through the wallet when required.
+    Keep approval in the account's security boundary. Email accounts use authenticator approval.
+    In the UniFi app, self-custodial users approve tokens if required and sign payments in Unio or
+    MetaMask.
   </Step>
   <Step title="Store the receipt ID">
     Save the returned receipt identifier with your own order or invoice record. It is the stable
@@ -49,8 +50,8 @@ Your client → Your trusted backend → UniFi API → Network settlement → Re
 ```
 
 Keep API keys in a trusted backend. Do not embed them in browser code, mobile binaries, public
-configuration, analytics events, or shared logs. Wallet signatures belong in the user's wallet;
-UniFi never needs a seed phrase or private key.
+configuration, analytics events, or shared logs. Sign in the user's wallet. UniFi servers never
+need a recovery phrase or private key.
 
 ## Design for asynchronous settlement
 

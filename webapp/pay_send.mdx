@@ -29,9 +29,9 @@ with an asset, a network, both values, or a prefilled address in the route.
         and fee treatment before authorizing.
     </Step>
     <Step title="Authorize and submit">
-        Email accounts confirm with authenticator OTP. MetaMask accounts approve
-        Permit2 when needed, then sign the payment-specific request before it is
-        sent to UniFi.
+        Email accounts confirm with authenticator OTP. With Unio or MetaMask, approve Permit2 if
+        needed, then sign the payment details. Unio signs on your device. MetaMask shows prompts
+        in the browser extension.
     </Step>
 </Steps>
 
@@ -50,10 +50,11 @@ network errors have distinct messages in the current implementation.
 
 ### Why connected wallets may need a network token
 
-When you pay with MetaMask or another self-custodial wallet, Permit2 must first be authorized to use
-the selected token. If the current allowance is insufficient, your wallet submits an onchain approval
-transaction. The network charges gas for this transaction, so the wallet must hold a small amount of
-the network's native token.
+The network charges gas when an onchain token approval is required.
+
+- **Unio:** If your wallet is short of native gas, UniFi can fund an eligible approval that Unio
+  signs on your device. The approval cost is included in the updated payment fee.
+- **MetaMask:** Keep enough of the network's native token in your wallet to cover the approval.
 
 After the approval is confirmed, you sign the payment authorization and submit the payment. Later
 payments can skip the approval step while the existing allowance remains sufficient.

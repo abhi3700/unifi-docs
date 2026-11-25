@@ -36,7 +36,10 @@ receipts, history, and API access in one responsive Dioxus application.
 | Account | Authorization | Wallet behavior |
 | --- | --- | --- |
 | Email | Password plus authenticator OTP for protected actions | UniFi-managed custodial wallet |
-| MetaMask | Wallet challenge for login; Permit2 approval and payment signature when required | Self-custodial EVM wallet |
+| [Unio](/webapp/unio#1-app) | Unlock on your device to sign in and authorize token approvals and payments | Built-in self-custodial EVM wallet |
+| [MetaMask](/webapp/auth#metamask-flow) | Sign the login challenge and authorize token approvals and payments in the extension | Self-custodial EVM wallet |
+
+Unio is available on web, PWA, and native apps. MetaMask is available in desktop web and PWA layouts.
 
 The protected routes redirect to Auth when the user has no valid session. Public routes include the
 home screen and the API-plan catalog.

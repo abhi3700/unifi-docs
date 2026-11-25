@@ -1,19 +1,14 @@
 ---
 title: "Auth"
-description: "Sign up or return with email credentials or a connected MetaMask wallet."
+description: "Sign in with an email account, Unio, or the MetaMask browser extension."
 icon: "lock"
 ---
 
 Auth is the gate for wallet, payment, history, and API-management routes. The route stores the page
 the user originally requested and returns there after a successful session is established.
 
-<Frame caption="Choose an email account or MetaMask to continue.">
-    <img
-        className="w-full h-auto"
-        src="/images/web-app/auth.png"
-        alt="UniFi account screen with an email field and MetaMask option"
-    />
-</Frame>
+Email and Unio are available on web, PWA, and native apps. Web and PWA layouts above 699px also
+offer MetaMask for sign-in and wallet switching.
 
 ## Email account flow
 
@@ -40,13 +35,16 @@ For a new email account, the implementation proceeds through:
 Returning email users complete password and authenticator checks when the backend reports that a
 fresh login is required. Recovery routes exist for password reset and 2FA renewal.
 
+## Unio flow
+
+Choose **Unio** to [create or import a wallet](/webapp/unio#set-up-the-wallet). When you return,
+unlock it with your wallet password or biometrics if enabled. When UniFi needs a new session,
+Unio signs the authentication challenge on your device.
+
 ## MetaMask flow
 
-MetaMask is offered in desktop web and PWA layouts above 699px. Mobile layouts and native apps
-offer email or Unio for sign-in and wallet switching.
-
-The wallet flow requests a server-issued challenge, signs it in MetaMask, and exchanges the
-signature for a web JWT. The server checks that the challenge address, origin, chain context,
+The app requests a server-issued challenge, asks MetaMask to sign it, and exchanges the signature
+for a web JWT. The server checks that the challenge address, origin, chain context,
 nonce, and expiry match before issuing the session.
 
 The challenge endpoints do not require an existing bearer credential.
@@ -81,9 +79,8 @@ The challenge endpoints do not require an existing bearer credential.
 </Note>
 
 <Warning>
-    UniFi never needs a seed phrase or private key. A legitimate login asks the
-    wallet to sign the displayed authentication challenge, not to reveal wallet
-    secrets.
+    Sign in by signing the wallet challenge. If you import a wallet into Unio, enter its recovery
+    phrase or private key only in Unio's local import screen. UniFi servers never receive either.
 </Warning>
 
 ## Session exit

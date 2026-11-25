@@ -9,20 +9,19 @@ authenticated session.
 
 ## 1. Choose how to sign in
 
-<Columns cols={2}>
+<Columns cols={3}>
   <Card title="Email account" icon="envelope">
     UniFi creates and manages the account wallet. Signup continues through email verification,
     password setup, and authenticator 2FA.
   </Card>
-  <Card title="MetaMask" icon="wallet">
-    Connect an EVM wallet and sign the server-issued authentication challenge. UniFi does not ask
-    for a seed phrase or private key.
+  <Card title="Unio" icon="wallet" href="/webapp/unio#set-up-the-wallet">
+    Create or import a self-custodial wallet built into UniFi. Unlock it and sign on your device.
+  </Card>
+  <Card title="MetaMask" icon="wallet" href="/webapp/auth#metamask-flow">
+    Connect your browser extension in the desktop layout and sign the authentication challenge
+    in MetaMask.
   </Card>
 </Columns>
-
-<Frame caption="Choose an email account or MetaMask to continue.">
-  <img className="w-full h-auto" src="/images/web-app/auth.png" alt="UniFi account creation screen with email and MetaMask options" />
-</Frame>
 
 ## 2. Start from a quick action
 
@@ -48,13 +47,13 @@ warning because sending another asset or using another network can permanently l
 
 ## 4. Review and authorize
 
-For an email account, a protected payment is completed with authenticator OTP. For a connected
-wallet, UniFi checks balance and Permit2 allowance, asks for token approval when required, and then
-asks the wallet to sign the payment details. The payment signature expires after 15 minutes.
+Email accounts authorize protected payments with authenticator OTP. With Unio or MetaMask, UniFi
+checks your balance and Permit2 allowance. Approve the token in your wallet if required, then sign
+the payment details. The payment signature expires after 15 minutes.
 
 <Tip>
-*Gasless* applies to the supported payment execution. A first-time ERC-20 approval is an onchain
-transaction and normally needs the network's native token.
+*Gasless* applies to supported payment execution. An ERC-20 approval is an onchain transaction and
+still needs network gas. See [how each wallet handles approval gas](/webapp/pay_send#why-connected-wallets-may-need-a-network-token).
 </Tip>
 
 ## 5. Track the receipt

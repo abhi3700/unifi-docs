@@ -76,8 +76,9 @@ flowchart LR
     checkout URL. Record that session ID against the order.
   </Step>
   <Step title="Send the payer to UniFi">
-    Open the hosted checkout with the exact order details. The payer connects a wallet, completes
-    Permit2 approval if required, and signs the short-lived payment authorization.
+    Open the hosted checkout with the exact order details. The payer can use email or Unio.
+    Desktop web and PWA layouts also offer MetaMask. With a self-custodial wallet, the payer
+    approves Permit2 if required and signs the short-lived payment authorization.
   </Step>
   <Step title="Check through your proxy">
     The merchant browser requests `/api/unifi/payment/merchant/session/:sessionId`. The same-origin

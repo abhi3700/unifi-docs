@@ -4,7 +4,8 @@ description: "Understand the one-time token approval, short-lived payment signat
 icon: "shield-halved"
 ---
 
-UniFi's non-custodial flow uses [Uniswap Permit2](https://etherscan.io/address/0x000000000022d473030f116ddee9f6b43ac78ba3#code) on Ethereum to separate a reusable token approval from each payment authorization.
+When you pay with [Unio](/webapp/unio#1-app) or MetaMask, UniFi uses [Uniswap Permit2](https://etherscan.io/address/0x000000000022d473030f116ddee9f6b43ac78ba3#code)
+to separate a reusable token approval from each payment authorization.
 
 ## Two different permissions
 
@@ -34,4 +35,5 @@ An unlimited token approval is a convenience and security tradeoff. Only approve
 
 ## What “gasless” means
 
-The payment execution can be sponsored or settled without the payer holding native gas. The initial ERC-20 approval is different: if an approval is required, it is an onchain transaction and normally needs the chain's native token.
+The payment can settle without the payer holding the network's native token. Any required ERC-20
+approval still uses network gas. See [how each wallet handles approval gas](/webapp/pay_send#why-connected-wallets-may-need-a-network-token).
