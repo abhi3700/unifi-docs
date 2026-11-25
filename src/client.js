@@ -3,27 +3,30 @@ import './style.css'
 
 const root = document.documentElement
 const systemTheme = matchMedia('(prefers-color-scheme: dark)')
-const themeButton = document.querySelector('[data-theme-toggle]')
+const themeButtons = document.querySelectorAll('[data-theme-toggle]')
 const currentTheme = () => root.dataset.theme ?? (systemTheme.matches ? 'dark' : 'light')
 
-function updateThemeLabel() {
+function updateThemeLabels() {
   const label = currentTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
-  themeButton.setAttribute('aria-label', label)
-  themeButton.title = label
+  for (const button of themeButtons) {
+    button.setAttribute('aria-label', label)
+    button.title = label
+  }
 }
-themeButton.addEventListener('click', () => {
+function toggleTheme() {
   root.dataset.theme = currentTheme() === 'dark' ? 'light' : 'dark'
   try { localStorage.setItem('unifi-docs-theme', root.dataset.theme) } catch {}
-  updateThemeLabel()
+  updateThemeLabels()
   if (visualizeDiagrams) void visualizeDiagrams()
-})
+}
+themeButtons.forEach((button) => button.addEventListener('click', toggleTheme))
 systemTheme.addEventListener('change', (event) => {
   try { if (localStorage.getItem('unifi-docs-theme')) return } catch {}
   root.dataset.theme = event.matches ? 'dark' : 'light'
-  updateThemeLabel()
+  updateThemeLabels()
   if (visualizeDiagrams) void visualizeDiagrams()
 })
-updateThemeLabel()
+updateThemeLabels()
 
 const searchDialog = document.querySelector('#search')
 const input = document.querySelector('#search-input')

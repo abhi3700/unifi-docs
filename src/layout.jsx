@@ -2,6 +2,13 @@ import { appLink, endpointSection, footerLinks, logos, sections, siteLink, suppo
 import { Method } from './api.jsx'
 import { Icon } from './ui.jsx'
 
+function ThemeToggle({ className, showLabel = false }) {
+  return <button className={className} type="button" data-theme-toggle="" aria-label="Toggle color theme" title="Toggle color theme">
+    <Icon className="theme-sun" name="sun" size={19} /><Icon className="theme-moon" name="moon" size={19} />
+    {showLabel && <><span className="theme-sun">Light mode</span><span className="theme-moon">Dark mode</span></>}
+  </button>
+}
+
 export function Header({ activeSection }) {
   return <header className="site-header">
     <div className="header-row shell">
@@ -17,9 +24,7 @@ export function Header({ activeSection }) {
       <div className="header-actions">
         <a className="header-link" href={siteLink.href}>Website <Icon name="external" size={13} /></a>
         <a className="header-link" href={supportLink.href}>Support</a>
-        <button className="icon-button theme-button" type="button" data-theme-toggle="" aria-label="Toggle color theme" title="Toggle color theme">
-          <Icon className="theme-sun" name="sun" size={19} /><Icon className="theme-moon" name="moon" size={19} />
-        </button>
+        <ThemeToggle className="icon-button" />
         <a className="launch" href={appLink}>Open app <Icon name="external" size={15} /></a>
       </div>
     </div>
@@ -83,11 +88,14 @@ export function Dialogs({ page }) {
     </dialog>
     <dialog id="mobile-menu" className="mobile-dialog" aria-labelledby="mobile-menu-title">
       <div className="drawer-header"><strong id="mobile-menu-title">Documentation</strong><button className="icon-button" type="button" data-dialog-close="" aria-label="Close navigation"><Icon name="close" size={21} /></button></div>
+      <div className="drawer-actions">
+        <ThemeToggle className="drawer-theme" showLabel />
+        <a className="launch" href={appLink}>Open app <Icon name="external" size={15} /></a>
+      </div>
       {page.path !== '/' && <nav className="drawer-sections" aria-label="Documentation sections">
         {sections.map((section) => <a href={section.path} key={section.label} aria-current={section.label === page.section ? 'true' : undefined}><Icon name={section.icon} size={15} /> {section.label}</a>)}
       </nav>}
       <Sidebar page={page} />
-      <a href={appLink} className="sidebar-home">Open app <Icon name="external" size={14} /></a>
     </dialog>
   </>
 }

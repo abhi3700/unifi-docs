@@ -348,6 +348,10 @@ body:has(dialog[open]) { overflow: hidden; }
 .search-hints { display: flex; gap: 12px; border-top: 1px solid var(--line); padding: 9px 12px; color: var(--muted); font-size: 11px; }
 .mobile-dialog { inset: 0 auto 0 0; width: min(340px, 88vw); max-height: none; height: 100%; margin: 0; padding: 14px 16px 30px; box-shadow: var(--shadow); }
 .drawer-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 5px 14px; }
+.drawer-actions { display: flex; gap: 8px; justify-content: space-between; padding-bottom: 15px; margin-bottom: 17px; border-bottom: 1px solid var(--line); }
+.drawer-actions > * { min-height: 44px; }
+.drawer-theme { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); color: var(--text); font-size: 13px; font-weight: 560; }
+.drawer-theme:hover { border-color: var(--accent); }
 .drawer-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 0 0 17px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
 .drawer-sections a { display: flex; align-items: center; gap: 5px; padding: 5px; border-radius: 6px; color: var(--muted); font-size: 12px; }
 .drawer-sections a[aria-current] { background: var(--accent-soft); color: var(--accent); }
@@ -372,16 +376,14 @@ body:has(dialog[open]) { overflow: hidden; }
 }
 @media (max-width: 760px) {
   :root { --header-height: 101px; }
-  .header-row { height: 59px; padding-inline: 13px; display: flex; gap: 8px; }
-  .mobile-menu { display: grid; }
-  .brand { margin-right: auto; gap: 6px; }
+  .header-row { height: 59px; padding-inline: 11px; grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 8px; }
+  .mobile-menu { display: grid; width: 44px; height: 44px; }
+  .brand { justify-self: center; gap: 4px; }
   .brand img { width: 72px; height: 23px; }
-  .brand span { padding-left: 7px; font-size: 12px; }
-  .header-search { flex: none; justify-content: center; width: 34px; height: 34px; padding: 0; background: transparent; border-color: transparent; }
-  .header-search span, .header-search kbd, .header-link, .desktop-sidebar { display: none; }
-  .header-actions { gap: 5px; }
-  .launch { min-height: 33px; padding: 5px 7px; font-size: 11px; }
-  .launch svg { width: 12px; }
+  .brand span { padding-left: 0; border-left: 0; font-size: 12px; }
+  .header-search { justify-content: center; width: 44px; height: 44px; padding: 0; background: transparent; border-color: transparent; }
+  .header-search svg { width: 19px; height: 19px; }
+  .header-search span, .header-search kbd, .header-actions, .desktop-sidebar { display: none; }
   .section-nav { min-height: 41px; padding-inline: 15px; gap: 19px; }
   .section-nav a { font-size: 12px; }
   .section-nav a svg { width: 14px; }
