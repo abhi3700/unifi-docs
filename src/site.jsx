@@ -18,6 +18,7 @@ function articleFor(page) {
       ? <ApiArticle endpoint={page.endpoint} />
       : <page.document components={mdxComponents} />)
     const $ = load(markup, {}, false)
+    $('.mobile-column-label').remove()
     $('p, li, h2, h3, h4, div.card-body, td, th, pre').append(' ')
     const targeted = $('h2[id], h3[id]')
     const headings = targeted.toArray().map((node) => ({
