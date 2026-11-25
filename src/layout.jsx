@@ -127,10 +127,6 @@ const featured = [
 export function Landing() {
   return <>
     <div className="hero">
-      <div className="hero-art" aria-hidden="true">
-        <div className="hero-contours" />
-        <div className="hero-mark"><img src="/logo/unifi-2.0-favicon.svg" width="94" height="94" alt="" /></div>
-      </div>
       <div className="hero-inner">
         <h1>UniFi documentation</h1>
         <p>Send stablecoin payments, add UniFi to your checkout, or build directly with the API.</p>
