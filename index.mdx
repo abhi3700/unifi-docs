@@ -3,142 +3,38 @@ title: "Welcome"
 description: "Everything you need to send/receive payments using stablecoins."
 ---
 
-## ⚡ Start with UniFi
+## What you can do
 
-UniFi is a **global stablecoin payment platform** that enables:
+UniFi lets you send and request stablecoin payments using an address, link, or QR code. Make instant, low-cost transfers across chains without managing bridges, or send payments in bulk for payroll and batch payouts. Read more about [UniFi’s privacy-first payment design and goals](/mission).
 
-- 🚫⛽ Gasless transactions
-- 🌍 Multi-chain payments
-- ⚡ Instant & low-cost transfers
-- 🔐 Privacy-first design
-- 💸 Bulk & scheduled payments
+- [Send a payment](/webapp/pay_send) and review the asset, network, and amount before you authorize it.
+- [Create a FliQ request](/webapp/pay_request) to share a payment link or QR code.
+- [Use Falcon](/falcon/overview) to prepare payments through chat, schedule workflows, or read payment details from a snapshot.
+- [Understand gasless payments and authorization](/concepts/security-and-permissions) before you approve a token or sign a payment.
 
-<Tip>Built for real-world payments — from individuals to enterprises.</Tip>
+<Warning>
+    Verify whether a payment is `Confirmed` or `Finalized` before treating it as complete. [Understand confirmation and finality](/webapp/pay_receipt).
+</Warning>
 
----
-
-## 🚀 Get Started
-
-<Columns cols={2}>
-  <Card title="Web App" icon="globe" href="/webapp/overview">
-    Explore the UniFi dashboard and payment flows.
-  </Card>
-
-<Card title="Falcon Agent" icon="robot" href="/falcon/overview">
-    Automate payments, scheduling, and workflows using your AI-powered payment
-    agent.
-</Card>
-
-<Card
-    title="Payment Gateway"
-    icon="credit-card"
-    href="/payment-gateway/overview"
->
-    Add a React widget or headless stablecoin payment flow to an existing
-    checkout.
-</Card>
-
-<Card title="CLI" icon="terminal" href="/cli/overview">
-    Automate payments and manage workflows via CLI.
-</Card>
-
-  <Card title="API Reference" icon="code" href="/api-reference/introduction">
-    Integrate UniFi into your product or backend.
-  </Card>
-</Columns>
-
----
-
-## Core capabilities
-
-<Columns cols={2}>
-  <Card title="Pay & Request" icon="send" href="/webapp/pay_send">
-    Send payments or create requests with an address, link, or QR code.
-  </Card>
-
-<Card title="Multi-Chain" icon="shuffle" href="/webapp/pay_send">
-    Pay across chains without worrying about bridges.
-</Card>
-
-<Card title="Bulk Payments" icon="box" href="/webapp/pay_send">
-    Execute payroll and batch payments with minimal fees.
-</Card>
-
-  <Card title="FliQ" icon="bolt" href="/webapp/pay_request">
-    Share a payment request as a link or QR code.
-  </Card>
-</Columns>
-
----
-
-## Falcon Agent
-
-<Note>Your autonomous payment agent.</Note>
-
-- 💬 Trigger payments via chat
-- ⏰ Schedule & automate workflows
-- 📊 Handle payroll and bulk operations
-- 📸 Share a payment snapshot to auto-detect payment details and pay instantly or schedule it for later.
-
-<Card title="Explore Falcon" icon="robot" href="/falcon/overview" />
-
----
-
-## For developers
-
-<Columns cols={2}>
-  <Card title="CLI Usage" icon="terminal" href="/cli/usage">
-    Run commands, manage keys, and automate payments.
-  </Card>
-
-  <Card title="API Integration" icon="plug" href="/api-reference/introduction">
-    Build on top of UniFi with secure APIs.
-  </Card>
-</Columns>
-
-### Create API access
+## Create API access
 
 <Steps>
     <Step title="Open the Keys view">
         Sign in to the UniFi web app, open **API**, and select **New API Key**.
     </Step>
     <Step title="Create and secure the key">
-        Give the key a unique integration name, create it, and copy it into a
-        server-side secret manager.
+        Give the key a unique integration name, create it, and copy it into a server-side secret manager.
     </Step>
     <Step title="Monitor or revoke access">
-        Review credits from **Quota** and delete keys as soon as an integration
-        no longer needs them.
+        Review credits from **Quota** and delete keys as soon as an integration no longer needs them.
     </Step>
 </Steps>
 
-<Card
-    title="Follow the API key walkthrough"
-    icon="key"
-    href="/api-reference/authentication"
->
-    See every step in the web app, then add the bearer credential to your server
-    integration.
-</Card>
-
----
-
-## Explore more
-
 <Columns cols={2}>
-  <Card title="Payment Gateway" icon="credit-card" href="/payment-gateway/overview">
-    Integrate checkout components, a secure status proxy, and durable receipt reconciliation.
+  <Card title="API key walkthrough" icon="key" href="/api-reference/authentication">
+    See every step in the web app, then add the bearer credential to your server integration.
   </Card>
-
-  <Card title="Changelog" icon="history" href="/cli/changelog">
-    Track updates and improvements.
+  <Card title="CLI changelog" icon="history" href="/cli/changelog">
+    Track releases, improvements, and fixes.
   </Card>
 </Columns>
-
----
-
-<Warning>
-    Always verify payment status (`Confirmed` vs `Finalized`) before treating a
-    payment as complete — [understand confirmation vs
-    finality](/webapp/pay_receipt) ↗️
-</Warning>
