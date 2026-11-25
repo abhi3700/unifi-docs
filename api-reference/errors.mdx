@@ -27,9 +27,10 @@ Do not parse human-readable error text into business logic. Branch on the HTTP s
 
 ## Receipt state
 
-`Processing` is not a failure; the web app presents this state as **Submitted**. `Confirmed` and
-`Finalized` represent different settlement confidence. `Failed` and `Reorged` require explicit
-handling.
+The web app shows **Submitted → Confirmed → Finalized**. The API returns `Processing` for
+**Submitted**, while the receipt is waiting for onchain confirmation. `Confirmed` means the payment
+is in a block. `Finalized` means the block has reached finality. Handle `Failed` and `Reorged`
+explicitly.
 
 <Warning>
     The public payment endpoint does not accept a caller-supplied idempotency

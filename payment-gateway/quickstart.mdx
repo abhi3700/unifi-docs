@@ -166,8 +166,9 @@ control and last-check time.
     `onPaid`. The order is not confirmed yet.
   </Step>
   <Step title="Wait for finality">
-    Check the receipt immediately, then every 15 minutes while it is `Processing` or `Confirmed`.
-    Offer a manual refresh action and confirm the order only after `Finalized`.
+    Check the receipt immediately, then every 15 minutes while it shows **Submitted** or
+    **Confirmed**. The API returns `Processing` for **Submitted**. Offer a manual refresh action
+    and confirm the order only after **Finalized**.
   </Step>
   <Step title="Verify your records">
     Confirm the order now contains its UniFi session ID and receipt ID. Do not rely on the temporary

@@ -54,7 +54,7 @@ flowchart LR
     API -->|Pending or receipt ID| Proxy
     Proxy -->|Receipt detected| Browser
     Browser -->|Immediate, every 15 min, or manual receipt check| Proxy
-    API -->|Processing, Confirmed, Finalized, Failed, or Reorged| Proxy
+    API -->|Receipt status| Proxy
     Proxy -->|Latest receipt status| Browser
 ```
 
@@ -86,8 +86,9 @@ flowchart LR
   </Step>
   <Step title="Track finality and fulfil">
     Store the detected receipt ID with the order, check its receipt status immediately, and refresh
-    non-terminal states every 15 minutes or when the customer requests a manual check. Keep
-    `Processing` and `Confirmed` in progress; confirm and fulfil the order only after `Finalized`.
+    non-terminal states every 15 minutes or when the customer requests a manual check. Show
+    **Submitted → Confirmed → Finalized** and fulfil the order only after **Finalized**. The API
+    returns `Processing` for **Submitted**.
   </Step>
 </Steps>
 

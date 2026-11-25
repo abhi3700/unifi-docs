@@ -147,9 +147,9 @@ label.
 For composed integrations, pass `statusPollIntervalMs`, `autoCheckSecondsLeft`, `autoCheckActive`,
 and `lastCheckedAt` from `useUniFiPayment` to render the automatic-check treatment shown above.
 
-The status sheet finds the receipt ID; it does not establish chain finality. After `onPaid`, call
-`checkUniFiReceiptStatus`, keep `Processing` and `Confirmed` in an in-progress order UI, refresh
-automatically no more than every 15 minutes, and offer a manual refresh action. Confirm the order
+After the status sheet finds the receipt ID and calls `onPaid`, use `checkUniFiReceiptStatus` to
+track finality. Show **Submitted** for `Processing` and **Confirmed** for `Confirmed`. Refresh
+automatically no more than every 15 minutes and offer a manual refresh action. Confirm the order
 only after `Finalized`.
 
 ## Link a receipt

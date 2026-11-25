@@ -105,8 +105,10 @@ const result = await checkUniFiReceiptStatus(receiptId);
 if (result.state === "received") {
   switch (result.receipt.status) {
     case "Processing":
+      showMessage("Submitted. Waiting for on-chain confirmation.");
+      break;
     case "Confirmed":
-      showMessage("Order confirmation in progress.");
+      showMessage("Confirmed. Waiting for finality.");
       break;
     case "Finalized":
       await confirmOrderIdempotently(order.id);
@@ -119,9 +121,10 @@ if (result.state === "received") {
 }
 ```
 
-Check once immediately after receipt detection. If the state is `Processing` or `Confirmed`, wait 15
-minutes before the next automatic check to conserve API credits. A user-triggered refresh may check
-immediately. Stop automatic checks after `Finalized`, `Failed`, or `Reorged`.
+Check once immediately after receipt detection. While the API returns `Processing` (**Submitted**)
+or `Confirmed`, wait 15 minutes before the next automatic check to conserve API credits. A
+user-triggered refresh may check immediately. Stop automatic checks after `Finalized`, `Failed`, or
+`Reorged`.
 
 ## Build a receipt link
 

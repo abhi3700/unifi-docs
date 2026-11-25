@@ -108,8 +108,8 @@ while the widget supplies the reusable UniFi payment, status, and receipt experi
 
   <Step title="Follow finality">
     The first successful session lookup returns a receipt ID, not proof of finality. FliQ Market
-    checks that receipt immediately and keeps the order unconfirmed while the on-chain payment is
-    `Processing` or `Confirmed`.
+    checks that receipt immediately and keeps the order unconfirmed during the **Submitted** and
+    **Confirmed** stages.
 
     <Frame caption="Show the confirmed on-chain payment while the order waits for finality.">
       <img
@@ -162,9 +162,9 @@ while the widget supplies the reusable UniFi payment, status, and receipt experi
 
 ## Receipt finality states
 
-- `Processing` — **Payment submitted**; the order is not confirmed;
-- `Confirmed` — included on-chain and waiting for finality;
-- `Finalized` — payment complete and the order can enter fulfillment; and
+- **Submitted** (API value `Processing`) — waiting for on-chain confirmation. The order stays unconfirmed.
+- **Confirmed** — included on-chain and waiting for finality.
+- **Finalized** — payment complete and the order can enter fulfillment.
 - `Failed` or `Reorged` — unsuccessful terminal state, so the order remains unconfirmed.
 
 While finality is pending, the page checks again every 15 minutes to conserve API credits. A refresh

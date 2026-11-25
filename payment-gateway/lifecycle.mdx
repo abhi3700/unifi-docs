@@ -106,7 +106,7 @@ may require different policies.
 After the session lookup returns a receipt ID:
 
 1. fetch the proxy's `/payment/onchain/receipt/:receiptId` path immediately;
-2. show `Processing` as payment submitted and `Confirmed` as confirmed on-chain but still waiting
+2. show **Submitted** for `Processing` and **Confirmed** once the payment is onchain and waiting
    for finality;
 3. while either state remains active, refresh automatically every 15 minutes to conserve API
    credits;
@@ -145,7 +145,7 @@ as a failed or finalized payment.
 - [ ] Successful Sepolia payment and receipt link.
 - [ ] Pending payment with the default manual-only status action.
 - [ ] Configured automatic session checks, draining progress ring, countdown, last-check time, and immediate refresh.
-- [ ] Receipt `Processing` and `Confirmed` states, 15-minute automatic refresh, and immediate manual refresh.
+- [ ] Receipt **Submitted** and **Confirmed** stages, 15-minute automatic refresh, and immediate manual refresh.
 - [ ] `Finalized` is the only state that confirms the order; `Failed` and `Reorged` remain unfulfilled.
 - [ ] Expired session and a new payment attempt.
 - [ ] Invalid or rejected API key.
