@@ -221,14 +221,13 @@ kbd { display: inline-flex; line-height: 1; align-items: center; justify-content
 .prose :not(pre) > code, .endpoint-path > code { padding: .12em .34em; border: 1px solid var(--line); border-radius: 4px; background: var(--soft); color: var(--code-text); font: .88em var(--mono); }
 .prose :not(pre) > code { box-decoration-break: clone; }
 .doc-columns { display: grid; grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); gap: 10px; margin: 17px 0; }
-.doc-card { position: relative; padding: 15px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--body); }
-a.doc-card { padding-right: 36px; }
+.doc-card { display: block; padding: 15px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--body); }
 a.doc-card:hover { border-color: var(--accent); }
 .card-title { display: flex; align-items: center; gap: 7px; color: var(--text); font-weight: 660; line-height: 1.4; }
 .card-title svg { color: var(--accent); }
+.card-title .card-arrow { margin-inline-start: auto; color: var(--subtle); }
 .card-body { margin-top: 5px; font-size: 13px; line-height: 1.55; }
 .card-body > :last-child { margin-bottom: 0; }
-.card-arrow { position: absolute; right: 12px; top: 16px; color: var(--subtle); }
 .callout { display: flex; gap: 10px; align-items: flex-start; margin: 17px 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); font-size: 14px; }
 .callout > svg { margin-top: 3px; color: var(--accent); }
 .callout > div > :first-child { margin-top: 0; }

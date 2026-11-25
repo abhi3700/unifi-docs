@@ -32,9 +32,12 @@ function Columns({ cols = 2, children }) {
 
 function Card({ title, icon, href, children }) {
   const content = <>
-    <span className="card-title">{icon && <Icon name={docIcons[icon]} size={17} />}{title}</span>
+    <span className="card-title">
+      {icon && <Icon name={docIcons[icon]} size={17} />}
+      {title}
+      {href && <Icon className="card-arrow" name={href.startsWith('http') ? 'external' : 'arrow'} size={16} />}
+    </span>
     {children && <div className="card-body">{children}</div>}
-    {href && <Icon className="card-arrow" name={href.startsWith('http') ? 'external' : 'arrow'} size={16} />}
   </>
   return href ? <a className="doc-card" href={href}>{content}</a> : <div className="doc-card">{content}</div>
 }
