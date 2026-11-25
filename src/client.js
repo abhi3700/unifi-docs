@@ -1,4 +1,5 @@
 import '@fontsource-variable/inter/wght.css'
+import '@fontsource-variable/inter/wght-italic.css'
 import './style.css'
 
 const root = document.documentElement
