@@ -1,17 +1,17 @@
 import { Children } from 'react'
 import {
   ArrowDownToLine, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Bot, Braces, Check, ChevronDown, ChevronRight,
-  CircleAlert, CodeXml, Copy, CreditCard, FileCode2, GitBranch, Globe2, Info, Layers3, Link2,
-  List, LockKeyhole, Menu, Monitor, Moon, Search, ShieldCheck, Sparkles, Sun, Terminal, TriangleAlert, X, Zap,
+  CircleAlert, CodeXml, Copy, CreditCard, Equal, FileCode2, GitBranch, Globe2, Info, Layers3, Link2,
+  List, LockKeyhole, Monitor, Moon, Search, ShieldCheck, Smartphone, Sparkles, Sun, Terminal, TriangleAlert, X, Zap,
 } from 'lucide-react'
 
 const icons = {
   arrow: ArrowRight, back: ArrowLeft, external: ArrowUpRight, book: BookOpen, bot: Bot, brackets: Braces,
   check: Check, chevron: ChevronRight, down: ChevronDown, code: CodeXml, copy: Copy, card: CreditCard,
-  branch: GitBranch, globe: Globe2, info: Info, layers: Layers3, link: Link2, list: List, menu: Menu,
+  branch: GitBranch, globe: Globe2, info: Info, layers: Layers3, link: Link2, list: List, menu: Equal,
   monitor: Monitor, moon: Moon, search: Search, shield: ShieldCheck, sparkles: Sparkles, sun: Sun,
   terminal: Terminal, warning: TriangleAlert, note: CircleAlert, close: X, zap: Zap, lock: LockKeyhole,
-  download: ArrowDownToLine, file: FileCode2,
+  download: ArrowDownToLine, file: FileCode2, phone: Smartphone,
 }
 
 export function Icon({ name, size = 18, ...props }) {

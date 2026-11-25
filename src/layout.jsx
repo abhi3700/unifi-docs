@@ -2,17 +2,9 @@ import { appLink, endpointSection, footerLinks, logos, sections, siteLink, suppo
 import { Method } from './api.jsx'
 import { Icon } from './ui.jsx'
 
-function ThemeToggle({ className, showLabel = false }) {
-  return <button className={className} type="button" data-theme-toggle="" aria-label="Toggle color theme" title="Toggle color theme">
-    <Icon className="theme-sun" name="sun" size={19} /><Icon className="theme-moon" name="moon" size={19} />
-    {showLabel && <><span className="theme-sun">Light mode</span><span className="theme-moon">Dark mode</span></>}
-  </button>
-}
-
 export function Header({ activeSection }) {
   return <header className="site-header">
     <div className="header-row shell">
-      <button className="icon-button mobile-menu" type="button" data-dialog-open="mobile-menu" aria-label="Open navigation"><Icon name="menu" size={21} /></button>
       <a className="brand" href="/" aria-label="UniFi documentation home">
         <img className="brand-light" src={logos.light} alt="UniFi" width="88" height="25" />
         <img className="brand-dark" src={logos.dark} alt="UniFi" width="88" height="25" />
@@ -24,8 +16,16 @@ export function Header({ activeSection }) {
       <div className="header-actions">
         <a className="header-link" href={siteLink.href}>Website <Icon name="external" size={13} /></a>
         <a className="header-link" href={supportLink.href}>Support</a>
-        <ThemeToggle className="icon-button" />
-        <a className="launch" href={appLink}>Open app <Icon name="external" size={15} /></a>
+        <button className="icon-button" type="button" data-theme-toggle="" aria-label="Toggle color theme" title="Toggle color theme">
+          <Icon className="theme-sun" name="sun" size={19} /><Icon className="theme-moon" name="moon" size={19} />
+        </button>
+        <a className="launch" href={appLink} aria-label="Open app">
+          <span>Open app</span><Icon className="launch-arrow" name="external" size={15} />
+          <Icon className="launch-phone" name="phone" size={20} />
+        </a>
+        <button className="icon-button mobile-menu" type="button" data-dialog-open="mobile-menu" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="mobile-menu">
+          <Icon name="menu" size={22} />
+        </button>
       </div>
     </div>
     <nav className="section-nav shell" aria-label="Documentation sections">
@@ -36,7 +36,7 @@ export function Header({ activeSection }) {
   </header>
 }
 
-export function Sidebar({ page }) {
+export function Sidebar({ page, showSectionLinks = true }) {
   const section = sections.find((item) => item.label === page.section)
   const onHome = page.path === '/'
   const groups = onHome ? [
@@ -46,8 +46,10 @@ export function Sidebar({ page }) {
       { title: 'How UniFi works', path: '/concepts/how-unifi-works', icon: 'layers' },
       { title: 'Security and permissions', path: '/concepts/security-and-permissions', icon: 'shield' },
     ] },
-    { label: 'Documentation', pages: sections.slice(1).map((item) => ({ title: item.label, path: item.path, icon: item.icon })) },
   ] : section.groups
+  if (onHome && showSectionLinks) {
+    groups.push({ label: 'Documentation', pages: sections.slice(1).map((item) => ({ title: item.label, path: item.path, icon: item.icon })) })
+  }
   const firstEndpointGroup = groups.find((group) => group.endpoints)
   return <nav className="sidebar-nav" aria-label={`${section.label} pages`}>
     {!onHome && <a className="sidebar-home" href="/"><Icon name="back" size={14} /> Docs home</a>}
@@ -87,15 +89,16 @@ export function Dialogs({ page }) {
       <div className="search-hints"><span><kbd>↑</kbd> <kbd>↓</kbd> Navigate</span><span><kbd>↵</kbd> Open</span><span><kbd>Esc</kbd> Close</span></div>
     </dialog>
     <dialog id="mobile-menu" className="mobile-dialog" aria-labelledby="mobile-menu-title">
-      <div className="drawer-header"><strong id="mobile-menu-title">Documentation</strong><button className="icon-button" type="button" data-dialog-close="" aria-label="Close navigation"><Icon name="close" size={21} /></button></div>
-      <div className="drawer-actions">
-        <ThemeToggle className="drawer-theme" showLabel />
-        <a className="launch" href={appLink}>Open app <Icon name="external" size={15} /></a>
+      <div className="drawer-top">
+        <div className="drawer-header">
+          <strong id="mobile-menu-title">Documentation</strong>
+          <button className="icon-button" type="button" data-dialog-close="" aria-label="Close navigation"><Icon name="close" size={21} /></button>
+        </div>
+        <nav className="drawer-sections" aria-label="Documentation sections">
+          {sections.map((section) => <a href={section.path} key={section.label} aria-current={section.label === page.section ? 'true' : undefined}><Icon name={section.icon} size={15} /> {section.label}</a>)}
+        </nav>
       </div>
-      {page.path !== '/' && <nav className="drawer-sections" aria-label="Documentation sections">
-        {sections.map((section) => <a href={section.path} key={section.label} aria-current={section.label === page.section ? 'true' : undefined}><Icon name={section.icon} size={15} /> {section.label}</a>)}
-      </nav>}
-      <Sidebar page={page} />
+      <div className="drawer-pages"><Sidebar page={page} showSectionLinks={false} /></div>
     </dialog>
   </>
 }
