@@ -284,7 +284,7 @@ a.doc-card:hover { border-color: var(--accent); }
 .hljs-string, .hljs-regexp { color: var(--code-string); }
 .hljs-number, .hljs-symbol, .hljs-bullet { color: var(--code-number); }
 .hljs-variable, .hljs-title, .hljs-attr, .hljs-built_in, .hljs-meta { color: var(--code-symbol); }
-.diagram { overflow: auto; padding: 12px; text-align: center; background: var(--surface); }
+.diagram { overflow: auto; overflow-wrap: normal; padding: 12px; text-align: center; background: var(--surface); }
 .diagram svg { max-width: 100%; height: auto; }
 
 .api-layout { grid-template-columns: minmax(0, 1fr) minmax(260px, .84fr); }
