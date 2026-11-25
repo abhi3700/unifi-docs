@@ -1,5 +1,6 @@
 import { readFile, stat } from 'node:fs/promises'
 import { extname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import mdx from '@mdx-js/rollup'
 import GithubSlugger from 'github-slugger'
 import rehypeHighlight from 'rehype-highlight'
@@ -118,15 +119,43 @@ function docsPreview() {
   }
 }
 
-export default defineConfig({
+const chunkSizeLimit = 500
+const mermaidParserSizeLimit = 650
+
+function checkClientChunkSizes() {
+  return {
+    name: 'unifi-docs-chunk-sizes',
+    apply: 'build',
+    applyToEnvironment: (environment) => environment.name === 'client',
+    generateBundle(_, bundle) {
+      for (const chunk of Object.values(bundle)) {
+        if (chunk.type !== 'chunk') continue
+        const size = Buffer.byteLength(chunk.code) / 1000
+        if (size <= chunkSizeLimit || size > mermaidParserSizeLimit) continue
+        // Mermaid ships this lazy parser as a single prebuilt module.
+        const [module] = chunk.moduleIds
+        if (chunk.moduleIds.length === 1 && /\/node_modules\/@mermaid-js\/parser\/dist\/chunks\//.test(module)) continue
+        this.warn(`${chunk.fileName} is ${size.toFixed(2)} kB after minification (limit ${chunkSizeLimit} kB).`)
+      }
+    },
+  }
+}
+
+export default defineConfig(({ command }) => ({
   publicDir: false,
   appType: 'mpa',
   oxc: { jsx: { runtime: 'automatic' } },
+  resolve: command === 'build' ? {
+    alias: [{ find: /^elkjs\/lib\/elk\.bundled\.js$/, replacement: fileURLToPath(new URL('./src/elk-worker.js', import.meta.url)) }],
+  } : undefined,
+  // Vite reports every chunk over the parser's limit. The plugin keeps the normal limit for the rest.
+  build: { chunkSizeWarningLimit: mermaidParserSizeLimit },
   plugins: [
     { ...mdx({
       remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter, remarkGfm],
       rehypePlugins: [headingIds, responsiveTables, [rehypeHighlight, { plainText: ['mermaid', 'text', 'powershell', 'makefile', 'http'] }]],
     }), enforce: 'pre' },
     docsPreview(),
+    checkClientChunkSizes(),
   ],
-})
+}))
