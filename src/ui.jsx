@@ -5,10 +5,20 @@ import {
   List, LockKeyhole, Maximize2, Menu, Minus, Monitor, Moon, Plus, Search, ShieldCheck, Smartphone, Sparkles, Sun, Terminal, TriangleAlert, WrapText, X, Zap,
 } from 'lucide-react'
 
+// Monochrome version of Falcon's res/falcon-agent-app-icon.svg.
+function FalconAgentIcon({ size, ...props }) {
+  return <svg {...props} width={size} height={size} viewBox="0 0 32 32" fill="none" strokeWidth="2">
+    <path d="M16 5v5" stroke="currentColor" strokeLinecap="round" />
+    <circle cx="16" cy="4" r="2.5" fill="currentColor" />
+    <rect x="3" y="10" width="26" height="19" rx="9.5" stroke="currentColor" />
+    <path fill="currentColor" fillRule="evenodd" d="M12.25 14h7.5a5.75 5.75 0 0 1 0 11.5h-7.5a5.75 5.75 0 0 1 0-11.5Z M10.5 18.5a1.5 1.5 0 0 1 3 0V21a1.5 1.5 0 0 1-3 0Z M18.5 18.5a1.5 1.5 0 0 1 3 0V21a1.5 1.5 0 0 1-3 0Z" />
+  </svg>
+}
+
 const icons = {
   arrow: ArrowRight, back: ArrowLeft, external: ArrowUpRight, book: BookOpen, bot: Bot, brackets: Braces,
   check: Check, chevron: ChevronRight, down: ChevronDown, code: CodeXml, copy: Copy, card: CreditCard,
-  branch: GitBranch, globe: Globe2, info: Info, layers: Layers3, link: Link2, list: List, menu: Menu,
+  branch: GitBranch, falcon: FalconAgentIcon, globe: Globe2, info: Info, layers: Layers3, link: Link2, list: List, menu: Menu,
   monitor: Monitor, moon: Moon, search: Search, shield: ShieldCheck, sparkles: Sparkles, sun: Sun,
   terminal: Terminal, warning: TriangleAlert, note: CircleAlert, close: X, zap: Zap, lock: LockKeyhole,
   download: ArrowDownToLine, expand: Maximize2, file: FileCode2, minus: Minus, phone: Smartphone, plus: Plus, wrap: WrapText,

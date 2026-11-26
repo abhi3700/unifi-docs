@@ -144,7 +144,7 @@ const featured = [
   { title: 'Web App', icon: 'monitor', path: '/webapp/overview', detail: 'Set up your wallet, send and request payments, and track receipts.', color: 'blue' },
   { title: 'Payment Gateway', icon: 'card', path: '/payment-gateway/overview', detail: 'Add stablecoin checkout with the React widget or headless SDK.', color: 'purple' },
   { title: 'API Reference', icon: 'code', path: '/api-reference/introduction', detail: 'Authenticate and integrate wallet, payment, and receipt operations.', color: 'cyan' },
-  { title: 'Falcon Agent', icon: 'bot', path: '/falcon/overview', detail: 'Prepare, schedule, and automate stablecoin payments through chat.', color: 'purple' },
+  { title: 'Falcon Agent', icon: 'falcon', path: '/falcon/overview', detail: 'Prepare, schedule, and automate stablecoin payments through chat.', color: 'purple' },
   { title: 'CLI', icon: 'terminal', path: '/cli/overview', detail: 'Manage wallets and automate payments from your terminal.', color: 'cyan' },
   { title: 'Core concepts', icon: 'layers', path: '/concepts/how-unifi-works', detail: 'Understand authorization, execution, and payment finality.', color: 'blue' },
 ]

@@ -46,7 +46,7 @@ for (const [path, item] of Object.entries(spec.paths)) {
 }
 
 const labels = ['Guides', 'Web App', 'Falcon Agent', 'Payment Gateway', 'CLI', endpointSection]
-const icons = ['book', 'monitor', 'bot', 'card', 'terminal', 'code']
+const icons = ['book', 'monitor', 'falcon', 'card', 'terminal', 'code']
 export const sections = nav.navigation.tabs.map((tab, index) => {
   const label = labels[index]
   const groups = (tab.groups ?? [{ group: label, pages: tab.pages }]).flatMap((group) => {
