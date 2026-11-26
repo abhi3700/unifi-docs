@@ -2,7 +2,8 @@ import { Children } from 'react'
 import {
   ArrowDownToLine, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Bot, Braces, Check, ChevronDown, ChevronRight,
   CircleAlert, CodeXml, Copy, CreditCard, FileCode2, GitBranch, Globe2, Info, Layers3, Link2,
-  List, LockKeyhole, Maximize2, Menu, Minus, Monitor, Moon, Plus, Search, ShieldCheck, Smartphone, Sparkles, Sun, Terminal, TriangleAlert, WrapText, X, Zap,
+  List, LockKeyhole, Mail, Maximize2, Menu, Minus, Monitor, Moon, Plus, Search, ShieldCheck, Smartphone, Sparkles,
+  Sun, Terminal, TriangleAlert, Wallet, WrapText, X, Zap,
 } from 'lucide-react'
 
 // Monochrome version of Falcon's res/falcon-agent-app-icon.svg.
@@ -15,6 +16,15 @@ function FalconAgentIcon({ size, ...props }) {
   </svg>
 }
 
+// Outline of the MetaMask fox used in web-app/assets/metamask-icon.svg.
+function MetaMaskIcon({ size, ...props }) {
+  return <svg {...props} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinejoin="round">
+    <path d="M3.3 2 10 6h4l6.7-4L22 7.1l-1.3 4.2 1.3 4.9-1.3 4.4-4.3-1.3-3.3 2h-2.2l-3.3-2-4.3 1.3L2 16.2l1.3-4.9L2 7.1Z" />
+    <path d="m3.3 2 6.4 6.8-3.6 2.5H3.3M20.7 2l-6.4 6.8 3.6 2.5h2.8" />
+    <path d="m7 13.5 2.6-.4.6 2.3Zm10 0-2.6-.4-.6 2.3ZM10 17.4h4l-2 1.7Z" fill="currentColor" stroke="none" />
+  </svg>
+}
+
 const icons = {
   arrow: ArrowRight, back: ArrowLeft, external: ArrowUpRight, book: BookOpen, bot: Bot, brackets: Braces,
   check: Check, chevron: ChevronRight, down: ChevronDown, code: CodeXml, copy: Copy, card: CreditCard,
@@ -22,6 +32,7 @@ const icons = {
   monitor: Monitor, moon: Moon, search: Search, shield: ShieldCheck, sparkles: Sparkles, sun: Sun,
   terminal: Terminal, warning: TriangleAlert, note: CircleAlert, close: X, zap: Zap, lock: LockKeyhole,
   download: ArrowDownToLine, expand: Maximize2, file: FileCode2, minus: Minus, phone: Smartphone, plus: Plus, wrap: WrapText,
+  mail: Mail, wallet: Wallet, metamask: MetaMaskIcon,
 }
 
 export function Icon({ name, size = 18, ...props }) {
@@ -34,6 +45,7 @@ const docIcons = {
   send: 'arrow', shuffle: 'branch', box: 'layers', bolt: 'zap', plug: 'code', key: 'lock', history: 'branch',
   'shield-halved': 'shield', shield: 'shield', 'diagram-project': 'branch', sparkles: 'sparkles', link: 'link',
   github: 'github', 'arrow-up-right-from-square': 'external', 'cart-shopping': 'card', 'triangle-exclamation': 'warning',
+  envelope: 'mail', wallet: 'wallet', metamask: 'metamask',
 }
 
 function Columns({ cols = 2, children }) {
