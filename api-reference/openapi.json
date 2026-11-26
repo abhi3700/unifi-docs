@@ -19,7 +19,7 @@
   "tags": [
     {
       "name": "Health",
-      "description": "Check API process availability and dependency health."
+      "description": "Check API health."
     },
     {
       "name": "Deposit",
@@ -43,51 +43,17 @@
     }
   ],
   "paths": {
-    "/v1/healthz": {
-      "get": {
-        "operationId": "getHealthz",
-        "summary": "Check API process availability",
-        "description": "Lightweight liveness check. It does not test the database, blockchain RPCs, or every downstream dependency.",
-        "tags": [
-          "Health"
-        ],
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "The API process is available.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                },
-                "example": {
-                  "status": "200 OK",
-                  "data": "API server is healthy",
-                  "server_uptime": 1789992000
-                }
-              }
-            }
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          },
-          "503": {
-            "$ref": "#/components/responses/Unavailable"
-          }
-        }
-      }
-    },
     "/v1/health": {
       "get": {
         "operationId": "getHealth",
-        "summary": "Check API dependencies",
-        "description": "Runs the deeper service health check, including production dependencies. This operation consumes protected API capacity.",
+        "summary": "Check API health",
+        "description": "Returns the current health of the API.",
         "tags": [
           "Health"
         ],
         "responses": {
           "200": {
-            "description": "The API and required dependencies are healthy.",
+            "description": "The API is healthy.",
             "content": {
               "application/json": {
                 "schema": {

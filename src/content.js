@@ -8,7 +8,11 @@ export const pages = new Map([[home.path, home]])
 const methods = new Set(['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'])
 const endpointGroups = new Map()
 const endpointIndex = '/api-reference/endpoints'
-export const redirects = new Map([['/index', '/'], [endpointIndex, '/api-reference/introduction']])
+export const redirects = new Map([
+  ['/index', '/'],
+  [endpointIndex, '/api-reference/introduction'],
+  [`${endpointIndex}/health/check-api-dependencies`, `${endpointIndex}/health/check-api-health`],
+])
 export const endpointSection = 'API Reference'
 
 export function resolveRef(value) {
