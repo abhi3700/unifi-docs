@@ -82,7 +82,7 @@ export function ApiEndpointInfo({ endpoint }) {
       <Method method={method} />
       <code data-wrap-content="">{route.split(/(?=\/)/).map((segment, index) =>
         <Fragment key={index}>{index > 0 && <wbr />}{segment}</Fragment>)}</code>
-      <WrapLinesButton label="Wrap endpoint path" pressed onlyWhenNeeded />
+      <WrapLinesButton label="Wrap endpoint path" pressed />
     </div>
     {endpoint.security?.length > 0 && <div className="api-auth">
       <Icon name="lock" size={15} /><a href="/api-reference/authentication">Bearer authentication</a><span>Required</span>

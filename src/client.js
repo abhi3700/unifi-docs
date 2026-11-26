@@ -167,13 +167,29 @@ function observePathWrap(block, code, button) {
   document.fonts.ready.then(update)
 }
 
+const codeWrapButtons = new Map()
+function updateCodeWrapButtons(blocks) {
+  // Measure unwrapped lines even when wrapping is on so the toggle stays available.
+  for (const code of blocks) code.style.whiteSpace = 'pre'
+  const overflows = blocks.map((code) => code.scrollWidth > code.clientWidth)
+  blocks.forEach((code, index) => {
+    code.style.removeProperty('white-space')
+    codeWrapButtons.get(code).hidden = !overflows[index]
+  })
+}
+const codeWrapObserver = new ResizeObserver((entries) => updateCodeWrapButtons(entries.map(({ target }) => target)))
+
 const mobileExamples = matchMedia('(max-width: 760px)')
 document.querySelectorAll('[data-wrap-lines]').forEach((button) => {
   const block = button.closest('[data-wrap-container]')
   const code = block.querySelector('[data-wrap-content]')
-  if (button.hasAttribute('data-wrap-if-needed')) {
+  if (code.matches('pre')) {
+    codeWrapButtons.set(code, button)
+    codeWrapObserver.observe(code)
+  } else {
     observePathWrap(block, code, button)
-  } else if (!block.dataset.wrap) {
+  }
+  if (!block.dataset.wrap) {
     function syncDefault() {
       if (!block.dataset.wrap) button.setAttribute('aria-pressed', String(!mobileExamples.matches))
     }
@@ -187,6 +203,7 @@ document.querySelectorAll('[data-wrap-lines]').forEach((button) => {
     if (wrap) code.scrollLeft = 0
   })
 })
+document.fonts.ready.then(() => updateCodeWrapButtons([...codeWrapButtons.keys()]))
 
 document.querySelectorAll('[data-copy]').forEach((button) => {
   let reset

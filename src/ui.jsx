@@ -77,8 +77,8 @@ function Tabs({ children }) {
   </div>
 }
 
-export function WrapLinesButton({ label = 'Wrap lines', pressed = false, onlyWhenNeeded = false }) {
-  return <button type="button" className="icon-button code-wrap" data-wrap-lines="" data-wrap-if-needed={onlyWhenNeeded ? '' : undefined} hidden={onlyWhenNeeded} aria-label={label} aria-pressed={pressed} title={label}>
+export function WrapLinesButton({ label = 'Wrap lines', pressed = false }) {
+  return <button type="button" className="icon-button code-wrap" data-wrap-lines="" hidden aria-label={label} aria-pressed={pressed} title={label}>
     <Icon name="wrap" size={16} />
   </button>
 }
