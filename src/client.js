@@ -153,6 +153,41 @@ document.addEventListener('keydown', (event) => {
   }
 })
 
+function observePathWrap(block, code, button) {
+  const route = document.createRange()
+  route.selectNodeContents(code)
+  function update() {
+    const routeWidth = Array.from(route.getClientRects()).reduce((total, rect) => total + rect.width, 0)
+    const controlWidth = button.hidden ? 0 : button.getBoundingClientRect().width + parseFloat(getComputedStyle(block).columnGap)
+    const availableWidth = code.getBoundingClientRect().width + controlWidth
+    button.hidden = routeWidth <= availableWidth + .5
+    code.tabIndex = button.hidden ? -1 : 0
+  }
+  new ResizeObserver(update).observe(block)
+  document.fonts.ready.then(update)
+}
+
+const mobileExamples = matchMedia('(max-width: 760px)')
+document.querySelectorAll('[data-wrap-lines]').forEach((button) => {
+  const block = button.closest('[data-wrap-container]')
+  const code = block.querySelector('[data-wrap-content]')
+  if (button.hasAttribute('data-wrap-if-needed')) {
+    observePathWrap(block, code, button)
+  } else if (!block.dataset.wrap) {
+    function syncDefault() {
+      if (!block.dataset.wrap) button.setAttribute('aria-pressed', String(!mobileExamples.matches))
+    }
+    syncDefault()
+    mobileExamples.addEventListener('change', syncDefault)
+  }
+  button.addEventListener('click', () => {
+    const wrap = button.getAttribute('aria-pressed') === 'false'
+    block.dataset.wrap = wrap ? 'on' : 'off'
+    button.setAttribute('aria-pressed', String(wrap))
+    if (wrap) code.scrollLeft = 0
+  })
+})
+
 document.querySelectorAll('[data-copy]').forEach((button) => {
   let reset
   button.addEventListener('click', async () => {

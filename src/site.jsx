@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { load } from 'cheerio'
-import { ApiArticle, ApiExamples } from './api.jsx'
+import { ApiDetails, ApiEndpointInfo, ApiExamples } from './api.jsx'
 import { home, pages, redirects } from './content.js'
 import { Dialogs, Footer, Header, Landing, Pager, Sidebar } from './layout.jsx'
 import { Icon, mdxComponents } from './ui.jsx'
@@ -14,10 +14,11 @@ function normalized(value) {
 const rendered = new Map()
 function articleFor(page) {
   if (!rendered.has(page.path)) {
+    const intro = page.endpoint ? renderToStaticMarkup(<ApiEndpointInfo endpoint={page.endpoint} />) : ''
     const markup = renderToStaticMarkup(page.endpoint
-      ? <ApiArticle endpoint={page.endpoint} />
+      ? <ApiDetails endpoint={page.endpoint} />
       : <page.document components={mdxComponents} />)
-    const $ = load(markup, {}, false)
+    const $ = load(intro + markup, {}, false)
     $('.mobile-column-label').remove()
     $('p, li, h2, h3, h4, div.card-body, td, th, pre').append(' ')
     const targeted = $('h2[id], h3[id]')
@@ -28,7 +29,7 @@ function articleFor(page) {
       text: normalized($(node).nextUntil('h2, h3').text()),
     })).filter((heading) => heading.title)
     const text = normalized($.root().text()).slice(0, 2300)
-    rendered.set(page.path, { markup, headings, text })
+    rendered.set(page.path, { intro, markup, headings, text })
   }
   return rendered.get(page.path)
 }
@@ -86,13 +87,22 @@ function Site({ page }) {
           <Landing />
           <div className="landing-article prose" dangerouslySetInnerHTML={{ __html: article.markup }} />
         </>}
-        {page && !isHome && <div className={`article-layout ${page.endpoint ? 'api-layout' : ''}`}>
+        {page?.endpoint && <article className="article-layout api-layout">
+          <div className="api-intro">
+            <DocHeading page={page} />
+            <div className="prose" dangerouslySetInnerHTML={{ __html: article.intro }} />
+          </div>
+          <ApiExamples endpoint={page.endpoint} />
+          <div className="prose api-details" dangerouslySetInnerHTML={{ __html: article.markup }} />
+          <Pager page={page} />
+        </article>}
+        {page && !isHome && !page.endpoint && <div className="article-layout">
           <article>
             <DocHeading page={page} />
             <div className="prose" dangerouslySetInnerHTML={{ __html: article.markup }} />
             <Pager page={page} />
           </article>
-          {page.endpoint ? <ApiExamples endpoint={page.endpoint} /> : article.headings.length > 1 && <Contents headings={article.headings} />}
+          {article.headings.length > 1 && <Contents headings={article.headings} />}
         </div>}
         {!page && <div className="missing-page">
           <h1>Page not found</h1>

@@ -1,5 +1,6 @@
+import { Fragment } from 'react'
 import { resolveRef } from './content.js'
-import { CodeBlock, Icon } from './ui.jsx'
+import { CodeBlock, Icon, WrapLinesButton } from './ui.jsx'
 
 export function Method({ method }) {
   return <span className={`method method-${method}`}>{method.toUpperCase()}</span>
@@ -21,7 +22,7 @@ function Fields({ schema: input, seen = [] }) {
   if (schema.oneOf || schema.anyOf || schema.allOf) {
     return (schema.oneOf ?? schema.anyOf ?? schema.allOf).map((variant, index) =>
       <details className="schema-details" key={index}>
-        <summary>{shape(variant)}</summary><Fields schema={variant} seen={seen} />
+        <summary><code>{shape(variant)}</code></summary><Fields schema={variant} seen={seen} />
       </details>)
   }
   if (!schema.properties) return null
@@ -74,15 +75,25 @@ function endpointExamples(endpoint) {
   return fragments.join(' \\\n')
 }
 
-export function ApiArticle({ endpoint }) {
+export function ApiEndpointInfo({ endpoint }) {
   const { route, method } = endpoint
-  const params = (endpoint.parameters ?? []).map(resolveRef)
-  const request = resolveRef(endpoint.requestBody)
   return <>
-    <div className="endpoint-path"><Method method={method} /><code>{route}</code></div>
+    <div className="endpoint-path" data-wrap-container="" data-wrap="on">
+      <Method method={method} />
+      <code data-wrap-content="">{route.split(/(?=\/)/).map((segment, index) =>
+        <Fragment key={index}>{index > 0 && <wbr />}{segment}</Fragment>)}</code>
+      <WrapLinesButton label="Wrap endpoint path" pressed onlyWhenNeeded />
+    </div>
     {endpoint.security?.length > 0 && <div className="api-auth">
       <Icon name="lock" size={15} /><a href="/api-reference/authentication">Bearer authentication</a><span>Required</span>
     </div>}
+  </>
+}
+
+export function ApiDetails({ endpoint }) {
+  const params = (endpoint.parameters ?? []).map(resolveRef)
+  const request = resolveRef(endpoint.requestBody)
+  return <>
     {Object.entries(parameterGroups).map(([location, title]) => {
       const fields = params.filter((param) => param.in === location)
       if (!fields.length) return null
@@ -98,22 +109,28 @@ export function ApiArticle({ endpoint }) {
       <h2 id="request-body">Request body</h2>
       {request.description && <p>{inlineCode(request.description)}</p>}
       {Object.entries(request.content).map(([type, { schema }]) => <div key={type}>
-        <p><code>{type}</code>{request.required && ' · Required'}</p>
+        <p className="api-media"><code>{type}</code>{request.required && ' · Required'}</p>
         <Fields schema={schema} />
       </div>)}
     </section>}
     <section>
       <h2 id="responses">Responses</h2>
-      {Object.entries(endpoint.responses).map(([status, value]) => {
-        const response = resolveRef(value)
-        return <details className="accordion api-response" key={status} open={status.startsWith('2')}>
-          <summary><span><span className={status.startsWith('2') ? 'response-ok' : 'response-error'}>{status}</span> {response.description}</span><Icon name="down" size={16} /></summary>
-          <div>{Object.entries(response.content ?? {}).map(([type, { schema }]) => <div key={type}>
-            <p><code>{type}</code>{schema && <> · {shape(schema)}</>}</p>
-            <Fields schema={schema} />
-          </div>)}</div>
-        </details>
-      })}
+      <div className="api-responses">
+        {Object.entries(endpoint.responses).map(([status, value]) => {
+          const response = resolveRef(value)
+          const success = status.startsWith('2')
+          return <details className="accordion api-response" key={status} open={success}>
+            <summary>
+              <span className={`response-status ${success ? 'response-ok' : 'response-error'}`}>{status}</span>{' '}
+              <span>{response.description}</span><Icon name="down" size={16} />
+            </summary>
+            <div>{Object.entries(response.content ?? {}).map(([type, { schema }]) => <div key={type}>
+              <p className="api-media"><code>{type}</code>{schema && <> · <code className="api-schema-name">{shape(schema)}</code></>}</p>
+              <Fields schema={schema} />
+            </div>)}</div>
+          </details>
+        })}
+      </div>
     </section>
   </>
 }
@@ -122,9 +139,9 @@ export function ApiExamples({ endpoint }) {
   const success = Object.entries(endpoint.responses).find(([status]) => status.startsWith('2'))
   const content = resolveRef(success?.[1])?.content
   const response = content && Object.values(content).find((type) => type.example !== undefined)
-  return <aside className="api-examples" aria-label="API examples">
-    <CodeBlock label="cURL request"><code>{endpointExamples(endpoint)}</code></CodeBlock>
-    {response && <CodeBlock label={`${success[0]} response`}><code className="json-example">{JSON.stringify(response.example, null, 2)}</code></CodeBlock>}
+  return <section className="api-examples" aria-label="API examples">
+    <CodeBlock label="cURL request" wrap="responsive"><code>{endpointExamples(endpoint)}</code></CodeBlock>
+    {response && <CodeBlock label={`${success[0]} response`} wrap="responsive"><code className="json-example">{JSON.stringify(response.example, null, 2)}</code></CodeBlock>}
     <a className="utility-link" href="/api-reference/openapi.json"><Icon name="download" size={15} /> OpenAPI specification</a>
-  </aside>
+  </section>
 }
