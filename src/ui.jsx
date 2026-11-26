@@ -2,7 +2,7 @@ import { Children } from 'react'
 import {
   ArrowDownToLine, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Bot, Braces, Check, ChevronDown, ChevronRight,
   CircleAlert, CodeXml, Copy, CreditCard, FileCode2, GitBranch, Globe2, Info, Layers3, Link2,
-  List, LockKeyhole, Menu, Monitor, Moon, Search, ShieldCheck, Smartphone, Sparkles, Sun, Terminal, TriangleAlert, WrapText, X, Zap,
+  List, LockKeyhole, Maximize2, Menu, Minus, Monitor, Moon, Plus, Search, ShieldCheck, Smartphone, Sparkles, Sun, Terminal, TriangleAlert, WrapText, X, Zap,
 } from 'lucide-react'
 
 const icons = {
@@ -11,7 +11,7 @@ const icons = {
   branch: GitBranch, globe: Globe2, info: Info, layers: Layers3, link: Link2, list: List, menu: Menu,
   monitor: Monitor, moon: Moon, search: Search, shield: ShieldCheck, sparkles: Sparkles, sun: Sun,
   terminal: Terminal, warning: TriangleAlert, note: CircleAlert, close: X, zap: Zap, lock: LockKeyhole,
-  download: ArrowDownToLine, file: FileCode2, phone: Smartphone, wrap: WrapText,
+  download: ArrowDownToLine, expand: Maximize2, file: FileCode2, minus: Minus, phone: Smartphone, plus: Plus, wrap: WrapText,
 }
 
 export function Icon({ name, size = 18, ...props }) {
@@ -85,7 +85,8 @@ export function WrapLinesButton({ label = 'Wrap lines', pressed = false }) {
 
 export function CodeBlock({ language, label, children, wrap }) {
   const title = label || ({ ts: 'TypeScript', tsx: 'TSX', sh: 'Shell', bash: 'Shell', json: 'JSON', http: 'HTTP', mermaid: 'Mermaid', text: 'Text' }[language] ?? language) || 'Code'
-  return <div className={`code-block${language === 'mermaid' ? ' diagram-source' : ''}`} data-wrap-container={wrap ? '' : undefined} data-wrap={wrap === 'off' ? wrap : undefined}>
+  const isDiagram = language === 'mermaid'
+  return <div className={`code-block${isDiagram ? ' diagram-source' : ''}`} data-wrap-container={wrap ? '' : undefined} data-wrap={wrap === 'off' ? wrap : undefined}>
     <div className="code-bar">
       <span>{title}</span>
       <div className="code-actions">
@@ -93,6 +94,9 @@ export function CodeBlock({ language, label, children, wrap }) {
         <button type="button" className="icon-button code-copy" data-copy="" aria-label="Copy code" title="Copy code">
           <Icon name="copy" size={16} />
         </button>
+        {isDiagram && <button type="button" className="icon-button code-expand" data-diagram-expand="" hidden aria-label="Expand diagram" title="Expand diagram" aria-haspopup="dialog" aria-controls="diagram-viewer">
+          <Icon name="expand" size={16} />
+        </button>}
       </div>
     </div>
     <pre data-wrap-content={wrap ? '' : undefined} tabIndex={wrap ? 0 : undefined} role={wrap ? 'region' : undefined} aria-label={wrap ? title : undefined}>{children}</pre>

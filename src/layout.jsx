@@ -100,6 +100,20 @@ export function Dialogs({ page }) {
       </div>
       <div className="drawer-pages"><Sidebar page={page} showSectionLinks={false} /></div>
     </dialog>
+    <dialog id="diagram-viewer" className="diagram-dialog" aria-labelledby="diagram-viewer-title">
+      <div className="diagram-dialog-header">
+        <h2 id="diagram-viewer-title">Mermaid diagram</h2>
+        <div className="diagram-dialog-actions">
+          <div className="diagram-zoom" role="group" aria-label="Diagram zoom">
+            <button type="button" className="icon-button" data-zoom-out="" aria-label="Zoom out" title="Zoom out"><Icon name="minus" size={16} /></button>
+            <button type="button" className="icon-button zoom-reset" data-zoom-reset="" title="Reset zoom">100%</button>
+            <button type="button" className="icon-button" data-zoom-in="" aria-label="Zoom in" title="Zoom in"><Icon name="plus" size={16} /></button>
+          </div>
+          <button type="button" className="icon-button" data-dialog-close="" aria-label="Close diagram" title="Close diagram" autoFocus><Icon name="close" size={21} /></button>
+        </div>
+      </div>
+      <div className="diagram diagram-viewport" tabIndex={0} role="region" aria-label="Diagram canvas" />
+    </dialog>
   </>
 }
 

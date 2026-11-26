@@ -254,6 +254,82 @@ document.querySelectorAll('[data-tabs]').forEach((group, groupIndex) => {
 })
 
 const diagrams = [...document.querySelectorAll('.diagram-source')]
+const diagramDialog = document.querySelector('#diagram-viewer')
+const diagramViewport = diagramDialog.querySelector('.diagram-viewport')
+const zoomOut = diagramDialog.querySelector('[data-zoom-out]')
+const zoomReset = diagramDialog.querySelector('[data-zoom-reset]')
+const zoomIn = diagramDialog.querySelector('[data-zoom-in]')
+const zoomLevels = [10, 25, 50, 75, 100, 125, 150, 200, 250, 300]
+const defaultZoom = zoomLevels.indexOf(100)
+let diagramZoom = defaultZoom
+let expandedDiagram
+
+function sizeDiagramViewport(graphic) {
+  const { width, height } = graphic.viewBox.baseVal
+  diagramDialog.style.setProperty('--diagram-width', `${width}px`)
+  diagramDialog.style.setProperty('--diagram-height', `${height}px`)
+}
+
+function updateDiagramZoom(level) {
+  diagramZoom = level
+  const percent = zoomLevels[level]
+  diagramDialog.style.setProperty('--diagram-zoom', percent / 100)
+  zoomReset.textContent = `${percent}%`
+  zoomReset.setAttribute('aria-label', `Reset zoom (current zoom ${percent}%)`)
+  zoomOut.disabled = level === 0
+  zoomIn.disabled = level === zoomLevels.length - 1
+}
+
+function zoomDiagram(level) {
+  if (level === diagramZoom) return
+  const graphic = diagramViewport.firstElementChild
+  const frame = diagramViewport.getBoundingClientRect()
+  const centerX = frame.left + diagramViewport.clientWidth / 2
+  const centerY = frame.top + diagramViewport.clientHeight / 2
+  const before = graphic.getBoundingClientRect()
+  updateDiagramZoom(level)
+  const after = graphic.getBoundingClientRect()
+  // Keep the same part of the diagram in view as its size changes.
+  diagramViewport.scrollBy(
+    after.left + (centerX - before.left) * after.width / before.width - centerX,
+    after.top + (centerY - before.top) * after.height / before.height - centerY,
+  )
+}
+
+zoomOut.addEventListener('click', () => zoomDiagram(diagramZoom - 1))
+zoomReset.addEventListener('click', () => zoomDiagram(defaultZoom))
+zoomIn.addEventListener('click', () => zoomDiagram(diagramZoom + 1))
+
+function restoreDiagram() {
+  if (!expandedDiagram) return
+  expandedDiagram.append(diagramViewport.firstElementChild)
+  expandedDiagram.style.removeProperty('min-height')
+  expandedDiagram = undefined
+}
+
+diagramDialog.addEventListener('close', () => {
+  if (!diagramDialog.open) restoreDiagram()
+})
+
+for (const block of diagrams) {
+  const button = block.querySelector('[data-diagram-expand]')
+  button.addEventListener('click', () => {
+    if (diagramDialog.open) return
+    restoreDiagram()
+    const figure = block.querySelector('.diagram')
+    if (!figure?.firstElementChild) return
+    // Keep the page in place while moving the SVG and its IDs into the dialog.
+    figure.style.minHeight = `${figure.offsetHeight}px`
+    expandedDiagram = figure
+    diagramViewport.append(figure.firstElementChild)
+    sizeDiagramViewport(diagramViewport.firstElementChild)
+    updateDiagramZoom(defaultZoom)
+    button.focus({ preventScroll: true })
+    openDialog(diagramDialog)
+    diagramViewport.scrollTo(0, 0)
+  })
+}
+
 let diagramPass = 0
 const visualizeDiagrams = diagrams.length ? async () => {
   const pass = ++diagramPass
@@ -267,9 +343,12 @@ const visualizeDiagrams = diagrams.length ? async () => {
       if (pass !== diagramPass) return
       const figure = block.querySelector('.diagram') ?? document.createElement('div')
       figure.className = 'diagram'
-      figure.innerHTML = svg
+      const target = figure === expandedDiagram ? diagramViewport : figure
+      target.innerHTML = svg
+      if (target === diagramViewport) sizeDiagramViewport(target.firstElementChild)
       if (!figure.parentNode) block.append(figure)
       pre.hidden = true
+      block.querySelector('[data-diagram-expand]').hidden = false
     } catch (error) {
       console.error('Could not render Mermaid diagram', error)
     }
