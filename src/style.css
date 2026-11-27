@@ -176,6 +176,7 @@ kbd { display: inline-flex; line-height: 1; align-items: center; justify-content
 .hero-primary:hover { background: var(--hero-primary-hover); }
 .hero-actions .hero-secondary { border-color: var(--hero-secondary-line); background: var(--hero-secondary); }
 .hero-actions .hero-secondary:hover { background: var(--hero-secondary-hover); }
+[data-docs-installed] [data-install-docs] { display: none; }
 .landing-section { margin: 34px 0 0; }
 .landing-section h2 { margin: 0 0 14px; font-size: 22px; letter-spacing: -.02em; font-weight: 600; }
 .featured-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }

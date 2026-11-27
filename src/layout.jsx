@@ -158,6 +158,7 @@ export function Landing() {
         <div className="hero-actions">
           <a className="hero-primary" href="/quickstart">Get started <Icon name="arrow" size={17} /></a>
           <a className="hero-secondary" href="/api-reference/introduction">API reference <Icon name="arrow" size={17} /></a>
+          <a className="hero-secondary" data-install-docs="" href="/webapp/install#install-unifi-docs">Install Docs <Icon name="download" size={17} /></a>
         </div>
       </div>
     </div>
