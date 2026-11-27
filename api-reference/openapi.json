@@ -22,6 +22,10 @@
       "description": "Check API health."
     },
     {
+      "name": "API Account",
+      "description": "Read API credits and key summaries for your account."
+    },
+    {
       "name": "Deposit",
       "description": "Resolve deposit addresses for a UniFi wallet."
     },
@@ -40,12 +44,17 @@
     {
       "name": "History",
       "description": "Track payment sessions, receipts, finality, and history."
+    },
+    {
+      "name": "Contacts",
+      "description": "Manage saved recipients and reusable batches."
     }
   ],
   "paths": {
     "/v1/health": {
       "get": {
         "operationId": "getHealth",
+        "x-playground-id": 1,
         "summary": "Check API health",
         "description": "Returns the current health of the API.",
         "tags": [
@@ -91,9 +100,80 @@
         }
       }
     },
+    "/v1/api/{user_id}": {
+      "get": {
+        "operationId": "getApiAccount",
+        "summary": "Get API credits and key summaries",
+        "description": "Returns the API plan, remaining credits, and key summaries for the account that owns the bearer API key. Each call costs one API credit. Check `data.metadata.credits` periodically or before a batch and alert your agents when the balance falls below your threshold so they can pause or defer work.",
+        "tags": [
+          "API Account"
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UniFi user ID of the account that owns the bearer API key."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The API plan, credit balance after the charge, and key names and creation times.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiAccountResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "metadata": {
+                      "plan": "Free",
+                      "duration": "Month",
+                      "credits": 49,
+                      "img_credits": 3,
+                      "expiry_at": 1795996800
+                    },
+                    "keys": [
+                      {
+                        "name": "payments",
+                        "created_at": 1793404800
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The API key is invalid or the account has exhausted its API credits.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
     "/v1/wallet/address/{user_id}/{chain}": {
       "get": {
         "operationId": "getUserWalletAddress",
+        "x-playground-id": 2,
         "summary": "Get a wallet address for a chain",
         "description": "Resolves the user's wallet address for the requested chain.",
         "tags": [
@@ -149,6 +229,7 @@
     "/v1/wallet/addresses/{user_id}": {
       "get": {
         "operationId": "getUserWalletAddresses",
+        "x-playground-id": 3,
         "summary": "Get wallet addresses by protocol",
         "description": "Returns the user's wallet address for every supported chain protocol.",
         "tags": [
@@ -203,6 +284,7 @@
     "/v1/wallet/onchain/balance/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getStablecoinBalance",
+        "x-playground-id": 4,
         "summary": "Get a stablecoin balance",
         "description": "Returns the formatted net balance for one user, chain, and stablecoin.",
         "tags": [
@@ -261,6 +343,7 @@
     "/v1/wallet/onchain/balances/{user_id}/{chain}": {
       "get": {
         "operationId": "getChainStablecoinBalances",
+        "x-playground-id": 5,
         "summary": "Get all stablecoin balances on a chain",
         "description": "Returns formatted balances for every supported stablecoin on the requested chain.",
         "tags": [
@@ -320,6 +403,7 @@
     "/v1/wallet/balances/{user_id}": {
       "get": {
         "operationId": "getWalletBalances",
+        "x-playground-id": 6,
         "summary": "Get the complete wallet balance view",
         "description": "Returns all supported assets across all supported chains, ordered by total USD value.",
         "tags": [
@@ -396,8 +480,9 @@
     "/v1/wallet/balance/by_pair/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getWalletBalanceByPair",
+        "x-playground-id": 7,
         "summary": "Get latest and finalized wallet balances for one pair",
-        "description": "Returns comparable latest-block and finalized-block net balances for one stablecoin-chain pair. Both use the same pay formula so finality_status and finality_delta describe only the exact block-finality difference. The balance field remains the two-decimal latest-block balance, while latest_value_usd is its two-decimal USD value.",
+        "description": "Returns comparable latest-block and finalized-block net balances for one stablecoin-chain pair. Both use the same pay formula so `finality_status` and `finality_delta` describe only the exact block-finality difference. The `balance` field remains the two-decimal latest-block balance, while `latest_value_usd` is its two-decimal USD value.",
         "tags": [
           "Wallet"
         ],
@@ -462,6 +547,7 @@
     "/v1/wallet/balances/by_chain/{user_id}/{chain}": {
       "get": {
         "operationId": "getWalletBalancesByChain",
+        "x-playground-id": 8,
         "summary": "Get wallet balances by chain",
         "description": "Returns each supported stablecoin balance and USD value for one chain.",
         "tags": [
@@ -537,6 +623,7 @@
     "/v1/wallet/balances/by_coin/{user_id}/{coin}": {
       "get": {
         "operationId": "getWalletBalancesByCoin",
+        "x-playground-id": 9,
         "summary": "Get wallet balances by stablecoin",
         "description": "Returns the selected stablecoin's balance and USD value across supported chains.",
         "tags": [
@@ -611,6 +698,7 @@
     "/v1/payment/onchain/net_balance/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getPaymentNetBalance",
+        "x-playground-id": 10,
         "summary": "Get spendable payment balance",
         "description": "Returns the user's formatted net balance before creating a payment.",
         "tags": [
@@ -669,6 +757,7 @@
     "/v1/payment/onchain/est_fee/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getEstimatedPaymentFee",
+        "x-playground-id": 11,
         "summary": "Estimate the payment fee",
         "description": "Returns the formatted estimated total stablecoin fee for the selected route.",
         "tags": [
@@ -727,6 +816,7 @@
     "/v1/payment/onchain/balance_est_fee/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getPaymentBalanceAndFee",
+        "x-playground-id": 12,
         "summary": "Get payment balance and fee",
         "description": "Combines spendable balance, estimated fee, and allowance state for the selected route.",
         "tags": [
@@ -789,6 +879,7 @@
     "/v1/payment/onchain/balance_est_fee_bulkpay/{user_id}/{chain}": {
       "post": {
         "operationId": "getManagedWalletBulkPaymentInputs",
+        "x-playground-id": 13,
         "summary": "Get custodial bulk-payment inputs",
         "description": "Returns balances, BundlePay allowances, gas data, and prices for the selected stablecoins on one chain.",
         "tags": [
@@ -859,6 +950,7 @@
     "/v1/payment/onchain/balance_est_fee_ncw/{user_id}/{is_fee_incl}": {
       "post": {
         "operationId": "getSelfCustodialPaymentBalanceAndFee",
+        "x-playground-id": 14,
         "summary": "Prepare a self-custodial payment",
         "description": "Checks the sender balance and Permit2 allowance, then estimates the payment fee for one self-custodial payment.",
         "tags": [
@@ -939,6 +1031,7 @@
     "/v1/payment/onchain/balance_est_fee_ncw_bulkpay/{user_id}/{is_fee_incl}": {
       "post": {
         "operationId": "getSelfCustodialBulkPaymentBalanceAndFee",
+        "x-playground-id": 15,
         "summary": "Prepare self-custodial bulk payments",
         "description": "Checks balances and Permit2 allowances by coin, then estimates the total fee for a self-custodial bulk payment.",
         "tags": [
@@ -1041,6 +1134,7 @@
     "/v1/payment/onchain/ncw/prefetch_balance_est_fee_params/{user_id}/{chain}/{coin}": {
       "get": {
         "operationId": "getSelfCustodialPaymentCalculationInputs",
+        "x-playground-id": 16,
         "summary": "Get self-custodial fee inputs",
         "description": "Returns raw allowance, balance, gas, and price inputs for client-side self-custodial payment calculations.",
         "tags": [
@@ -1105,6 +1199,7 @@
     "/v1/payment/onchain/ncw/prefetch_balance_est_fee_params_bulkpay/{user_id}/{chain}": {
       "post": {
         "operationId": "getSelfCustodialBulkPaymentCalculationInputs",
+        "x-playground-id": 17,
         "summary": "Get self-custodial bulk fee inputs",
         "description": "Returns raw Permit2 allowances, balances, gas data, and prices for the selected stablecoins on one chain.",
         "tags": [
@@ -1175,6 +1270,7 @@
     "/v1/payment/onchain/{user_id}/{is_fee_incl}": {
       "post": {
         "operationId": "createManagedWalletPayment",
+        "x-playground-id": 18,
         "summary": "Create a stablecoin payment",
         "description": "Submits a payment from a UniFi-managed wallet. The response is a receipt ID; query the receipt endpoint for settlement progress.",
         "tags": [
@@ -1249,6 +1345,7 @@
     "/v1/payment/onchain/cw_bulkpay/{user_id}/{is_fee_incl}": {
       "post": {
         "operationId": "createManagedWalletBulkPayment",
+        "x-playground-id": 19,
         "summary": "Create managed-wallet bulk payments",
         "description": "Submits two or more same-chain payments from a UniFi-managed wallet. UniFi handles controlled-wallet approval and signing and returns one durable bulk payment ID plus one receipt ID per recipient.",
         "tags": [
@@ -1285,7 +1382,8 @@
                     "memo": "BulkPay"
                   }
                 ],
-                "scheds": null
+                "scheds": null,
+                "save_batch": false
               }
             }
           }
@@ -1338,8 +1436,9 @@
     "/v1/payment/onchain/merchant/{user_id}/{is_fee_incl}/{session_id}": {
       "post": {
         "operationId": "createManagedWalletMerchantPayment",
+        "x-playground-id": 20,
         "summary": "Create a managed-wallet merchant payment",
-        "description": "Submits a merchant payment from a UniFi-managed wallet and associates its receipt with the supplied payment session. A session accepts only one payment; an already-paid or currently-processing session returns 409 Conflict.",
+        "description": "Submits a merchant payment from a UniFi-managed wallet and associates its receipt with the supplied payment session. A session accepts only one payment; an already-paid or currently-processing session returns `409 Conflict`.",
         "tags": [
           "Pay"
         ],
@@ -1413,6 +1512,7 @@
     "/v1/payment/onchain/ncw/create_domain_permit/{user_id}": {
       "post": {
         "operationId": "createSelfCustodialPaymentPermit",
+        "x-playground-id": 21,
         "summary": "Create a self-custodial payment permit",
         "description": "Builds the EIP-712 domain and Permit2 message that the sender signs before submitting one self-custodial payment.",
         "tags": [
@@ -1500,6 +1600,7 @@
     "/v1/payment/onchain/ncw/create_domain_permit_bulkpay/{user_id}": {
       "post": {
         "operationId": "createSelfCustodialBulkPaymentPermit",
+        "x-playground-id": 22,
         "summary": "Create a self-custodial bulk-payment permit",
         "description": "Builds the EIP-712 domain and Permit2 message that the sender signs before submitting a self-custodial bulk payment.",
         "tags": [
@@ -1602,6 +1703,7 @@
     "/v1/payment/onchain/ncw/{user_id}": {
       "post": {
         "operationId": "createSelfCustodialPayment",
+        "x-playground-id": 23,
         "summary": "Create a self-custodial payment",
         "description": "Submits one payment with the sender's Permit2 nonce and signature. The response is a receipt ID; query the receipt endpoint for settlement progress.",
         "tags": [
@@ -1680,6 +1782,7 @@
     "/v1/payment/onchain/ncw_bulkpay/{user_id}": {
       "post": {
         "operationId": "createSelfCustodialBulkPayment",
+        "x-playground-id": 24,
         "summary": "Create self-custodial bulk payments",
         "description": "Submits a signed Permit2 batch and returns one durable bulk payment ID plus the receipt IDs created for its individual payments.",
         "tags": [
@@ -1721,7 +1824,8 @@
                   "nonce": "0",
                   "sig": "0xpermit2-signature"
                 },
-                "scheds": null
+                "scheds": null,
+                "save_batch": false
               }
             }
           }
@@ -1774,8 +1878,9 @@
     "/v1/payment/onchain/ncw/merchant/{user_id}/{session_id}": {
       "post": {
         "operationId": "createSelfCustodialMerchantPayment",
+        "x-playground-id": 25,
         "summary": "Create a self-custodial merchant payment",
-        "description": "Submits a signed self-custodial merchant payment and associates its receipt with the supplied payment session. A session accepts only one payment; an already-paid or currently-processing session returns 409 Conflict.",
+        "description": "Submits a signed self-custodial merchant payment and associates its receipt with the supplied payment session. A session accepts only one payment; an already-paid or currently-processing session returns `409 Conflict`.",
         "tags": [
           "Pay"
         ],
@@ -1852,8 +1957,9 @@
     "/v1/payment/merchant/session/{session_id}": {
       "get": {
         "operationId": "getPaymentSessionStatus",
+        "x-playground-id": 26,
         "summary": "Get a merchant payment session status",
-        "description": "Returns the receipt ID associated with a merchant payment session. An empty data string means that no receipt has been attached yet.",
+        "description": "Returns the receipt ID associated with a merchant payment session. An empty `data` string means that no receipt has been attached yet.",
         "tags": [
           "History"
         ],
@@ -1904,6 +2010,7 @@
     "/v1/payment/onchain/receipt/{receipt_id}": {
       "get": {
         "operationId": "getPaymentReceipt",
+        "x-playground-id": 27,
         "summary": "Get a payment receipt",
         "description": "Returns the latest known state of one stablecoin payment.",
         "tags": [
@@ -1973,6 +2080,7 @@
     "/v1/payment/onchain/bulkpay/{bulk_pay_id}": {
       "get": {
         "operationId": "getBulkPaymentReceipts",
+        "x-playground-id": 28,
         "summary": "Get a bulk payment",
         "description": "Returns the ordered individual receipts created by one managed-wallet or self-custodial bulk-payment submission.",
         "tags": [
@@ -2048,8 +2156,9 @@
     "/v1/payment/onchain/receipts/{user_id}/{sort_by_latest}/{from_start}": {
       "get": {
         "operationId": "getPaymentReceipts",
+        "x-playground-id": 29,
         "summary": "Get payment history",
-        "description": "Returns a page of receipts sent or received by the user. pending=true matches Processing and Confirmed receipts; pending=false excludes both. Do not combine pending with status. For a continuation request, set next_or_previous and pass the receipt ID at the current page edge as cursor: the last receipt for the next page or the first receipt for the previous page.",
+        "description": "Returns a page of receipts sent or received by the user. `pending=true` matches `Processing` and `Confirmed` receipts; `pending=false` excludes both. Do not combine `pending` with `status`. For a continuation request, set `next_or_previous` and pass the receipt ID at the current page edge as `cursor`: the last receipt for the next page or the first receipt for the previous page.",
         "tags": [
           "History"
         ],
@@ -2171,6 +2280,675 @@
           },
           "429": {
             "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/contacts/{user_id}": {
+      "get": {
+        "operationId": "getContacts",
+        "x-playground-id": 30,
+        "summary": "List contacts",
+        "description": "Returns saved contacts in name order. Set `with_batch=true` to include batch memberships and an independent batch page. Contact filters apply only to the contacts page.",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "name": "with_batch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include batch_ids on each contact and a separately paginated batch list in data.batches."
+          },
+          {
+            "name": "protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ChainProtocol"
+            },
+            "description": "Filter by chain protocol."
+          },
+          {
+            "name": "is_own_wallet",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Use true for contacts marked as the user's own wallets or false for other recipients."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by a case-insensitive substring of the contact name."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use data.next_cursor from the previous contacts page with the same filters."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 4294967295,
+              "default": 50
+            },
+            "description": "Maximum number of contacts per page. The API clamps the value to 1–100."
+          },
+          {
+            "name": "batch_cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use data.batches.next_cursor from the previous batch page. Used when with_batch=true."
+          },
+          {
+            "name": "batch_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 4294967295,
+              "default": 25
+            },
+            "description": "Maximum number of batches per page when with_batch=true. The API clamps the value to 1–100."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of contacts and, when requested, a page of batches.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactPageResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "contacts": [
+                      {
+                        "id": "6738a2009c3f472a4e000001",
+                        "name": "Alice",
+                        "protocol": "Evm",
+                        "address": "0x2222222222222222222222222222222222222222",
+                        "is_own_wallet": false,
+                        "batch_ids": []
+                      }
+                    ],
+                    "total": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "upsertContacts",
+        "x-playground-id": 31,
+        "summary": "Create or update contacts",
+        "description": "Creates and updates contacts in one request. Existing protocol/address pairs are left as saved unless `reject_existing` is `true`, which returns a conflict. To save a batch, set `save_batch=true` and provide at least two distinct members across saved IDs and submitted contacts. Include `batch_id` to replace a batch's full membership and name.",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertContactsPayload"
+              },
+              "example": {
+                "contacts": [
+                  {
+                    "name": "Alice",
+                    "protocol": "Evm",
+                    "address": "0x2222222222222222222222222222222222222222",
+                    "is_own_wallet": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The resolved contacts and optional saved batch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpsertContactsResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "message": "Contacts and optional batch upserted successfully",
+                  "data": {
+                    "contacts": [
+                      {
+                        "id": "6738a2009c3f472a4e000001",
+                        "name": "Alice",
+                        "protocol": "Evm",
+                        "address": "0x2222222222222222222222222222222222222222",
+                        "is_own_wallet": false,
+                        "batch_ids": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteContacts",
+        "x-playground-id": 32,
+        "summary": "Delete contacts",
+        "description": "Deletes the selected contacts and updates their batch memberships in one operation. Batches that would have fewer than two members or duplicate a retained batch are deleted. Preview the batch changes before sending this request.",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteContactsPayload"
+              },
+              "example": {
+                "contact_ids": [
+                  "6738a2009c3f472a4e000001"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The deleted contact IDs and resulting batch changes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteContactsResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "message": "Contacts removed successfully",
+                  "data": {
+                    "contact_ids": [
+                      "6738a2009c3f472a4e000001"
+                    ],
+                    "unlinked_contact_ids": [],
+                    "batches_to_delete": [
+                      {
+                        "id": "b6e5bc278b0132662739ef500",
+                        "name": "Payroll team",
+                        "removed_contact_ids": [
+                          "6738a2009c3f472a4e000001"
+                        ],
+                        "remaining_contact_ids": [
+                          "6738a2009c3f472a4e000002"
+                        ]
+                      }
+                    ],
+                    "batches_to_delink": []
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/contacts/{user_id}/{contact_id}": {
+      "get": {
+        "operationId": "getContact",
+        "x-playground-id": 33,
+        "summary": "Get a contact",
+        "description": "Returns a saved contact and all of its batch memberships.",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "name": "contact_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ContactId"
+            },
+            "description": "Contact ID returned by the contacts API."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The contact and its batch IDs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "id": "6738a2009c3f472a4e000001",
+                    "name": "Alice",
+                    "protocol": "Evm",
+                    "address": "0x2222222222222222222222222222222222222222",
+                    "is_own_wallet": false,
+                    "batch_ids": [
+                      "b6e5bc278b0132662739ef500"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/contacts/{user_id}/delete_impact": {
+      "post": {
+        "operationId": "previewDeleteContacts",
+        "x-playground-id": 34,
+        "summary": "Preview contact deletion",
+        "description": "Returns the batches that would be deleted or have members removed if the selected contacts were deleted. This is a read-only preview.",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteContactsPayload"
+              },
+              "example": {
+                "contact_ids": [
+                  "6738a2009c3f472a4e000001"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The contact IDs and projected batch changes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewDeleteContactsResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "contact_ids": [
+                      "6738a2009c3f472a4e000001"
+                    ],
+                    "unlinked_contact_ids": [],
+                    "batches_to_delete": [
+                      {
+                        "id": "b6e5bc278b0132662739ef500",
+                        "name": "Payroll team",
+                        "removed_contact_ids": [
+                          "6738a2009c3f472a4e000001"
+                        ],
+                        "remaining_contact_ids": [
+                          "6738a2009c3f472a4e000002"
+                        ]
+                      }
+                    ],
+                    "batches_to_delink": []
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/contact_batches/{user_id}": {
+      "get": {
+        "operationId": "getContactBatches",
+        "x-playground-id": 35,
+        "summary": "List contact batches",
+        "description": "Returns a page of saved batches, newest first, with the full contact records for each batch. Contact records include all their batch memberships.",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use the next_cursor from the previous batch page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 4294967295,
+              "default": 25
+            },
+            "description": "Maximum number of batches per page. The API clamps the value to 1–100."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of batches with their contacts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactBatchViewPageResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "batches": [
+                      {
+                        "id": "b6e5bc278b0132662739ef500",
+                        "name": "Payroll team",
+                        "created_at_us": 1731765000000000,
+                        "contacts": [
+                          {
+                            "id": "6738a2009c3f472a4e000001",
+                            "name": "Alice",
+                            "protocol": "Evm",
+                            "address": "0x2222222222222222222222222222222222222222",
+                            "is_own_wallet": false,
+                            "batch_ids": [
+                              "b6e5bc278b0132662739ef500"
+                            ]
+                          },
+                          {
+                            "id": "6738a2009c3f472a4e000002",
+                            "name": "Bob",
+                            "protocol": "Evm",
+                            "address": "0x3333333333333333333333333333333333333333",
+                            "is_own_wallet": false,
+                            "batch_ids": [
+                              "b6e5bc278b0132662739ef500"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "total": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/contact_batches/{user_id}/{batch_id}": {
+      "get": {
+        "operationId": "getContactBatch",
+        "x-playground-id": 36,
+        "summary": "Get a contact batch",
+        "description": "Returns one saved batch and its member contact IDs.",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Batch ID returned by the contacts API."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The batch and its member IDs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactBatchResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "data": {
+                    "id": "b6e5bc278b0132662739ef500",
+                    "name": "Payroll team",
+                    "contact_ids": [
+                      "6738a2009c3f472a4e000001",
+                      "6738a2009c3f472a4e000002"
+                    ],
+                    "created_at_us": 1731765000000000
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteContactBatch",
+        "x-playground-id": 37,
+        "summary": "Delete a contact batch",
+        "description": "Deletes a batch. Set `del_its_contacts=true` to also delete its contacts and reconcile all other batches that contain them.",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Batch ID returned by the contacts API."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteContactBatchPayload"
+              },
+              "example": {
+                "del_its_contacts": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The batch was removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "example": {
+                  "status": "200 OK",
+                  "message": "Contact batch removed successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/ServerError"
@@ -3531,7 +4309,8 @@
         "type": "object",
         "required": [
           "chain",
-          "batch"
+          "batch",
+          "save_batch"
         ],
         "properties": {
           "chain": {
@@ -3551,6 +4330,14 @@
             "items": {
               "$ref": "#/components/schemas/Schedule"
             }
+          },
+          "save_batch": {
+            "type": "boolean",
+            "description": "Save the recipients as a reusable contact batch."
+          },
+          "batch_name": {
+            "type": "string",
+            "description": "Optional name for the saved batch. Used only when save_batch is true."
           }
         },
         "additionalProperties": false
@@ -3872,7 +4659,8 @@
       "SelfCustodialBulkPaymentRequest": {
         "type": "object",
         "required": [
-          "payload"
+          "payload",
+          "save_batch"
         ],
         "properties": {
           "payload": {
@@ -3884,6 +4672,14 @@
             "items": {
               "$ref": "#/components/schemas/Schedule"
             }
+          },
+          "save_batch": {
+            "type": "boolean",
+            "description": "Save the recipients as a reusable contact batch."
+          },
+          "batch_name": {
+            "type": "string",
+            "description": "Optional name for the saved batch. Used only when save_batch is true."
           }
         },
         "additionalProperties": false
@@ -3985,6 +4781,527 @@
           },
           "data": {
             "$ref": "#/components/schemas/BulkPayReceiptGroup"
+          }
+        }
+      },
+      "ChainProtocol": {
+        "type": "string",
+        "enum": [
+          "Evm"
+        ]
+      },
+      "ContactId": {
+        "type": "string",
+        "pattern": "^[a-fA-F0-9]{24}$"
+      },
+      "Contact": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "protocol",
+          "address",
+          "is_own_wallet",
+          "batch_ids"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ContactId"
+          },
+          "name": {
+            "type": "string",
+            "description": "Saved display name."
+          },
+          "protocol": {
+            "$ref": "#/components/schemas/ChainProtocol"
+          },
+          "address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "Recipient wallet address."
+          },
+          "is_own_wallet": {
+            "type": "boolean",
+            "description": "Marks an external wallet the user owns. It must differ from the user's UniFi wallet."
+          },
+          "batch_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Batch memberships returned by the operation. The contacts-only list returns an empty array."
+          }
+        }
+      },
+      "ContactPage": {
+        "type": "object",
+        "required": [
+          "contacts",
+          "total"
+        ],
+        "properties": {
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Number of matching records across all pages."
+          },
+          "next_cursor": {
+            "type": "string",
+            "description": "Opaque cursor for the next page. Omitted on the last page."
+          },
+          "batches": {
+            "$ref": "#/components/schemas/ContactBatchPage"
+          }
+        }
+      },
+      "ContactBatch": {
+        "type": "object",
+        "required": [
+          "id",
+          "contact_ids",
+          "created_at_us"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Optional display name."
+          },
+          "created_at_us": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Creation time in Unix microseconds."
+          },
+          "contact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactId"
+            }
+          }
+        }
+      },
+      "ContactBatchPage": {
+        "type": "object",
+        "required": [
+          "batches",
+          "total"
+        ],
+        "properties": {
+          "batches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactBatch"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Number of matching records across all pages."
+          },
+          "next_cursor": {
+            "type": "string",
+            "description": "Opaque cursor for the next page. Omitted on the last page."
+          }
+        }
+      },
+      "ContactBatchWithContacts": {
+        "type": "object",
+        "required": [
+          "id",
+          "contacts",
+          "created_at_us"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Optional display name."
+          },
+          "created_at_us": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Creation time in Unix microseconds."
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            }
+          }
+        }
+      },
+      "ContactBatchViewPage": {
+        "type": "object",
+        "required": [
+          "batches",
+          "total"
+        ],
+        "properties": {
+          "batches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactBatchWithContacts"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Number of matching records across all pages."
+          },
+          "next_cursor": {
+            "type": "string",
+            "description": "Opaque cursor for the next page. Omitted on the last page."
+          }
+        }
+      },
+      "AddContactPayload": {
+        "type": "object",
+        "required": [
+          "name",
+          "protocol",
+          "address",
+          "is_own_wallet"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name. Names are unique per owner, ignoring case. A wallet address cannot be used as a manually entered name."
+          },
+          "protocol": {
+            "$ref": "#/components/schemas/ChainProtocol"
+          },
+          "address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "Recipient wallet address."
+          },
+          "is_own_wallet": {
+            "type": "boolean",
+            "description": "Marks an external wallet the user owns. It must differ from the user's UniFi wallet."
+          }
+        }
+      },
+      "UpdateContactPayload": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "New display name."
+          },
+          "protocol": {
+            "$ref": "#/components/schemas/ChainProtocol"
+          },
+          "address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "Recipient wallet address."
+          },
+          "is_own_wallet": {
+            "type": "boolean",
+            "description": "Marks an external wallet the user owns. It must differ from the user's UniFi wallet."
+          }
+        }
+      },
+      "UpdateContactItem": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "update"
+        ],
+        "properties": {
+          "contact_id": {
+            "$ref": "#/components/schemas/ContactId"
+          },
+          "update": {
+            "$ref": "#/components/schemas/UpdateContactPayload"
+          }
+        }
+      },
+      "UpsertContactsPayload": {
+        "type": "object",
+        "properties": {
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddContactPayload"
+            },
+            "description": "New contacts to save."
+          },
+          "reject_existing": {
+            "type": "boolean",
+            "default": false,
+            "description": "Reject existing or repeated contact identities. An identity is the protocol and normalized address."
+          },
+          "updates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateContactItem"
+            },
+            "description": "Partial updates to existing contacts."
+          },
+          "save_batch": {
+            "type": "boolean",
+            "default": false,
+            "description": "Save the desired batch state in the same request."
+          },
+          "batch_id": {
+            "type": "string",
+            "description": "ID of a batch to replace. Omit to create a batch."
+          },
+          "batch_contact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactId"
+            },
+            "description": "Saved contacts in the final membership. Contacts created or updated in this request also become members."
+          },
+          "batch_name": {
+            "type": "string",
+            "description": "Final display name for the batch. Omit or leave blank to save an unnamed batch."
+          }
+        }
+      },
+      "UpsertContactsResult": {
+        "type": "object",
+        "required": [
+          "contacts"
+        ],
+        "properties": {
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            },
+            "description": "Contacts resolved by the upsert."
+          },
+          "batch": {
+            "$ref": "#/components/schemas/ContactBatch"
+          }
+        }
+      },
+      "DeleteContactsPayload": {
+        "type": "object",
+        "required": [
+          "contact_ids"
+        ],
+        "properties": {
+          "contact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactId"
+            },
+            "minItems": 1,
+            "description": "IDs of the saved contacts to delete or preview. Repeated IDs are deduplicated."
+          }
+        }
+      },
+      "ContactBatchDeletionImpact": {
+        "type": "object",
+        "required": [
+          "id",
+          "removed_contact_ids",
+          "remaining_contact_ids"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Optional display name."
+          },
+          "removed_contact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactId"
+            },
+            "description": "Selected members removed from the batch."
+          },
+          "remaining_contact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactId"
+            },
+            "description": "Members left after removing the selected contacts."
+          }
+        }
+      },
+      "DeleteContactsImpact": {
+        "type": "object",
+        "required": [
+          "contact_ids",
+          "unlinked_contact_ids",
+          "batches_to_delete",
+          "batches_to_delink"
+        ],
+        "properties": {
+          "contact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactId"
+            },
+            "description": "Validated, deduplicated IDs of the selected contacts."
+          },
+          "unlinked_contact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactId"
+            },
+            "description": "Selected contacts that belonged to no batch."
+          },
+          "batches_to_delete": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactBatchDeletionImpact"
+            },
+            "description": "Batches that lose too many members or would duplicate a retained batch."
+          },
+          "batches_to_delink": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactBatchDeletionImpact"
+            },
+            "description": "Surviving batches that lose the selected members."
+          }
+        }
+      },
+      "DeleteContactBatchPayload": {
+        "type": "object",
+        "required": [
+          "del_its_contacts"
+        ],
+        "properties": {
+          "del_its_contacts": {
+            "type": "boolean",
+            "description": "Set false to keep the contacts. Set true to delete them and reconcile other affected batches."
+          }
+        }
+      },
+      "ContactResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Contact"
+          }
+        }
+      },
+      "ContactPageResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ContactPage"
+          }
+        }
+      },
+      "ContactBatchResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ContactBatch"
+          }
+        }
+      },
+      "ContactBatchViewPageResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ContactBatchViewPage"
+          }
+        }
+      },
+      "UpsertContactsResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "message",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UpsertContactsResult"
+          }
+        }
+      },
+      "PreviewDeleteContactsResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DeleteContactsImpact"
+          }
+        }
+      },
+      "DeleteContactsResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "message",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DeleteContactsImpact"
           }
         }
       }

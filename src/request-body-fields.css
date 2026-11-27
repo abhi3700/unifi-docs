@@ -1,0 +1,297 @@
+[data-request-body-fields] {
+  display: none;
+}
+
+[data-request-body-active] [data-request-body-raw] {
+  display: none;
+}
+
+[data-request-body-active] [data-request-body-fields],
+.request-fields-group,
+.request-fields-field,
+.request-fields-optional,
+.request-fields-item {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.request-fields-group:empty {
+  display: none;
+}
+
+[data-request-body-fields] {
+  --request-field-line: var(--unifi-line, var(--line));
+  --request-field-surface: var(--unifi-surface, var(--surface));
+  --request-field-inset: var(--unifi-surface-soft, var(--code-bg));
+  --request-field-text: var(--unifi-text, var(--text));
+  --request-field-muted: var(--unifi-muted, var(--muted));
+  --request-field-accent: var(--unifi-primary-strong, var(--accent));
+  color: var(--request-field-text);
+  font-size: .8125rem;
+}
+
+.request-fields-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 5px;
+}
+
+.request-fields-caption,
+.request-fields-label {
+  font-size: .75rem;
+  font-weight: 550;
+}
+
+.request-fields-caption {
+  margin: 0;
+  color: var(--request-field-muted);
+}
+
+.request-fields-field {
+  gap: 4px;
+}
+
+.request-fields-item,
+.request-fields-optional {
+  padding: 6px;
+  border: 1px solid var(--request-field-line);
+  border-radius: 9px;
+}
+
+.request-fields-optional > summary {
+  min-height: 32px;
+  align-content: center;
+  cursor: pointer;
+  color: var(--request-field-accent);
+}
+
+.request-fields-optional[open] > summary {
+  margin-bottom: 4px;
+}
+
+.request-fields-item > .request-fields-heading {
+  justify-content: space-between;
+  color: var(--request-field-muted);
+  font-size: .75rem;
+}
+
+.request-fields-inline-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.request-fields-input-frame {
+  --field-scale: .75;
+  --field-height: 2.25rem;
+  min-width: 0;
+  height: var(--field-height);
+  overflow: clip;
+  border-radius: 8px;
+}
+
+.request-fields-input-frame:focus-within {
+  outline: 2px solid var(--request-field-accent);
+  outline-offset: 1px;
+}
+
+[data-request-body-fields] .request-fields-input-frame > input.request-fields-input {
+  display: block;
+  width: calc(100% / var(--field-scale));
+  height: calc(var(--field-height) / var(--field-scale));
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--request-field-line);
+  border-radius: 8px;
+  background: var(--request-field-inset);
+  color: var(--request-field-text);
+  font-size: max(16px, 1rem);
+  transform: scale(var(--field-scale));
+  transform-origin: top left;
+}
+
+.request-fields-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--request-field-line);
+  border-radius: 9px;
+  background: var(--request-field-inset);
+}
+
+.request-fields-option {
+  flex: 1 1 auto;
+  min-height: 34px;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--request-field-muted);
+  font: 550 .75rem/1.2 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.request-fields-option[aria-pressed="true"] {
+  border-color: var(--request-field-accent);
+  background: var(--request-field-surface);
+  color: var(--request-field-accent);
+}
+
+.request-fields-action {
+  justify-self: start;
+  min-height: 36px;
+  padding: 4px 8px;
+  border: 1px solid var(--request-field-line, currentColor);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--request-field-accent, var(--unifi-primary-strong, var(--accent)));
+  font-size: .75rem;
+  cursor: pointer;
+}
+
+.request-fields-action:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.request-fields-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding-inline: 7px;
+  background: var(--request-field-inset);
+}
+
+.request-fields-add > span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.request-fields-item-remove {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--request-field-line);
+  border-radius: 50%;
+  background: var(--request-field-surface);
+  color: var(--request-field-muted);
+  font: 400 1rem/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.request-fields-item-remove:hover,
+.request-fields-add:where(:enabled):hover {
+  border-color: var(--request-field-accent);
+  color: var(--request-field-accent);
+}
+
+.request-fields-remove {
+  margin-inline-start: auto;
+}
+
+.request-fields-note {
+  color: var(--request-field-muted);
+  font-size: .75rem;
+}
+
+.request-fields-info {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.request-fields-info:hover {
+  filter: brightness(1.12);
+}
+
+.request-fields-info > span {
+  display: grid;
+  width: 14px;
+  height: 14px;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--request-field-accent), var(--unifi-primary, var(--accent)));
+  color: #fff;
+  font: italic 800 .48rem/1 Georgia, serif;
+}
+
+.request-fields-error {
+  margin: 0;
+  color: var(--unifi-danger, var(--warning));
+  font-size: .75rem;
+}
+
+dialog.request-fields-dialog {
+  position: fixed;
+  inset: auto 0 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.request-fields-dialog::backdrop {
+  background: #07112b68;
+  backdrop-filter: blur(3px);
+}
+
+.request-fields-dialog-panel {
+  max-width: 32rem;
+  margin-inline: auto;
+  padding: 14px 16px max(16px, env(safe-area-inset-bottom));
+  border: 1px solid var(--unifi-line, var(--line));
+  border-radius: 16px 16px 0 0;
+  background: var(--unifi-surface, var(--surface));
+  color: var(--unifi-text, var(--text));
+}
+
+.request-fields-dialog-panel .request-fields-heading {
+  justify-content: space-between;
+}
+
+.request-fields-close {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--unifi-line, var(--line));
+  border-radius: 50%;
+  background: var(--unifi-surface-raised, var(--surface));
+  color: var(--unifi-text, var(--text));
+  font: 400 1.125rem/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.request-fields-dialog-panel h3,
+.request-fields-dialog-panel p {
+  margin: 0;
+}
+
+.request-fields-dialog-panel h3 {
+  font-size: .95rem;
+  font-weight: 650;
+}
+
+.request-fields-dialog-panel p {
+  margin-block-start: 8px;
+  color: var(--unifi-muted, var(--muted));
+  font-size: .8125rem;
+}

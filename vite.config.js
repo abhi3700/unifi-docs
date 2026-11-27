@@ -78,9 +78,14 @@ function responsiveTables() {
 }
 
 function docsPreview() {
+  function allowSpecReads(req, res, next) {
+    if (req.url?.split('?')[0] === '/api-reference/openapi.json') res.setHeader('Access-Control-Allow-Origin', '*')
+    next()
+  }
   return {
     name: 'unifi-docs-dev',
     configureServer(server) {
+      server.middlewares.use(allowSpecReads)
       server.middlewares.use(async (req, res, next) => {
         const url = new URL(req.url, 'http://localhost')
         const path = url.pathname.replace(/\/$/, '') || '/'
@@ -116,6 +121,9 @@ function docsPreview() {
         }
       })
     },
+    configurePreviewServer(server) {
+      server.middlewares.use(allowSpecReads)
+    },
   }
 }
 
@@ -144,6 +152,8 @@ function checkClientChunkSizes() {
 export default defineConfig(({ command }) => ({
   publicDir: false,
   appType: 'mpa',
+  server: { port: 3001, strictPort: true },
+  preview: { port: 3001, strictPort: true },
   oxc: { jsx: { runtime: 'automatic' } },
   resolve: command === 'build' ? {
     alias: [{ find: /^elkjs\/lib\/elk\.bundled\.js$/, replacement: fileURLToPath(new URL('./src/elk-worker.js', import.meta.url)) }],

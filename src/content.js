@@ -14,6 +14,11 @@ export const redirects = new Map([
   [`${endpointIndex}/health/check-api-dependencies`, `${endpointIndex}/health/check-api-health`],
 ])
 export const endpointSection = 'API Reference'
+const local = ['development', 'test', 'canvas'].includes(import.meta.env.MODE)
+const dev = import.meta.env.MODE === 'dev'
+const webAppOrigin = import.meta.env.VITE_WEB_APP_BASE_URL?.trim() ||
+  (local ? 'http://localhost:3334' : dev ? 'https://dev.payunifi.com' : 'https://payunifi.com')
+const apiOrigin = import.meta.env.VITE_API_BASE_URL?.trim() || (local ? 'http://localhost:3333' : spec.servers[0].url)
 
 export function resolveRef(value) {
   while (value?.$ref) {
@@ -29,14 +34,23 @@ export function endpointSlug(text) {
 for (const [path, item] of Object.entries(spec.paths)) {
   for (const [method, operation] of Object.entries(item)) {
     if (!methods.has(method)) continue
+    const playgroundId = operation['x-playground-id']
+    if (playgroundId !== undefined && (!Number.isInteger(playgroundId) || playgroundId < 1)) {
+      throw new Error(`Invalid playground number for ${method} ${path}`)
+    }
     const tag = operation.tags[0]
     const slug = endpointSlug(operation.summary)
     const page = {
       path: `${endpointIndex}/${endpointSlug(tag)}/${slug}`,
       title: operation.summary,
-      description: operation.description,
+      description: operation.description?.replace(/`([^`]+)`/g, '$1'),
       section: endpointSection,
-      endpoint: { ...operation, method, route: path, server: spec.servers[0].url, security: operation.security ?? spec.security },
+      endpoint: {
+        ...operation, method, route: path,
+        server: new URL(apiOrigin).origin,
+        webAppUrl: playgroundId && new URL(`/app/api/playground/${playgroundId}`, webAppOrigin).href,
+        security: operation.security ?? spec.security,
+      },
     }
     if (pages.has(page.path)) throw new Error(`Duplicate API endpoint slug ${page.path}`)
     pages.set(page.path, page)

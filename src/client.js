@@ -1,6 +1,9 @@
-import '@fontsource-variable/inter/wght.css'
-import '@fontsource-variable/inter/wght-italic.css'
-import './style.css'
+import { initApiTry } from './api-try.js'
+import { initMobileKeyboard } from './mobile-keyboard.js'
+import './request-body-fields.js'
+
+await globalThis.docsStylesReady
+initMobileKeyboard()
 
 const root = document.documentElement
 const systemTheme = matchMedia('(prefers-color-scheme: dark)')
@@ -117,6 +120,15 @@ function openDialog(dialog) {
   if (dialog === searchDialog) {
     input.focus()
     void search()
+  } else if (dialog.id === 'mobile-menu') {
+    const pages = dialog.querySelector('.drawer-pages')
+    const currentPage = pages.querySelector('[aria-current="page"]')
+    if (!currentPage) return
+    const group = currentPage.closest('details')
+    if (group) group.open = true
+    const link = currentPage.getBoundingClientRect()
+    const viewport = pages.getBoundingClientRect()
+    pages.scrollTop += link.top - viewport.top - (viewport.height - link.height) / 2
   }
 }
 
@@ -169,6 +181,7 @@ function observePathWrap(block, code, button) {
 
 const codeWrapButtons = new Map()
 function updateCodeWrapButtons(blocks) {
+  blocks = blocks.filter((code) => code.clientWidth > 0)
   // Measure unwrapped lines even when wrapping is on so the toggle stays available.
   for (const code of blocks) code.style.whiteSpace = 'pre'
   const overflows = blocks.map((code) => code.scrollWidth > code.clientWidth)
@@ -180,14 +193,17 @@ function updateCodeWrapButtons(blocks) {
 const codeWrapObserver = new ResizeObserver((entries) => updateCodeWrapButtons(entries.map(({ target }) => target)))
 
 const mobileExamples = matchMedia('(max-width: 760px)')
+const visibleCode = (block) => block.querySelector('pre:not([hidden])')
 document.querySelectorAll('[data-wrap-lines]').forEach((button) => {
   const block = button.closest('[data-wrap-container]')
-  const code = block.querySelector('[data-wrap-content]')
-  if (code.matches('pre')) {
-    codeWrapButtons.set(code, button)
-    codeWrapObserver.observe(code)
+  const content = block.querySelectorAll('[data-wrap-content]')
+  if (content[0].matches('pre')) {
+    for (const code of content) {
+      codeWrapButtons.set(code, button)
+      codeWrapObserver.observe(code)
+    }
   } else {
-    observePathWrap(block, code, button)
+    observePathWrap(block, content[0], button)
   }
   if (!block.dataset.wrap) {
     function syncDefault() {
@@ -200,43 +216,56 @@ document.querySelectorAll('[data-wrap-lines]').forEach((button) => {
     const wrap = button.getAttribute('aria-pressed') === 'false'
     block.dataset.wrap = wrap ? 'on' : 'off'
     button.setAttribute('aria-pressed', String(wrap))
-    if (wrap) code.scrollLeft = 0
+    if (wrap) (visibleCode(block) ?? content[0]).scrollLeft = 0
   })
 })
 document.fonts.ready.then(() => updateCodeWrapButtons([...codeWrapButtons.keys()]))
 
+const apiTryForm = document.querySelector('[data-api-try]')
+if (apiTryForm) initApiTry(apiTryForm, (code) => updateCodeWrapButtons([code]))
+
 document.querySelectorAll('[data-copy]').forEach((button) => {
-  let reset
+  const block = button.closest('.code-block')
+  let timer
+  function reset() {
+    clearTimeout(timer)
+    delete button.dataset.copied
+    button.setAttribute('aria-label', 'Copy code')
+  }
+  block.addEventListener('tabschange', reset)
   button.addEventListener('click', async () => {
-    const text = button.closest('.code-block').querySelector('pre').textContent
+    const code = visibleCode(block)
     try {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(code.textContent)
+      if (visibleCode(block) !== code) return
       button.dataset.copied = 'true'
       button.setAttribute('aria-label', 'Copied')
     } catch {
+      if (visibleCode(block) !== code) return
       button.setAttribute('aria-label', 'Could not copy')
     }
-    clearTimeout(reset)
-    reset = setTimeout(() => {
-      delete button.dataset.copied
-      button.setAttribute('aria-label', 'Copy code')
-    }, 1600)
+    clearTimeout(timer)
+    timer = setTimeout(reset, 1600)
   })
 })
 
 document.querySelectorAll('[data-tabs]').forEach((group, groupIndex) => {
-  const tabs = [...group.querySelectorAll(':scope > .tab-list > [role="tab"]')]
+  const list = group.querySelector(':scope > .tab-list, :scope > .code-bar > .tab-list')
+  const tabs = [...list.querySelectorAll('[role="tab"]')]
   const panels = [...group.querySelectorAll(':scope > [role="tabpanel"]')]
   function activate(index, focus = false) {
+    const changed = panels[index].hidden
     tabs.forEach((tab, position) => {
       tab.setAttribute('aria-selected', position === index)
       tab.tabIndex = position === index ? 0 : -1
       panels[position].hidden = position !== index
     })
+    if (changed && codeWrapButtons.has(panels[index])) updateCodeWrapButtons([panels[index]])
+    if (changed) group.dispatchEvent(new Event('tabschange'))
     if (focus) tabs[index].focus()
   }
   tabs.forEach((tab, index) => {
-    const id = `example-${groupIndex}-${index}`
+    const id = tab.id || `example-${groupIndex}-${index}`
     tab.id = id
     tab.setAttribute('aria-controls', id + '-panel')
     panels[index].id = id + '-panel'
