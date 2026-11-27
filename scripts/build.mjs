@@ -1,9 +1,12 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
+import { parseArgs } from 'node:util'
 import { build } from 'vite'
 
-await build()
+const { values: { mode } } = parseArgs({ options: { mode: { type: 'string' } } })
+await build({ mode })
 await build({
+  mode,
   build: {
     ssr: 'src/site.jsx',
     outDir: '.dist-ssr',
@@ -28,7 +31,7 @@ try {
     writeFile('dist/_redirects', Array.from(redirects)
       .filter(([from, to]) => from !== to && !pages.has(from))
       .map(([from, to]) => `${from} ${to} 301`).join('\n') + '\n'),
-    writeFile('dist/_headers', '/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n'),
+    writeFile('dist/_headers', '/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n\n/api-reference/openapi.json\n  Access-Control-Allow-Origin: *\n'),
   ])
 } finally {
   await rm('.dist-ssr', { recursive: true, force: true })

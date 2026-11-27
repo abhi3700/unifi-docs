@@ -4,3 +4,5 @@ node_modules/
 dist/
 .dist-ssr/
 .wrangler/
+.env.local
+.env.*.local

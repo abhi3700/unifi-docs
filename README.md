@@ -11,7 +11,21 @@ npm ci
 npm run dev
 ```
 
-Edit the existing MDX files and use `docs.json` to update the section order and navigation. Endpoint pages are generated from `api-reference/openapi.json` and use the same paths as the Mintlify reference.
+The local preview runs at `http://localhost:3001`. Edit the MDX files for copy and `docs.json`
+for navigation. The API endpoint pages come from `api-reference/openapi.json`.
+
+## API reference environments
+
+| Vite mode | Web app | API default |
+| --- | --- | --- |
+| `development`, `test`, `canvas` | `http://localhost:3334` | `http://localhost:3333` |
+| `dev` | `https://dev.payunifi.com` | OpenAPI server |
+| `production` | `https://payunifi.com` | OpenAPI server |
+
+Set `VITE_WEB_APP_BASE_URL` and `VITE_API_BASE_URL` in the build environment or the matching
+`.env.<mode>.local` file to override these public origins. For `docs.dev.payunifi.com`, set
+`VITE_API_BASE_URL` to the API running in dev mode so the docs origin matches its CORS policy.
+Each OpenAPI operation has a stable `x-playground-id` used by `/app/api/playground/<number>`.
 
 ## Build and check
 
@@ -28,7 +42,7 @@ The build generates static HTML, the search index, and the Cloudflare Pages asse
 Run these commands from the public docs repository after authenticating Wrangler.
 
 ```sh
-npm run build
+npm run build -- --mode dev
 npm run check
 wrangler pages deploy dist --project-name unifi-docs --branch feat/vite-docs
 ```

@@ -1,11 +1,11 @@
 ---
 title: "Introduction"
-description: "Use the production UniFi API for deposit, wallet, payments, history & more."
+description: "Use the production UniFi API for deposits, wallets, contacts, payments, and history."
 icon: "code"
 ---
 
-The UniFi API exposes wallet, payment, history, and checkout operations without requiring callers
-to manage UniFi's internal services.
+The UniFi API exposes wallet, contact, payment, history, and checkout operations without requiring
+callers to manage UniFi's internal services.
 
 ## Base URL
 
@@ -14,6 +14,45 @@ https://api.payunifi.com
 ```
 
 All requests use HTTPS and JSON unless an endpoint states otherwise.
+
+## Try an endpoint
+
+- Open **Try it** where available above the request examples.
+- Enter your bearer token and the applicable parameters. On mobile, use the request body fields
+  to add items and choose values. On desktop, edit the JSON body.
+- Use the picker for asset and network parameters. In a paired picker, select **Done** to apply your choices.
+- Send the request to see the HTTP status and response.
+- Choose **cURL**, **Rust**, or **TypeScript** to copy the request. The examples update as you edit the form.
+- Fill in any remaining placeholders and set `UNIFI_API_KEY` in your terminal before running a copied example.
+- Use the open-in-new-tab icon to run the same endpoint in the signed-in UniFi web app.
+
+**Payment submission endpoints can move real funds.**
+
+## SDK setup
+
+Install the UniFi SDK for your language once per project.
+
+### Rust
+
+In a Cargo project, add the SDK, its shared types, and the runtime used by the examples.
+
+```sh
+cargo add --git https://github.com/abhi3700/unifi-dev-kit.git --rev d7c93a4f7bec2f1ef735fb77afe6deb44b54893a unifi-sdk-rs unifi-sdk-primitives
+cargo add tokio -F macros,rt
+cargo add serde_json
+```
+
+Save the example as `src/main.rs` and run `cargo run`.
+
+### TypeScript
+
+In a Node.js 22.18+ project, install the SDK.
+
+```sh
+npm install 'git+https://github.com/abhi3700/unifi-dev-kit.git#d7c93a4f7bec2f1ef735fb77afe6deb44b54893a'
+```
+
+Save the example as `example.ts` and run `node example.ts`.
 
 ## Authentication
 

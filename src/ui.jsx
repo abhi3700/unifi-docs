@@ -1,8 +1,8 @@
-import { Children } from 'react'
+import { Children, useId } from 'react'
 import {
   ArrowDownToLine, ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Bot, Braces, Check, ChevronDown, ChevronRight,
   CircleAlert, CodeXml, Copy, CreditCard, FileCode2, GitBranch, Globe2, Info, Layers3, Link2,
-  List, LockKeyhole, Mail, Maximize2, Menu, Minus, Monitor, Moon, Plus, Search, ShieldCheck, Smartphone, Sparkles,
+  List, LockKeyhole, Mail, Maximize2, Menu, Minus, Monitor, Moon, Plus, Search, Send, ShieldCheck, Smartphone, Sparkles,
   Sun, Terminal, TriangleAlert, Wallet, WrapText, X, Zap,
 } from 'lucide-react'
 
@@ -32,7 +32,7 @@ const icons = {
   monitor: Monitor, moon: Moon, search: Search, shield: ShieldCheck, sparkles: Sparkles, sun: Sun,
   terminal: Terminal, warning: TriangleAlert, note: CircleAlert, close: X, zap: Zap, lock: LockKeyhole,
   download: ArrowDownToLine, expand: Maximize2, file: FileCode2, minus: Minus, phone: Smartphone, plus: Plus, wrap: WrapText,
-  mail: Mail, wallet: Wallet, metamask: MetaMaskIcon,
+  mail: Mail, send: Send, wallet: Wallet, metamask: MetaMaskIcon,
 }
 
 export function Icon({ name, size = 18, ...props }) {
@@ -105,12 +105,17 @@ export function WrapLinesButton({ label = 'Wrap lines', pressed = false }) {
   </button>
 }
 
-export function CodeBlock({ language, label, children, wrap }) {
+export function CodeBlock({ language, label, children, wrap, tabs }) {
+  const id = useId()
   const title = label || ({ ts: 'TypeScript', tsx: 'TSX', sh: 'Shell', bash: 'Shell', json: 'JSON', http: 'HTTP', mermaid: 'Mermaid', text: 'Text' }[language] ?? language) || 'Code'
   const isDiagram = language === 'mermaid'
-  return <div className={`code-block${isDiagram ? ' diagram-source' : ''}`} data-wrap-container={wrap ? '' : undefined} data-wrap={wrap === 'off' ? wrap : undefined}>
+  return <div className={`code-block${isDiagram ? ' diagram-source' : ''}`} data-tabs={tabs ? '' : undefined}
+    data-wrap-container={wrap ? '' : undefined} data-wrap={wrap === 'off' ? wrap : undefined}>
     <div className="code-bar">
-      <span>{title}</span>
+      {tabs ? <div className="tab-list" role="tablist" aria-label={title}>
+        {tabs.map((tab, index) => <button key={tab.id} type="button" id={`${id}-${tab.id}`} role="tab"
+          aria-controls={`${id}-${tab.id}-panel`} aria-selected={index === 0} tabIndex={index ? -1 : 0}>{tab.title}</button>)}
+      </div> : <span>{title}</span>}
       <div className="code-actions">
         {wrap && <WrapLinesButton />}
         <button type="button" className="icon-button code-copy" data-copy="" aria-label="Copy code" title="Copy code">
@@ -121,7 +126,11 @@ export function CodeBlock({ language, label, children, wrap }) {
         </button>}
       </div>
     </div>
-    <pre data-wrap-content={wrap ? '' : undefined} tabIndex={wrap ? 0 : undefined} role={wrap ? 'region' : undefined} aria-label={wrap ? title : undefined}>{children}</pre>
+    {tabs ? tabs.map((tab, index) => <pre key={tab.id} id={`${id}-${tab.id}-panel`} role="tabpanel" tabIndex={0}
+      aria-labelledby={`${id}-${tab.id}`} hidden={index > 0} data-wrap-content={wrap ? '' : undefined}>
+      {tab.content}
+    </pre>) : <pre data-wrap-content={wrap ? '' : undefined} tabIndex={wrap ? 0 : undefined}
+      role={wrap ? 'region' : undefined} aria-label={wrap ? title : undefined}>{children}</pre>}
   </div>
 }
 

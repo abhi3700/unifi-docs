@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { load } from 'cheerio'
-import { ApiDetails, ApiEndpointInfo, ApiExamples } from './api.jsx'
+import { ApiDetails, ApiEndpointInfo, ApiExamples, inlineCode } from './api.jsx'
 import { home, pages, redirects } from './content.js'
 import { Dialogs, Footer, Header, Landing, Pager, Sidebar } from './layout.jsx'
 import { Icon, mdxComponents } from './ui.jsx'
@@ -69,7 +69,7 @@ function DocHeading({ page }) {
   return <div className="article-header">
     <div className="breadcrumb"><a href="/">Docs</a><Icon name="chevron" size={13} />{page.section}</div>
     <h1>{page.title}</h1>
-    {page.description && <p>{page.description}</p>}
+    {page.description && <p>{page.endpoint ? inlineCode(page.endpoint.description) : page.description}</p>}
   </div>
 }
 
@@ -92,7 +92,9 @@ function Site({ page }) {
             <DocHeading page={page} />
             <div className="prose" dangerouslySetInnerHTML={{ __html: article.intro }} />
           </div>
-          <ApiExamples endpoint={page.endpoint} />
+          <div className="api-examples-column">
+            <ApiExamples endpoint={page.endpoint} />
+          </div>
           <div className="prose api-details" dangerouslySetInnerHTML={{ __html: article.markup }} />
           <Pager page={page} />
         </article>}
@@ -127,6 +129,8 @@ function PageMeta({ page }) {
 }
 
 export function renderDocument(template, page) {
-  return template.replace('<!--head-->', () => renderToStaticMarkup(<PageMeta page={page} />))
+  return template.replace(/<link rel="stylesheet"[^>]*>/, (link) =>
+    link.replace('<link', '<link id="docs-styles" media="print"') + `\n<noscript>${link}</noscript>`)
+    .replace('<!--head-->', () => renderToStaticMarkup(<PageMeta page={page} />))
     .replace('<!--body-->', () => renderToStaticMarkup(<Site page={page} />))
 }

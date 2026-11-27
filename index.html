@@ -5,13 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/logo/unifi-docs-favicon.png" type="image/png" sizes="64x64" />
     <!--head-->
+    <style>
+      #docs-loading { display: none; }
+      [data-docs-loading] body > :not(#docs-loading) { visibility: hidden; }
+      [data-docs-loading] #docs-loading {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 12px;
+        margin: 0;
+        background: #fff;
+        color: #101a32;
+        font: 500 15px/1.6 system-ui, sans-serif;
+      }
+      [data-theme="dark"] #docs-loading { background: #090f1c; color: #f2f6ff; }
+      #docs-loading::before {
+        content: "";
+        width: 18px;
+        height: 18px;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        #docs-loading::before { animation: docs-loading-spin .8s linear infinite; }
+      }
+      @keyframes docs-loading-spin { to { transform: rotate(1turn); } }
+    </style>
     <script>
+      const root = document.documentElement
       try {
         const preference = localStorage.getItem('unifi-docs-theme')
-        document.documentElement.dataset.theme = preference || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        root.dataset.theme = preference || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       } catch {}
+
+      root.dataset.docsLoading = ''
+      globalThis.docsStylesReady = new Promise((resolve) => {
+        function settleStyles(event) {
+          const link = event.target
+          if (link.id !== 'docs-styles') return
+          if (event.type === 'load') link.media = 'all'
+          delete root.dataset.docsLoading
+          document.removeEventListener('load', settleStyles, true)
+          document.removeEventListener('error', settleStyles, true)
+          resolve()
+        }
+        document.addEventListener('load', settleStyles, true)
+        document.addEventListener('error', settleStyles, true)
+      })
     </script>
+    <link rel="stylesheet" href="/src/style.css" />
     <script type="module" src="/src/client.js"></script>
   </head>
-  <body><!--body--></body>
+  <body>
+    <p id="docs-loading" role="status">Loading docs ...</p>
+    <!--body-->
+  </body>
 </html>
