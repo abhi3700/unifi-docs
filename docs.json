@@ -44,6 +44,7 @@
         "tab": "🖥️ Web App",
         "pages": [
           "webapp/overview",
+          "webapp/install",
           "webapp/home",
           "webapp/auth",
           "webapp/unio",
