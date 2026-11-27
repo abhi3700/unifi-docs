@@ -1,0 +1,15 @@
+{
+  "id": "/",
+  "name": "UniFi Docs",
+  "short_name": "UniFi Docs",
+  "description": "Guides and API reference for UniFi stablecoin payments.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/icons/docs-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/docs-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

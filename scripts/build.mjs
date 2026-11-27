@@ -31,7 +31,12 @@ try {
     writeFile('dist/_redirects', Array.from(redirects)
       .filter(([from, to]) => from !== to && !pages.has(from))
       .map(([from, to]) => `${from} ${to} 301`).join('\n') + '\n'),
-    writeFile('dist/_headers', '/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n\n/api-reference/openapi.json\n  Access-Control-Allow-Origin: *\n'),
+    writeFile('dist/_headers', [
+      '/assets/*\n  Cache-Control: public, max-age=31536000, immutable',
+      '/api-reference/openapi.json\n  Access-Control-Allow-Origin: *',
+      '/install.js\n  Cache-Control: no-cache',
+      '/manifest.webmanifest\n  Cache-Control: no-cache\n  Content-Type: application/manifest+json; charset=utf-8',
+    ].join('\n\n') + '\n'),
   ])
 } finally {
   await rm('.dist-ssr', { recursive: true, force: true })

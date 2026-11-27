@@ -150,7 +150,6 @@ function checkClientChunkSizes() {
 }
 
 export default defineConfig(({ command }) => ({
-  publicDir: false,
   appType: 'mpa',
   server: { port: 3001, strictPort: true },
   preview: { port: 3001, strictPort: true },
