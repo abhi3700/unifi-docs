@@ -760,7 +760,7 @@
         "operationId": "getEstimatedPaymentFee",
         "x-playground-id": 11,
         "summary": "Estimate the payment fee",
-        "description": "Returns the formatted estimated total stablecoin fee for the selected route.",
+        "description": "Returns the estimated stablecoin fee for the selected network and asset. For self-custodial wallets, this is the estimate shown before entering an amount. Use Prepare a self-custodial payment for an amount-specific estimate.",
         "tags": [
           "Preflight"
         ],
