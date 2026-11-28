@@ -82,7 +82,8 @@ svg { flex: none; vertical-align: middle; }
 .shell { max-width: 1536px; margin-inline: auto; }
 .site-header { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: var(--bg); }
 .header-row { height: 64px; padding-inline: 34px; display: grid; grid-template-columns: 1fr minmax(220px, 390px) 1fr; align-items: center; gap: 22px; }
-.brand { display: flex; align-items: center; gap: 11px; justify-self: start; }
+.header-brand { display: flex; align-items: center; justify-self: start; }
+.brand { display: flex; align-items: center; gap: 11px; }
 .brand img { width: 88px; height: 28px; object-fit: contain; }
 .brand span { padding-left: 11px; border-left: 1px solid var(--line); color: var(--muted); font-size: 13px; font-weight: 610; line-height: 20px; }
 .brand-dark, .theme-sun, [data-theme="dark"] .brand-light, [data-theme="dark"] .theme-moon { display: none; }
@@ -96,6 +97,8 @@ kbd { display: inline-flex; line-height: 1; align-items: center; justify-content
 .header-link:hover, .utility-link:hover { color: var(--accent); }
 .icon-button { display: grid; place-items: center; flex: none; width: 34px; height: 34px; padding: 0; color: var(--muted); background: transparent; border: 0; border-radius: 7px; }
 .icon-button:hover { color: var(--text); background: var(--soft); }
+[data-install-docs]:hover { background: transparent; }
+[data-docs-installed] [data-install-docs] { display: none; }
 .mobile-menu, .launch-phone { display: none; }
 .launch { display: inline-flex; gap: 6px; align-items: center; flex: none; padding: 7px 12px; border: 1px solid #234fbd; border-radius: 8px; background: #215bd9; color: #fff; font-size: 13px; font-weight: 625; }
 .launch:hover { background: #194ab8; }
@@ -176,7 +179,6 @@ kbd { display: inline-flex; line-height: 1; align-items: center; justify-content
 .hero-primary:hover { background: var(--hero-primary-hover); }
 .hero-actions .hero-secondary { border-color: var(--hero-secondary-line); background: var(--hero-secondary); }
 .hero-actions .hero-secondary:hover { background: var(--hero-secondary-hover); }
-[data-docs-installed] [data-install-docs] { display: none; }
 .landing-section { margin: 34px 0 0; }
 .landing-section h2 { margin: 0 0 14px; font-size: 22px; letter-spacing: -.02em; font-weight: 600; }
 .featured-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -615,10 +617,12 @@ body:has(dialog[open]) { overflow: hidden; }
 @media (max-width: 760px) {
   :root { --header-height: 101px; }
   .header-row { height: 59px; padding-inline: 15px 7px; display: flex; gap: 0; }
-  .brand { flex: none; margin-inline-end: auto; gap: 6px; }
+  .header-brand { flex: none; margin-inline-end: auto; }
+  .brand { gap: 6px; }
   /* The wordmark has transparent space after the lettering. */
   .brand img { width: 72px; height: 23px; margin-inline-end: -14px; }
   .brand span { padding-left: 8px; font-size: 12px; line-height: 17px; }
+  .header-brand .icon-button { width: 38px; height: 44px; }
   .header-actions { gap: 0; }
   .header-search, .header-actions :is(.icon-button, .launch) { flex: none; width: 38px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--muted); }
   .header-search:hover, .header-actions :is(.icon-button, .launch):hover { background: transparent; color: var(--text); }

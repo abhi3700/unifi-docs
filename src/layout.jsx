@@ -5,11 +5,16 @@ import { Icon } from './ui.jsx'
 export function Header({ activeSection }) {
   return <header className="site-header">
     <div className="header-row shell">
-      <a className="brand" href="/" aria-label="UniFi documentation home">
-        <img className="brand-light" src={logos.light} alt="UniFi" width="88" height="25" />
-        <img className="brand-dark" src={logos.dark} alt="UniFi" width="88" height="25" />
-        <span>Docs</span>
-      </a>
+      <div className="header-brand">
+        <a className="brand" href="/" aria-label="UniFi documentation home">
+          <img className="brand-light" src={logos.light} alt="UniFi" width="88" height="25" />
+          <img className="brand-dark" src={logos.dark} alt="UniFi" width="88" height="25" />
+          <span>Docs</span>
+        </a>
+        <a className="icon-button" data-install-docs="" href="/webapp/install#install-unifi-docs" aria-label="Install Docs" title="Install Docs">
+          <Icon name="download" size={17} />
+        </a>
+      </div>
       <button className="header-search" type="button" data-dialog-open="search" aria-label="Search documentation" aria-keyshortcuts="Control+k Meta+k">
         <Icon name="search" size={17} /><span>Search documentation</span><kbd data-shortcut="">⌘ K</kbd>
       </button>
@@ -158,7 +163,6 @@ export function Landing() {
         <div className="hero-actions">
           <a className="hero-primary" href="/quickstart">Get started <Icon name="arrow" size={17} /></a>
           <a className="hero-secondary" href="/api-reference/introduction">API reference <Icon name="arrow" size={17} /></a>
-          <a className="hero-secondary" data-install-docs="" href="/webapp/install#install-unifi-docs">Install Docs <Icon name="download" size={17} /></a>
         </div>
       </div>
     </div>
