@@ -87,7 +87,7 @@ function Site({ page }) {
           <Landing />
           <div className="landing-article prose" dangerouslySetInnerHTML={{ __html: article.markup }} />
         </>}
-        {page?.endpoint && <article className="article-layout api-layout">
+        {page?.endpoint && <article className="article-layout api-layout" data-playground-endpoint={page.endpoint['x-playground-id']}>
           <div className="api-intro">
             <DocHeading page={page} />
             <div className="prose" dangerouslySetInnerHTML={{ __html: article.intro }} />

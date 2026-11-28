@@ -43,6 +43,9 @@
     </style>
     <script>
       const root = document.documentElement
+      if (new URLSearchParams(location.search).get('embed') === 'playground') {
+        root.dataset.playgroundEmbed = ''
+      }
       try {
         const preference = localStorage.getItem('unifi-docs-theme')
         root.dataset.theme = preference || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')

@@ -114,6 +114,15 @@
   transform-origin: top left;
 }
 
+[data-request-body-fields] .request-fields-input-frame > input[aria-invalid="true"] {
+  border-color: var(--unifi-danger, var(--warning));
+}
+
+.request-fields-input::placeholder {
+  color: var(--request-field-muted);
+  opacity: 1;
+}
+
 .request-fields-options {
   display: flex;
   flex-wrap: wrap;
@@ -183,8 +192,14 @@
   border-radius: 50%;
   background: var(--request-field-surface);
   color: var(--request-field-muted);
-  font: 400 1rem/1 system-ui, sans-serif;
   cursor: pointer;
+}
+
+.request-fields-item-remove::before {
+  width: 8px;
+  height: 1px;
+  background: currentColor;
+  content: "";
 }
 
 .request-fields-item-remove:hover,
@@ -198,6 +213,7 @@
 }
 
 .request-fields-note {
+  margin: 0;
   color: var(--request-field-muted);
   font-size: .75rem;
 }
