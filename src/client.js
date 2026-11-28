@@ -6,6 +6,45 @@ await globalThis.docsStylesReady
 initMobileKeyboard()
 
 const root = document.documentElement
+const playgroundEmbed = root.hasAttribute('data-playground-embed')
+if (playgroundEmbed) {
+  document.querySelectorAll('.api-try, .site-header, .desktop-sidebar, .breadcrumb, .site-footer')
+    .forEach((element) => element.remove())
+  document.querySelectorAll('a[href]').forEach(setPlaygroundLink)
+  if (window.parent !== window) {
+    const publishDocsUrl = () => {
+      const url = new URL(location.href)
+      url.searchParams.delete('embed')
+      url.searchParams.delete('playground-pager')
+      window.parent.postMessage(`unifi:playground-docs-url:${url.href}`, '*')
+    }
+    publishDocsUrl()
+    window.addEventListener('hashchange', publishDocsUrl)
+    if (new URLSearchParams(location.search).has('playground-pager')) {
+      const endpoint = document.querySelector('[data-playground-endpoint]')?.dataset.playgroundEndpoint
+      if (endpoint) window.parent.postMessage(`unifi:playground-docs-endpoint:${endpoint}`, '*')
+    }
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !event.repeat && !event.defaultPrevented && !document.querySelector('dialog[open]')) {
+        window.parent.postMessage('unifi:close-playground-docs', '*')
+      }
+    })
+  }
+}
+
+function setPlaygroundLink(link) {
+  if (!playgroundEmbed || link.target || link.hasAttribute('download') || link.getAttribute('href').startsWith('#')) return
+  const url = new URL(link.href)
+  if (url.origin === location.origin && !/\.[^/]+$/.test(url.pathname)) {
+    url.searchParams.set('embed', 'playground')
+    if (link.closest('.pager')) url.searchParams.set('playground-pager', '1')
+    link.href = url.href
+  } else if (url.protocol === 'http:' || url.protocol === 'https:') {
+    link.target = '_blank'
+    link.relList.add('noopener')
+  }
+}
+
 const systemTheme = matchMedia('(prefers-color-scheme: dark)')
 const themeButtons = document.querySelectorAll('[data-theme-toggle]')
 const currentTheme = () => root.dataset.theme ?? (systemTheme.matches ? 'dark' : 'light')
@@ -37,12 +76,12 @@ const input = document.querySelector('#search-input')
 const results = document.querySelector('#search-results')
 const status = document.querySelector('#search-status')
 const sectionNav = document.querySelector('.section-nav')
-const activeSection = sectionNav.querySelector('[aria-current]')
-if (activeSection?.offsetLeft + activeSection?.offsetWidth > sectionNav.clientWidth) {
+const activeSection = sectionNav?.querySelector('[aria-current]')
+if (activeSection && activeSection.offsetLeft + activeSection.offsetWidth > sectionNav.clientWidth) {
   sectionNav.scrollLeft = activeSection.offsetLeft - 16
 }
 const shortcuts = document.querySelector('[data-shortcut]')
-shortcuts.textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ K' : 'Ctrl K'
+if (shortcuts) shortcuts.textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ K' : 'Ctrl K'
 
 let searchIndex
 let activeResult = -1
@@ -85,6 +124,7 @@ function showResults(matches, query) {
     const entry = document.createElement('li')
     const link = document.createElement('a')
     link.href = match.id
+    setPlaygroundLink(link)
     const section = document.createElement('span')
     section.textContent = match.section
     const title = document.createElement('strong')

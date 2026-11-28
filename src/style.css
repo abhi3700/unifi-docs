@@ -590,6 +590,10 @@ body:has(dialog[open]) { overflow: hidden; }
 /* Mermaid sets an inline max-width for the diagram embedded in the page. */
 .diagram-viewport > svg { width: calc(var(--diagram-width) * var(--diagram-zoom)); max-width: none !important; margin: auto; }
 
+:root[data-playground-embed] { --header-height: 0px; overscroll-behavior: contain; }
+[data-playground-embed] :is(.api-try, .site-header, .desktop-sidebar, .breadcrumb, .site-footer) { display: none; }
+[data-playground-embed] .site-layout { grid-template-columns: minmax(0, 1fr); }
+
 @media (max-width: 1160px) {
   :root { --sidebar-width: 222px; }
   .header-actions { gap: 11px; }

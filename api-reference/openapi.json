@@ -103,6 +103,7 @@
     "/v1/api/{user_id}": {
       "get": {
         "operationId": "getApiAccount",
+        "x-playground-id": 38,
         "summary": "Get API credits and key summaries",
         "description": "Returns the API plan, remaining credits, and key summaries for the account that owns the bearer API key. Each call costs one API credit. Check `data.metadata.credits` periodically or before a batch and alert your agents when the balance falls below your threshold so they can pause or defer work.",
         "tags": [
