@@ -4670,6 +4670,7 @@
           "scheds": {
             "type": "array",
             "nullable": true,
+            "description": "Optional schedules aligned one-to-one with batch items.",
             "items": {
               "$ref": "#/components/schemas/Schedule"
             }
