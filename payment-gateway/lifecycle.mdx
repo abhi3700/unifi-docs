@@ -49,7 +49,7 @@ UniFi retains the `session_id → receipt_id` mapping in Redis for two hours. Th
 for checkout polling and return-to-merchant status checks.
 
 The hosted checkout reads this status when it opens, including after a reload. UniFi also reserves
-the session atomically while either a managed-wallet or self-custodial payment is being submitted.
+the session atomically while either a custodial or self-custodial payment is being submitted.
 Submitting an already-paid session, or submitting the same session concurrently, returns
 `409 Conflict` instead of creating another payment.
 

@@ -12,6 +12,9 @@ export const redirects = new Map([
   ['/index', '/'],
   [endpointIndex, '/api-reference/introduction'],
   [`${endpointIndex}/health/check-api-dependencies`, `${endpointIndex}/health/check-api-health`],
+  [`${endpointIndex}/history/get-a-bulk-payment`, `${endpointIndex}/history/get-a-bulk-payment-receipt`],
+  [`${endpointIndex}/pay/create-managed-wallet-bulk-payments`, `${endpointIndex}/pay/create-custodial-bulk-payments`],
+  [`${endpointIndex}/pay/create-a-managed-wallet-merchant-payment`, `${endpointIndex}/pay/create-a-custodial-merchant-payment`],
 ])
 export const endpointSection = 'API Reference'
 const local = ['development', 'test', 'canvas'].includes(import.meta.env.MODE)
