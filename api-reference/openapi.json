@@ -39,7 +39,7 @@
     },
     {
       "name": "Pay",
-      "description": "Create managed-wallet, merchant, and self-custodial payments."
+      "description": "Create custodial and self-custodial payments, including merchant payments."
     },
     {
       "name": "History",
@@ -1273,7 +1273,7 @@
         "operationId": "createManagedWalletPayment",
         "x-playground-id": 18,
         "summary": "Create a stablecoin payment",
-        "description": "Submits a payment from a UniFi-managed wallet. The response is a receipt ID; query the receipt endpoint for settlement progress.",
+        "description": "Submits a payment from a UniFi custodial wallet. The response is a receipt ID; query the receipt endpoint for settlement progress.",
         "tags": [
           "Pay"
         ],
@@ -1347,8 +1347,8 @@
       "post": {
         "operationId": "createManagedWalletBulkPayment",
         "x-playground-id": 19,
-        "summary": "Create managed-wallet bulk payments",
-        "description": "Submits two or more same-chain payments from a UniFi-managed wallet. UniFi handles controlled-wallet approval and signing and returns one durable bulk payment ID plus one receipt ID per recipient.",
+        "summary": "Create custodial bulk payments",
+        "description": "Submits two or more same-chain payments from a UniFi custodial wallet. UniFi handles wallet approval and signing and returns one durable bulk payment ID plus one receipt ID per recipient.",
         "tags": [
           "Pay"
         ],
@@ -1438,8 +1438,8 @@
       "post": {
         "operationId": "createManagedWalletMerchantPayment",
         "x-playground-id": 20,
-        "summary": "Create a managed-wallet merchant payment",
-        "description": "Submits a merchant payment from a UniFi-managed wallet and associates its receipt with the supplied payment session. A session accepts only one payment; an already-paid or currently-processing session returns `409 Conflict`.",
+        "summary": "Create a custodial merchant payment",
+        "description": "Submits a merchant payment from a UniFi custodial wallet and associates its receipt with the supplied payment session. A session accepts only one payment; an already-paid or currently-processing session returns `409 Conflict`.",
         "tags": [
           "Pay"
         ],
@@ -2082,8 +2082,8 @@
       "get": {
         "operationId": "getBulkPaymentReceipts",
         "x-playground-id": 28,
-        "summary": "Get a bulk payment",
-        "description": "Returns the ordered individual receipts created by one managed-wallet or self-custodial bulk-payment submission.",
+        "summary": "Get a bulk payment receipt",
+        "description": "Returns the ordered individual receipts created by one custodial or self-custodial bulk-payment submission.",
         "tags": [
           "History"
         ],
